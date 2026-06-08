@@ -11,7 +11,10 @@ if (!SPREADSHEET_ID) { console.error('❌ Thiếu SPREADSHEET_ID'); process.exit
 
 const credsJson = process.env.GOOGLE_CREDENTIALS || '';
 if (!credsJson) { console.error('❌ Thiếu GOOGLE_CREDENTIALS'); process.exit(1); }
-fs.writeFileSync('/tmp/credentials.json', credsJson);
+const credPath = process.platform === 'win32' 
+  ? 'C:\\actions-runner\\credentials.json' 
+  : '/tmp/credentials.json';
+fs.writeFileSync(credPath, credsJson);
 
 const CONFIG = {
   SPREADSHEET_ID,
@@ -254,7 +257,7 @@ async function scrapeBrand(page, brand) {
 // ── Google Sheets helpers (giữ nguyên từ v4) ────────────
 async function initGoogleSheets() {
   const auth = new google.auth.GoogleAuth({
-    keyFile: '/tmp/credentials.json',
+    keyFile: credPath,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
   return google.sheets({ version: 'v4', auth });
