@@ -1,0 +1,9 @@
+{
+  "name": "tgdd-laptop-scraper",
+  "version": "4.0.0",
+  "scripts": { "start": "node scraper_v4.js" },
+  "dependencies": {
+    "puppeteer": "^22.0.0",
+    "googleapis": "^140.0.0"
+  }
+}
