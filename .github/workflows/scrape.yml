@@ -2,9 +2,8 @@ name: TGDĐ Laptop Scraper — Daily 9AM
 
 on:
   schedule:
-    # Chạy lúc 9:00 sáng giờ Việt Nam (UTC+7) = 02:00 UTC
-    - cron: '0 2 * * *'
-  workflow_dispatch:   # Cho phép chạy thủ công bất cứ lúc nào
+    - cron: '0 2 * * *'   # 9:00 sáng giờ VN (UTC+7)
+  workflow_dispatch:        # Chạy thủ công bất cứ lúc nào
 
 jobs:
   scrape:
@@ -19,7 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # Bỏ cache vì không có package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -32,11 +31,3 @@ jobs:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         run: node scraper_v4.js
-
-      - name: Upload log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: scraper-log
-          path: scraper.log
-          retention-days: 3
