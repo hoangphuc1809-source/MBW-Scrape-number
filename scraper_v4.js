@@ -1,18 +1,14 @@
 /**
- * TGDĐ LAPTOP SCRAPER v4 — GitHub Actions Edition
- * Đọc credentials từ env variable GOOGLE_CREDENTIALS (JSON string)
+ * TGDĐ LAPTOP SCRAPER v5 — Anti-bot bypass cho GitHub Actions
  */
 
 const puppeteer  = require('puppeteer');
 const { google } = require('googleapis');
 const fs         = require('fs');
-const path       = require('path');
 
-// ── Đọc config từ environment ──────────────────────────────
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '';
 if (!SPREADSHEET_ID) { console.error('❌ Thiếu SPREADSHEET_ID'); process.exit(1); }
 
-// Ghi credentials.json từ secret
 const credsJson = process.env.GOOGLE_CREDENTIALS || '';
 if (!credsJson) { console.error('❌ Thiếu GOOGLE_CREDENTIALS'); process.exit(1); }
 fs.writeFileSync('/tmp/credentials.json', credsJson);
@@ -20,10 +16,8 @@ fs.writeFileSync('/tmp/credentials.json', credsJson);
 const CONFIG = {
   SPREADSHEET_ID,
   SHEET_NAME: 'Laptop TGDĐ',
-  DELAY_MS  : 2000,
-  HEADLESS  : true,
-  TIMEOUT_MS: 45000,
-
+  DELAY_MS  : 4000,
+  TIMEOUT_MS: 60000,
   BRANDS: [
     { name: 'HP',       url: 'https://www.thegioididong.com/laptop-hp-compaq'    },
     { name: 'Asus',     url: 'https://www.thegioididong.com/laptop-asus'         },
@@ -38,36 +32,114 @@ const CONFIG = {
 };
 
 const HEADERS = [
-  'STT', 'Tên Model', 'Hãng', 'CPU', 'RAM', 'Ổ cứng', 'Màn hình',
-  'Card đồ họa', 'Trọng lượng', 'Giá gốc (₫)', 'Giá KM (₫)', 'Giảm (%)',
-  'Đã bán', 'Rating (★)', 'Link sản phẩm', 'Cập nhật'
+  'STT','Tên Model','Hãng','CPU','RAM','Ổ cứng','Màn hình',
+  'Card đồ họa','Trọng lượng','Giá gốc (₫)','Giá KM (₫)','Giảm (%)',
+  'Đã bán','Rating (★)','Link sản phẩm','Cập nhật'
 ];
+
+// ── Danh sách User-Agent thực từ Chrome Windows ──────────
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+];
+
+function randomUA() {
+  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+}
+
+// ── Fetch với retry ──────────────────────────────────────
+async function gotoWithRetry(page, url, maxRetry = 4) {
+  for (let attempt = 1; attempt <= maxRetry; attempt++) {
+    try {
+      console.log(`    Attempt ${attempt}/${maxRetry}...`);
+
+      // Đổi User-Agent mỗi lần retry
+      await page.setUserAgent(randomUA());
+
+      // Thêm headers giống browser thật
+      await page.setExtraHTTPHeaders({
+        'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+      });
+
+      const res = await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: CONFIG.TIMEOUT_MS,
+      });
+
+      if (res && res.status() === 200) {
+        // Đợi thêm để JS render
+        await sleep(3000);
+        return true;
+      }
+      console.log(`    HTTP ${res ? res.status() : 'unknown'}, retrying...`);
+    } catch(e) {
+      console.log(`    ⚠ ${e.message.substring(0, 80)}`);
+    }
+
+    // Delay tăng dần giữa các lần retry
+    const delay = attempt * 5000;
+    console.log(`    Chờ ${delay/1000}s trước khi thử lại...`);
+    await sleep(delay);
+  }
+  return false;
+}
 
 async function main() {
   const start = new Date();
-  console.log(`\n🚀 TGDĐ Laptop Scraper — ${start.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`);
+  console.log(`\n🚀 TGDĐ Laptop Scraper v5 — ${start.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}`);
 
   const browser = await puppeteer.launch({
     headless: true,
     args: [
-      '--no-sandbox', '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage', '--disable-gpu',
-      '--lang=vi-VN',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-blink-features=AutomationControlled', // ẩn dấu hiệu automation
+      '--lang=vi-VN,vi',
+      '--window-size=1366,768',
     ],
   });
 
   const page = await browser.newPage();
-  await page.setViewport({ width: 1366, height: 900 });
-  await page.setUserAgent(
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-    '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-  );
-  await page.setExtraHTTPHeaders({ 'Accept-Language': 'vi-VN,vi;q=0.9' });
+  await page.setViewport({ width: 1366, height: 768 });
+
+  // Ẩn webdriver flag — quan trọng để bypass bot detection
+  await page.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    Object.defineProperty(navigator, 'plugins', { get: () => [1,2,3,4,5] });
+    Object.defineProperty(navigator, 'languages', { get: () => ['vi-VN','vi','en-US','en'] });
+    window.chrome = { runtime: {} };
+  });
+
+  // Chặn ảnh/font để tải nhanh
   await page.setRequestInterception(true);
   page.on('request', req => {
     if (['image','font','media'].includes(req.resourceType())) req.abort();
     else req.continue();
   });
+
+  // Warm-up: vào trang chủ trước như người dùng thật
+  console.log('\n🌐 Warm-up: vào trang chủ TGDĐ...');
+  const warmed = await gotoWithRetry(page, 'https://www.thegioididong.com', 3);
+  if (!warmed) {
+    console.log('⚠ Không vào được trang chủ, thử tiếp...');
+  }
+  await sleep(3000);
 
   const sheets = await initGoogleSheets();
   await setupSheet(sheets);
@@ -78,6 +150,8 @@ async function main() {
     const products = await scrapeBrand(page, brand);
     allProducts = allProducts.concat(products);
     console.log(`  ✓ ${products.length} sản phẩm`);
+    // Nghỉ giữa các hãng
+    await sleep(3000);
   }
 
   await browser.close();
@@ -96,89 +170,88 @@ async function scrapeBrand(page, brand) {
 
   while (pageNum <= 30) {
     const url = pageNum === 1 ? brand.url : `${brand.url}?page=${pageNum}`;
-    console.log(`  Trang ${pageNum}`);
+    console.log(`  Trang ${pageNum}: ${url}`);
 
-    try {
-      await page.goto(url, { waitUntil: 'networkidle2', timeout: CONFIG.TIMEOUT_MS });
-      await sleep(2000);
-      await autoScroll(page);
-      await sleep(1500);
-
-      const pageProducts = await page.evaluate((brandName, BASE) => {
-        const results = [];
-        const items = document.querySelectorAll('ul.listproduct li.item');
-        items.forEach(item => {
-          const anchor = item.querySelector('a.main-contain');
-          if (!anchor) return;
-          const href      = anchor.getAttribute('href') || '';
-          const fullName  = anchor.getAttribute('data-name') || '';
-          const link      = href.startsWith('http') ? href : BASE + href;
-          if (!fullName || !href) return;
-
-          const salePrice = parseFloat(anchor.getAttribute('data-price') || '0');
-          const oldEl     = item.querySelector('p.price-old');
-          const origPrice = oldEl ? parseInt(oldEl.innerText.replace(/[^\d]/g,'')) : 0;
-          const pctEl     = item.querySelector('span.percent');
-          const discount  = pctEl ? pctEl.innerText.trim() : '';
-
-          let cpu='', screen='', gpu='', weight='', ram='', storage='';
-          item.querySelectorAll('div.utility p').forEach(p => {
-            const t = p.innerText.trim();
-            if (t.startsWith('CPU:'))          cpu    = t.replace('CPU:','').trim().substring(0,60);
-            else if (t.startsWith('Màn hình:'))screen = t.replace('Màn hình:','').trim().substring(0,40);
-            else if (t.startsWith('Card:'))    gpu    = t.replace('Card:','').trim().substring(0,40);
-            else if (t.startsWith('Khối lượng:')) weight = t.replace('Khối lượng:','').trim();
-          });
-          item.querySelectorAll('div.item-compare span').forEach(s => {
-            const t = s.innerText.trim();
-            if (/RAM/i.test(t))      ram     = t;
-            if (/SSD|HDD/i.test(t)) storage = t;
-          });
-
-          const ratingEl = item.querySelector('div.vote-txt b');
-          const rating   = ratingEl ? ratingEl.innerText.trim() : '';
-
-          let sold = '';
-          const rBox = item.querySelector('div.rating_Compare');
-          if (rBox) {
-            rBox.querySelectorAll('span').forEach(s => {
-              if (s.innerText.includes('Đã bán'))
-                sold = s.innerText.replace(/[•\s]*Đã bán\s*/i,'').trim();
-            });
-          }
-
-          results.push({ name: fullName.trim(), brand: brandName,
-            cpu, ram, storage, screen, gpu, weight,
-            origPrice: origPrice||'', salePrice: salePrice ? Math.round(salePrice) : '',
-            discount, sold, rating, link });
-        });
-        return results;
-      }, brand.name, 'https://www.thegioididong.com');
-
-      const newOnes = pageProducts.filter(p => {
-        if (!p.link || seenLinks.has(p.link)) return false;
-        seenLinks.add(p.link); return true;
-      });
-
-      if (newOnes.length === 0) { console.log(`  → Hết sản phẩm`); break; }
-      products.push(...newOnes);
-      console.log(`    +${newOnes.length} SP (tổng: ${products.length})`);
-
-      const hasMore = await page.evaluate(() =>
-        !!document.querySelector('.view-more a:not(.prevent), a.loadmore')
-      ).catch(() => false);
-      if (!hasMore) { console.log(`  → Hết trang`); break; }
-
-      pageNum++;
-      await sleep(CONFIG.DELAY_MS);
-    } catch(err) {
-      console.log(`  ⚠ ${err.message.substring(0,80)}`);
+    const ok = await gotoWithRetry(page, url, 4);
+    if (!ok) {
+      console.log(`  ❌ Không load được trang, bỏ qua hãng ${brand.name}`);
       break;
     }
+
+    // Scroll để load lazy items
+    await autoScroll(page);
+    await sleep(2000);
+
+    const pageProducts = await page.evaluate((brandName, BASE) => {
+      const results = [];
+      const items = document.querySelectorAll('ul.listproduct li.item');
+      items.forEach(item => {
+        const anchor = item.querySelector('a.main-contain');
+        if (!anchor) return;
+        const href     = anchor.getAttribute('href') || '';
+        const fullName = anchor.getAttribute('data-name') || '';
+        const link     = href.startsWith('http') ? href : BASE + href;
+        if (!fullName || !href) return;
+
+        const salePrice = parseFloat(anchor.getAttribute('data-price') || '0');
+        const oldEl     = item.querySelector('p.price-old');
+        const origPrice = oldEl ? parseInt(oldEl.innerText.replace(/[^\d]/g,'')) : 0;
+        const pctEl     = item.querySelector('span.percent');
+        const discount  = pctEl ? pctEl.innerText.trim() : '';
+
+        let cpu='',screen='',gpu='',weight='',ram='',storage='';
+        item.querySelectorAll('div.utility p').forEach(p => {
+          const t = p.innerText.trim();
+          if (t.startsWith('CPU:'))           cpu    = t.replace('CPU:','').trim().substring(0,60);
+          else if (t.startsWith('Màn hình:')) screen = t.replace('Màn hình:','').trim().substring(0,40);
+          else if (t.startsWith('Card:'))     gpu    = t.replace('Card:','').trim().substring(0,40);
+          else if (t.startsWith('Khối lượng:')) weight = t.replace('Khối lượng:','').trim();
+        });
+        item.querySelectorAll('div.item-compare span').forEach(s => {
+          const t = s.innerText.trim();
+          if (/RAM/i.test(t))      ram     = t;
+          if (/SSD|HDD/i.test(t)) storage = t;
+        });
+
+        const ratingEl = item.querySelector('div.vote-txt b');
+        const rating   = ratingEl ? ratingEl.innerText.trim() : '';
+
+        let sold = '';
+        const rBox = item.querySelector('div.rating_Compare');
+        if (rBox) rBox.querySelectorAll('span').forEach(s => {
+          if (s.innerText.includes('Đã bán'))
+            sold = s.innerText.replace(/[•\s]*Đã bán\s*/i,'').trim();
+        });
+
+        results.push({ name:fullName.trim(), brand:brandName,
+          cpu, ram, storage, screen, gpu, weight,
+          origPrice: origPrice||'', salePrice: salePrice ? Math.round(salePrice) : '',
+          discount, sold, rating, link });
+      });
+      return results;
+    }, brand.name, 'https://www.thegioididong.com');
+
+    const newOnes = pageProducts.filter(p => {
+      if (!p.link || seenLinks.has(p.link)) return false;
+      seenLinks.add(p.link); return true;
+    });
+
+    if (newOnes.length === 0) { console.log(`  → Hết sản phẩm`); break; }
+    products.push(...newOnes);
+    console.log(`    +${newOnes.length} SP (tổng: ${products.length})`);
+
+    const hasMore = await page.evaluate(() =>
+      !!document.querySelector('.view-more a:not(.prevent)')
+    ).catch(() => false);
+    if (!hasMore) { console.log(`  → Hết trang`); break; }
+
+    pageNum++;
+    await sleep(CONFIG.DELAY_MS);
   }
   return products;
 }
 
+// ── Google Sheets helpers (giữ nguyên từ v4) ────────────
 async function initGoogleSheets() {
   const auth = new google.auth.GoogleAuth({
     keyFile: '/tmp/credentials.json',
@@ -188,60 +261,62 @@ async function initGoogleSheets() {
 }
 
 async function setupSheet(sheets) {
-  await sheets.spreadsheets.values.clear({ spreadsheetId: CONFIG.SPREADSHEET_ID, range: CONFIG.SHEET_NAME });
+  await sheets.spreadsheets.values.clear({ spreadsheetId:CONFIG.SPREADSHEET_ID, range:CONFIG.SHEET_NAME });
   await sheets.spreadsheets.values.update({
-    spreadsheetId: CONFIG.SPREADSHEET_ID, range: `${CONFIG.SHEET_NAME}!A1`,
-    valueInputOption: 'RAW', requestBody: { values: [HEADERS] },
+    spreadsheetId:CONFIG.SPREADSHEET_ID, range:`${CONFIG.SHEET_NAME}!A1`,
+    valueInputOption:'RAW', requestBody:{ values:[HEADERS] },
   });
-  const sheetId = await getSheetId(sheets);
-  await sheets.spreadsheets.batchUpdate({ spreadsheetId: CONFIG.SPREADSHEET_ID, requestBody: { requests: [
-    { repeatCell: { range: { sheetId, startRowIndex:0, endRowIndex:1 },
-      cell: { userEnteredFormat: {
-        backgroundColor: {red:0.102,green:0.451,blue:0.914},
-        textFormat: {foregroundColor:{red:1,green:1,blue:1}, bold:true, fontSize:10},
-        horizontalAlignment: 'CENTER' }},
-      fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)' }},
-    { updateSheetProperties: { properties: { sheetId, gridProperties: { frozenRowCount:1 } },
-      fields: 'gridProperties.frozenRowCount' }},
+  const sid = await getSheetId(sheets);
+  await sheets.spreadsheets.batchUpdate({ spreadsheetId:CONFIG.SPREADSHEET_ID, requestBody:{ requests:[
+    { repeatCell:{ range:{sheetId:sid,startRowIndex:0,endRowIndex:1},
+      cell:{userEnteredFormat:{
+        backgroundColor:{red:0.102,green:0.451,blue:0.914},
+        textFormat:{foregroundColor:{red:1,green:1,blue:1},bold:true,fontSize:10},
+        horizontalAlignment:'CENTER'}},
+      fields:'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'}},
+    { updateSheetProperties:{ properties:{sheetId:sid,gridProperties:{frozenRowCount:1}},
+      fields:'gridProperties.frozenRowCount'}},
   ]}});
   console.log('✓ Sheet reset xong');
 }
 
 async function writeToSheet(sheets, products) {
-  const now  = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+  if (products.length === 0) { console.log('⚠ Không có sản phẩm để ghi'); return; }
+  const now  = new Date().toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});
   const rows = products.map((p,i) => [
-    i+1, p.name, p.brand, p.cpu, p.ram, p.storage, p.screen, p.gpu, p.weight,
-    p.origPrice||'', p.salePrice||'', p.discount, p.sold, p.rating, p.link, now
+    i+1,p.name,p.brand,p.cpu,p.ram,p.storage,p.screen,p.gpu,p.weight,
+    p.origPrice||'',p.salePrice||'',p.discount,p.sold,p.rating,p.link,now
   ]);
-  for (let i = 0; i < rows.length; i += 500) {
+  for (let i=0;i<rows.length;i+=500) {
     await sheets.spreadsheets.values.append({
-      spreadsheetId: CONFIG.SPREADSHEET_ID, range: `${CONFIG.SHEET_NAME}!A2`,
-      valueInputOption: 'RAW', requestBody: { values: rows.slice(i, i+500) },
+      spreadsheetId:CONFIG.SPREADSHEET_ID, range:`${CONFIG.SHEET_NAME}!A2`,
+      valueInputOption:'RAW', requestBody:{values:rows.slice(i,i+500)},
     });
+    console.log(`  Đã ghi ${Math.min(i+500,rows.length)}/${rows.length} dòng`);
   }
-  const sheetId = await getSheetId(sheets);
-  const total   = rows.length + 1;
-  const zebraR  = Array.from({length: rows.length}, (_,r) => ({ repeatCell: {
-    range: { sheetId, startRowIndex:r+1, endRowIndex:r+2, startColumnIndex:0, endColumnIndex:HEADERS.length },
-    cell: { userEnteredFormat: { backgroundColor: r%2===0
-      ? {red:0.945,green:0.953,blue:0.957} : {red:1,green:1,blue:1} }},
-    fields: 'userEnteredFormat.backgroundColor' }}));
-  await sheets.spreadsheets.batchUpdate({ spreadsheetId: CONFIG.SPREADSHEET_ID, requestBody: { requests: [
+  const sid   = await getSheetId(sheets);
+  const total = rows.length+1;
+  const zebraR = Array.from({length:rows.length},(_,r)=>({ repeatCell:{
+    range:{sheetId:sid,startRowIndex:r+1,endRowIndex:r+2,startColumnIndex:0,endColumnIndex:HEADERS.length},
+    cell:{userEnteredFormat:{backgroundColor: r%2===0
+      ?{red:0.945,green:0.953,blue:0.957}:{red:1,green:1,blue:1}}},
+    fields:'userEnteredFormat.backgroundColor'}}));
+  await sheets.spreadsheets.batchUpdate({ spreadsheetId:CONFIG.SPREADSHEET_ID, requestBody:{requests:[
     ...zebraR,
-    { repeatCell: { range:{sheetId,startRowIndex:1,endRowIndex:total,startColumnIndex:9,endColumnIndex:11},
+    {repeatCell:{range:{sheetId:sid,startRowIndex:1,endRowIndex:total,startColumnIndex:9,endColumnIndex:11},
       cell:{userEnteredFormat:{numberFormat:{type:'NUMBER',pattern:'#,##0'}}},
-      fields:'userEnteredFormat.numberFormat' }},
-    { repeatCell: { range:{sheetId,startRowIndex:1,endRowIndex:total,startColumnIndex:11,endColumnIndex:12},
+      fields:'userEnteredFormat.numberFormat'}},
+    {repeatCell:{range:{sheetId:sid,startRowIndex:1,endRowIndex:total,startColumnIndex:11,endColumnIndex:12},
       cell:{userEnteredFormat:{textFormat:{foregroundColor:{red:0.8,green:0.13,blue:0.08},bold:true}}},
-      fields:'userEnteredFormat.textFormat' }},
-    { autoResizeDimensions: { dimensions:{sheetId,dimension:'COLUMNS',startIndex:0,endIndex:HEADERS.length} }},
+      fields:'userEnteredFormat.textFormat'}},
+    {autoResizeDimensions:{dimensions:{sheetId:sid,dimension:'COLUMNS',startIndex:0,endIndex:HEADERS.length}}},
   ]}});
   console.log('✓ Format sheet xong');
 }
 
 async function getSheetId(sheets) {
-  const meta  = await sheets.spreadsheets.get({ spreadsheetId: CONFIG.SPREADSHEET_ID });
-  const found = meta.data.sheets.find(s => s.properties.title === CONFIG.SHEET_NAME);
+  const meta  = await sheets.spreadsheets.get({spreadsheetId:CONFIG.SPREADSHEET_ID});
+  const found = meta.data.sheets.find(s=>s.properties.title===CONFIG.SHEET_NAME);
   if (!found) throw new Error(`Không tìm thấy sheet "${CONFIG.SHEET_NAME}"`);
   return found.properties.sheetId;
 }
@@ -249,15 +324,13 @@ async function getSheetId(sheets) {
 async function autoScroll(page) {
   await page.evaluate(async () => {
     await new Promise(resolve => {
-      let total = 0;
-      const timer = setInterval(() => {
-        window.scrollBy(0, 400); total += 400;
-        if (total >= document.body.scrollHeight) { clearInterval(timer); resolve(); }
-      }, 120);
+      let total=0;
+      const timer=setInterval(()=>{ window.scrollBy(0,400); total+=400;
+        if(total>=document.body.scrollHeight){clearInterval(timer);resolve();}},150);
     });
   });
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
 
-main().catch(err => { console.error('\n❌ Lỗi:', err.message); process.exit(1); });
+main().catch(err=>{ console.error('\n❌ Lỗi:',err.message); process.exit(1); });
