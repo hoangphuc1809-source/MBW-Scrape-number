@@ -1,0 +1,530 @@
+/**
+ * multi_dealer_scraper.js  — v2.2
+ * Scrape laptop prices từ MBW / FPT Retail / CellPhone S → Google Sheets
+ *
+ * FIX v2.2:
+ *  [BUG1] MBW ghi trùng 3 bản/ngày → chuẩn hóa dateStr sang DD/MM/YYYY cố định
+ *  [BUG2] FPT sai tên + không có giá → dùng div.cardInfo thay [class*="product"]
+ *  [BUG3] CPS không lấy được → sửa URL (/laptop/hp.html) + price selector đúng
+ */
+
+'use strict';
+
+const puppeteer    = require('puppeteer');
+const { google }   = require('googleapis');
+const fs           = require('fs');
+const path         = require('path');
+const os           = require('os');
+
+// ── Config ────────────────────────────────────────────────
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
+const SHEET_NAME     = 'Laptop TGDĐ';
+const CREDS_PATH     = path.join(os.tmpdir(), 'scraper_gcp.json');
+
+// [BUG3 FIX] CPS URL đúng là /laptop/[brand].html (không có "thuong-hieu-")
+const BRANDS = [
+  { name: 'Asus',     mbwUrl: 'https://www.thegioididong.com/laptop-asus',     fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/asus',     cpsUrl: 'https://cellphones.com.vn/laptop/asus.html'     },
+  { name: 'Acer',     mbwUrl: 'https://www.thegioididong.com/laptop-acer',     fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/acer',     cpsUrl: 'https://cellphones.com.vn/laptop/acer.html'     },
+  { name: 'Dell',     mbwUrl: 'https://www.thegioididong.com/laptop-dell',     fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/dell',     cpsUrl: 'https://cellphones.com.vn/laptop/dell.html'     },
+  { name: 'HP',       mbwUrl: 'https://www.thegioididong.com/laptop-hp',       fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/hp',       cpsUrl: 'https://cellphones.com.vn/laptop/hp.html'       },
+  { name: 'Lenovo',   mbwUrl: 'https://www.thegioididong.com/laptop-lenovo',   fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/lenovo',   cpsUrl: 'https://cellphones.com.vn/laptop/lenovo.html'   },
+  { name: 'MSI',      mbwUrl: 'https://www.thegioididong.com/laptop-msi',      fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/msi',      cpsUrl: 'https://cellphones.com.vn/laptop/msi.html'      },
+  { name: 'Samsung',  mbwUrl: 'https://www.thegioididong.com/laptop-samsung',  fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/samsung',  cpsUrl: 'https://cellphones.com.vn/laptop/samsung.html'  },
+  { name: 'MacBook',  mbwUrl: 'https://www.thegioididong.com/laptop-apple',    fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/macbook',  cpsUrl: 'https://cellphones.com.vn/macbook.html'          },
+  { name: 'Gigabyte', mbwUrl: 'https://www.thegioididong.com/laptop-gigabyte', fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/gigabyte', cpsUrl: 'https://cellphones.com.vn/laptop/gigabyte.html' },
+];
+
+const HEADERS = [
+  'Ngày','Giờ','STT','Dealer','Tên Model','Hãng',
+  'CPU','RAM','Ổ cứng','Màn hình','Card đồ họa','Trọng lượng',
+  'Giá gốc (₫)','Giá KM (₫)','Giảm (%)','Đã bán','Rating (★)','Link sản phẩm',
+];
+
+// ── Helpers ───────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// [BUG1 FIX] Format ngày cố định DD/MM/YYYY để tránh locale mismatch
+function formatDate(d) {
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+function formatTime(d) {
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${min}`;
+}
+
+async function scrollToBottom(page) {
+  await page.evaluate(async () => {
+    await new Promise(resolve => {
+      let total = 0;
+      const timer = setInterval(() => {
+        window.scrollBy(0, 600);
+        total += 600;
+        if (total >= document.body.scrollHeight) { clearInterval(timer); resolve(); }
+      }, 300);
+    });
+  });
+}
+
+// ── FPT: fetch specs từ detail page ──────────────────────
+async function fetchSpecsFPT(page, url) {
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await sleep(1500);
+    const clicked = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('span, button, a')]
+        .find(b => b.innerText?.trim() === 'Xem tất cả thông số');
+      if (btn) { btn.click(); return true; }
+      return false;
+    });
+    if (clicked) await sleep(800);
+    const rawSpecs = await page.evaluate(() => {
+      const specs = {};
+      document.querySelectorAll('.flex.gap-2.border-b').forEach(row => {
+        const ch = [...row.children];
+        if (ch.length >= 2) {
+          const label = ch[0].innerText?.trim();
+          const value = ch[1].innerText?.trim().replace(/\n+/g, ' ');
+          if (label && value) specs[label] = value;
+        }
+      });
+      return specs;
+    });
+    return mapSpecsFPT(rawSpecs);
+  } catch (e) {
+    console.log(`    ⚠ FPT spec fetch failed: ${e.message.substring(0, 60)}`);
+    return {};
+  }
+}
+
+function mapSpecsFPT(raw) {
+  const cpu     = [raw['Công nghệ CPU'], raw['Loại CPU']].filter(Boolean).join(' ')
+                  + (raw['Tốc độ tối đa'] ? ` - Max Turbo: ${raw['Tốc độ tối đa']}` : '');
+  const ram     = raw['Dung lượng RAM'] || '';
+  const storage = raw['Dung lượng SSD'] ? `${raw['Dung lượng SSD']}GB SSD` : (raw['Kiểu ổ cứng'] || '');
+  const screen  = raw['Kích thước màn hình'] || '';
+  const gpu     = raw['Tên đầy đủ (Card onbroad)'] || raw['Hãng (Card Oboard)'] || '';
+  const weight  = raw['Khối lượng'] || raw['Trọng lượng'] || '';
+  return { cpu, ram, storage, screen, gpu, weight };
+}
+
+// ── CPS: fetch specs từ detail page ──────────────────────
+async function fetchSpecsCPS(page, url) {
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await sleep(1500);
+    const rawSpecs = await page.evaluate(() => {
+      const specs = {};
+      document.querySelectorAll('tr.technical-content-item').forEach(row => {
+        const tds = row.querySelectorAll('td');
+        if (tds.length >= 2) {
+          const label = tds[0].innerText?.trim();
+          const value = tds[1].innerText?.trim().replace(/\n+/g, ' ');
+          if (label && value) specs[label] = value;
+        }
+      });
+      return specs;
+    });
+    return mapSpecsCPS(rawSpecs);
+  } catch (e) {
+    console.log(`    ⚠ CPS spec fetch failed: ${e.message.substring(0, 60)}`);
+    return {};
+  }
+}
+
+function mapSpecsCPS(raw) {
+  return {
+    cpu:     raw['Loại CPU'] || '',
+    ram:     raw['Dung lượng RAM'] || '',
+    storage: raw['Ổ cứng'] || '',
+    screen:  raw['Kích thước màn hình'] || '',
+    gpu:     raw['Loại card đồ họa'] || '',
+    weight:  raw['Trọng lượng'] || raw['Khối lượng'] || '',
+  };
+}
+
+// ── SCRAPER 1 — MBW ──────────────────────────────────────
+async function scrapeMBW(page, brand) {
+  console.log(`  [MBW] ${brand.name}`);
+  try {
+    await page.goto(brand.mbwUrl, { waitUntil: 'networkidle2', timeout: 90000 });
+  } catch(e) {
+    console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
+    return [];
+  }
+  await sleep(2000);
+
+  let clicks = 0;
+  while (true) {
+    const clicked = await page.evaluate(() => {
+      const btn = document.querySelector('a.view-more, button.view-more, .view-more-btn');
+      if (btn && btn.offsetParent !== null) { btn.click(); return true; }
+      return false;
+    }).catch(() => false);
+    if (!clicked) break;
+    clicks++;
+    await sleep(2000);
+  }
+  if (clicks) console.log(`    → Load thêm: ${clicks} lần`);
+
+  return page.evaluate((brandName, BASE) => {
+    const out  = [];
+    const seen = new Set();
+    document.querySelectorAll('ul.listproduct li.item').forEach(item => {
+      const aEl = item.querySelector('a.main-contain');
+      if (!aEl) return;
+      const href = aEl.getAttribute('href') || '';
+      const link = href.startsWith('http') ? href : BASE + href;
+      if (!href || seen.has(link)) return;
+      seen.add(link);
+
+      const name      = aEl.getAttribute('data-name') || aEl.querySelector('h3')?.innerText?.trim() || '';
+      const salePrice = parseInt((aEl.getAttribute('data-price') || '0').replace(/\D/g,'')) || 0;
+      const origEl    = item.querySelector('p.price-old');
+      const origPrice = origEl ? parseInt(origEl.innerText.replace(/\D/g,'')) || 0 : 0;
+      const discount  = item.querySelector('span.percent')?.innerText?.trim() || '';
+      const specs     = [...item.querySelectorAll('div.utility p')].map(p => p.innerText.trim());
+      const compare   = [...item.querySelectorAll('div.item-compare span')].map(s => s.innerText.trim());
+      const rating    = item.querySelector('div.vote-txt b')?.innerText?.trim() || '';
+      const sold      = item.querySelector('div.rating_Compare span')?.innerText?.trim() || '';
+
+      out.push({
+        dealer: 'MBW', name, brand: brandName,
+        cpu: specs[0]||'', screen: specs[1]||'', gpu: specs[2]||'', weight: specs[3]||'',
+        ram: compare[0]||'', storage: compare[1]||'',
+        origPrice, salePrice, discount, sold, rating, link,
+      });
+    });
+    return out;
+  }, brand.name, 'https://www.thegioididong.com');
+}
+
+// ── SCRAPER 2 — FPT Retail ────────────────────────────────
+// [BUG2 FIX] Dùng div.cardInfo để lấy đúng tên + giá
+async function scrapeFPT(page, brand, specCache) {
+  console.log(`  [FPT] ${brand.name}`);
+  try {
+    await page.goto(brand.fptUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  } catch(e) {
+    console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
+    return [];
+  }
+  await sleep(2000);
+
+  // Scroll để load lazy products
+  let prevCount = 0;
+  for (let i = 0; i < 8; i++) {
+    await scrollToBottom(page);
+    await sleep(1500);
+    const count = await page.evaluate(() => document.querySelectorAll('div.cardInfo').length);
+    if (count === prevCount && count > 0) break;
+    prevCount = count;
+  }
+
+  const products = await page.evaluate((brandName, BASE) => {
+    const out  = [];
+    const seen = new Set();
+
+    // [BUG2 FIX] div.cardInfo chứa đúng: link, tên (h3), giá bán, giá gốc
+    document.querySelectorAll('div.cardInfo').forEach(card => {
+      const linkEl  = card.querySelector('a[href*="may-tinh-xach-tay/"]');
+      if (!linkEl) return;
+      const href = linkEl.getAttribute('href') || '';
+      const link = href.startsWith('http') ? href : BASE + href;
+      if (!href || seen.has(link)) return;
+      seen.add(link);
+
+      const name      = card.querySelector('h3, h2')?.innerText?.trim() || '';
+      // Giá bán: p.b1-semibold (không có line-through)
+      const salePrice = parseInt((card.querySelector('p.b1-semibold, [class*="b1-semibold"]')
+                          ?.innerText || '').replace(/\D/g,'')) || 0;
+      // Giá gốc: span có class line-through
+      const origPrice = parseInt((card.querySelector('span[class*="line-through"]')
+                          ?.innerText || '').replace(/\D/g,'')) || 0;
+      // Discount: span có class discount hoặc percent
+      const discount  = card.querySelector('[class*="discount"], [class*="percent"]')
+                          ?.innerText?.trim() || '';
+
+      if (!name || name.length < 5) return;
+      out.push({
+        dealer: 'FPT Retail', name, brand: brandName,
+        cpu: '', ram: '', storage: '', screen: '', gpu: '', weight: '',
+        origPrice, salePrice, discount, sold: '', rating: '', link,
+      });
+    });
+    return out;
+  }, brand.name, 'https://fptshop.com.vn');
+
+  console.log(`    → ${products.length} sản phẩm tìm thấy`);
+
+  // Fetch specs chỉ cho sản phẩm mới
+  let fetched = 0;
+  for (const p of products) {
+    if (specCache.has(p.link)) {
+      Object.assign(p, specCache.get(p.link));
+    } else {
+      console.log(`    → Specs: ${p.name.substring(0, 45)}`);
+      const specs = await fetchSpecsFPT(page, p.link);
+      Object.assign(p, specs);
+      specCache.set(p.link, specs);
+      fetched++;
+      await sleep(800);
+    }
+  }
+  if (fetched) console.log(`    → Fetch specs xong: ${fetched} SP mới`);
+  return products;
+}
+
+// ── SCRAPER 3 — CellPhone S ───────────────────────────────
+// [BUG3 FIX] URL đúng + selector đúng (.product__price--show / --through)
+async function scrapeCPS(page, brand, specCache) {
+  console.log(`  [CPS] ${brand.name}`);
+  try {
+    await page.goto(brand.cpsUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  } catch(e) {
+    console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
+    return [];
+  }
+  await sleep(2000);
+
+  // Scroll + load more
+  let clicks = 0;
+  while (true) {
+    await scrollToBottom(page);
+    await sleep(1800);
+    const clicked = await page.evaluate(() => {
+      const sels = ['.btn-show-more','button.btn-show-more','.loadmore-btn',
+                    'button[class*="loadmore"]','a[class*="loadmore"]','.load-more-button'];
+      for (const sel of sels) {
+        const el = document.querySelector(sel);
+        if (el && el.offsetParent !== null) { el.click(); return true; }
+      }
+      return false;
+    }).catch(() => false);
+    if (!clicked) break;
+    clicks++;
+    await sleep(2500);
+  }
+  if (clicks) console.log(`    → Load thêm: ${clicks} lần`);
+
+  const products = await page.evaluate((brandName, BASE) => {
+    const out  = [];
+    const seen = new Set();
+
+    // [BUG3 FIX] .product-item là selector đúng trên CPS
+    document.querySelectorAll('.product-item').forEach(card => {
+      const linkEl = card.querySelector('a[href]');
+      if (!linkEl) return;
+      const href = linkEl.getAttribute('href') || '';
+      const link = href.startsWith('http') ? href : BASE + href;
+      if (!link.includes('.html') || seen.has(link)) return;
+      seen.add(link);
+
+      const name      = card.querySelector('h3, h2')?.innerText?.trim() || '';
+      // [BUG3 FIX] Selectors giá đúng đã verify
+      const salePrice = parseInt((card.querySelector('.product__price--show')
+                          ?.innerText || '').replace(/\D/g,'')) || 0;
+      const origPrice = parseInt((card.querySelector('.product__price--through')
+                          ?.innerText || '').replace(/\D/g,'')) || 0;
+      const discount  = card.querySelector('[class*="percent"], [class*="discount"]')
+                          ?.innerText?.trim() || '';
+      const rating    = card.querySelector('[class*="rating"] b, .rating b')
+                          ?.innerText?.trim() || '';
+      const soldEl    = [...card.querySelectorAll('span, p')]
+                          .find(el => /[Đđ]ã bán/.test(el.innerText));
+      const sold      = soldEl?.innerText?.replace(/[Đđ]ã bán\s*/i,'')?.trim() || '';
+
+      if (!name || name.length < 5) return;
+      out.push({
+        dealer: 'CellPhone S', name, brand: brandName,
+        cpu: '', ram: '', storage: '', screen: '', gpu: '', weight: '',
+        origPrice, salePrice, discount, sold, rating, link,
+      });
+    });
+    return out;
+  }, brand.name, 'https://cellphones.com.vn');
+
+  console.log(`    → ${products.length} sản phẩm tìm thấy`);
+
+  // Fetch specs chỉ cho sản phẩm mới
+  let fetched = 0;
+  for (const p of products) {
+    if (specCache.has(p.link)) {
+      Object.assign(p, specCache.get(p.link));
+    } else {
+      console.log(`    → Specs: ${p.name.substring(0, 45)}`);
+      const specs = await fetchSpecsCPS(page, p.link);
+      Object.assign(p, specs);
+      specCache.set(p.link, specs);
+      fetched++;
+      await sleep(800);
+    }
+  }
+  if (fetched) console.log(`    → Fetch specs xong: ${fetched} SP mới`);
+  return products;
+}
+
+// ── Google Sheets: đọc spec cache ────────────────────────
+async function loadSpecCacheFromSheet(sheets) {
+  const cache = new Map();
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!A2:R`,
+    });
+    (res.data.values || []).forEach(row => {
+      const link = row[17];
+      if (!link) return;
+      const cpu = row[6]||'', ram = row[7]||'', storage = row[8]||'';
+      const screen = row[9]||'', gpu = row[10]||'', weight = row[11]||'';
+      if (cpu || ram || storage || screen || gpu || weight) {
+        cache.set(link, { cpu, ram, storage, screen, gpu, weight });
+      }
+    });
+    console.log(`📋 Spec cache: ${cache.size} SP đã có specs`);
+  } catch(e) {
+    console.log(`⚠ Không đọc được spec cache: ${e.message}`);
+  }
+  return cache;
+}
+
+// ── Google Sheets: ghi data ───────────────────────────────
+async function writeToSheet(sheets, allProducts) {
+  const today   = new Date();
+  // [BUG1 FIX] Format cố định DD/MM/YYYY
+  const dateStr = formatDate(today);
+  const timeStr = formatTime(today);
+
+  // Giữ lại rows ngày khác
+  let existingRows = [];
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!A2:R`,
+    });
+    // [BUG1 FIX] So sánh chính xác với dateStr cùng format
+    existingRows = (res.data.values || []).filter(row => row[0] && row[0] !== dateStr);
+  } catch(e) {
+    console.log('⚠ Không đọc được dữ liệu cũ:', e.message);
+  }
+
+  const newRows = allProducts.map((p, i) => [
+    dateStr, timeStr, i + 1,
+    p.dealer, p.name, p.brand,
+    p.cpu, p.ram, p.storage, p.screen, p.gpu, p.weight,
+    p.origPrice || '', p.salePrice || '', p.discount,
+    p.sold, p.rating, p.link,
+  ]);
+
+  const allRows = [...existingRows, ...newRows];
+
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A2:R`,
+  });
+
+  if (allRows.length > 0) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!A2`,
+      valueInputOption: 'RAW',
+      requestBody: { values: allRows },
+    });
+  }
+
+  // Ghi header
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A1:R1`,
+    valueInputOption: 'RAW',
+    requestBody: { values: [HEADERS] },
+  });
+
+  console.log(`✅ Đã ghi ${newRows.length} dòng mới | Giữ ${existingRows.length} dòng cũ`);
+}
+
+// ── MAIN ──────────────────────────────────────────────────
+(async () => {
+  const startTime = Date.now();
+  console.log('🚀 Multi-Dealer Scraper v2.2 bắt đầu...');
+  console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
+
+  fs.writeFileSync(CREDS_PATH, process.env.GOOGLE_CREDENTIALS);
+  const auth = new google.auth.GoogleAuth({
+    keyFile: CREDS_PATH,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  const specCache = await loadSpecCacheFromSheet(sheets);
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    protocolTimeout: 120000,
+    args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage',
+           '--disable-gpu','--window-size=1280,900'],
+  });
+
+  const allProducts = [];
+
+  try {
+    // ── MBW ──
+    console.log('\n═══ MBW (thegioididong.com) ═══');
+    const pageMBW = await browser.newPage();
+    await pageMBW.setViewport({ width: 1280, height: 900 });
+    await pageMBW.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+    for (const brand of BRANDS) {
+      const products = await scrapeMBW(pageMBW, brand);
+      console.log(`    → ${products.length} SP`);
+      allProducts.push(...products);
+      await sleep(1000);
+    }
+    await pageMBW.close();
+
+    // ── FPT ──
+    console.log('\n═══ FPT Retail (fptshop.com.vn) ═══');
+    const pageFPT = await browser.newPage();
+    await pageFPT.setViewport({ width: 1280, height: 900 });
+    await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+    for (const brand of BRANDS) {
+      const products = await scrapeFPT(pageFPT, brand, specCache);
+      allProducts.push(...products);
+      await sleep(1000);
+    }
+    await pageFPT.close();
+
+    // ── CPS ──
+    console.log('\n═══ CellPhone S (cellphones.com.vn) ═══');
+    const pageCPS = await browser.newPage();
+    await pageCPS.setViewport({ width: 1280, height: 900 });
+    await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+    for (const brand of BRANDS) {
+      const products = await scrapeCPS(pageCPS, brand, specCache);
+      allProducts.push(...products);
+      await sleep(1000);
+    }
+    await pageCPS.close();
+
+  } finally {
+    await browser.close();
+  }
+
+  const byDealer = { MBW: 0, 'FPT Retail': 0, 'CellPhone S': 0 };
+  allProducts.forEach(p => { if (p.dealer in byDealer) byDealer[p.dealer]++; });
+  console.log('\n📊 Kết quả:');
+  Object.entries(byDealer).forEach(([d, c]) => console.log(`   ${d}: ${c} SP`));
+  console.log(`   TỔNG: ${allProducts.length} SP`);
+
+  console.log('\n📝 Ghi vào Google Sheets...');
+  await writeToSheet(sheets, allProducts);
+
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  console.log(`\n✅ Hoàn thành trong ${Math.floor(elapsed/60)}p${elapsed%60}s`);
+  fs.unlinkSync(CREDS_PATH);
+})().catch(err => {
+  console.error('💥 Fatal error:', err);
+  process.exit(1);
+});
