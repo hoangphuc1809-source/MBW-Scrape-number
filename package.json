@@ -1,7 +1,10 @@
 {
-  "name": "tgdd-laptop-scraper",
-  "version": "4.0.0",
-  "scripts": { "start": "node scraper_v4.js" },
+  "name": "multi-dealer-laptop-scraper",
+  "version": "1.0.0",
+  "description": "Scrape laptop prices from MBW, FPT Shop, CellPhones → Google Sheets",
+  "scripts": {
+    "start": "node multi_dealer_scraper.js"
+  },
   "dependencies": {
     "puppeteer": "^22.0.0",
     "googleapis": "^140.0.0"
