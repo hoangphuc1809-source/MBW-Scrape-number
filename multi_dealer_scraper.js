@@ -1,11 +1,10 @@
 /**
- * multi_dealer_scraper.js  — v2.2
- * Scrape laptop prices từ MBW / FPT Retail / CellPhone S → Google Sheets
+ * multi_dealer_scraper.js  — v2.3
  *
- * FIX v2.2:
- *  [BUG1] MBW ghi trùng 3 bản/ngày → chuẩn hóa dateStr sang DD/MM/YYYY cố định
- *  [BUG2] FPT sai tên + không có giá → dùng div.cardInfo thay [class*="product"]
- *  [BUG3] CPS không lấy được → sửa URL (/laptop/hp.html) + price selector đúng
+ * FIX v2.3:
+ *  [BUG4] ProtocolError timeout khi fetch specs → tăng protocolTimeout + retry logic
+ *  [BUG5] Quá chậm khi fetch specs lần đầu → giới hạn MAX_SPEC_FETCH_PER_RUN = 30
+ *         Các lần chạy sau tự động lấy nốt phần còn lại
  */
 
 'use strict';
@@ -17,11 +16,11 @@ const path         = require('path');
 const os           = require('os');
 
 // ── Config ────────────────────────────────────────────────
-const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
-const SHEET_NAME     = 'Laptop TGDĐ';
-const CREDS_PATH     = path.join(os.tmpdir(), 'scraper_gcp.json');
+const SPREADSHEET_ID        = process.env.SPREADSHEET_ID;
+const SHEET_NAME            = 'Laptop TGDĐ';
+const CREDS_PATH            = path.join(os.tmpdir(), 'scraper_gcp.json');
+const MAX_SPEC_FETCH_PER_RUN = 30; // [BUG5] Tối đa 30 SP/lần chạy để tránh timeout
 
-// [BUG3 FIX] CPS URL đúng là /laptop/[brand].html (không có "thuong-hieu-")
 const BRANDS = [
   { name: 'Asus',     mbwUrl: 'https://www.thegioididong.com/laptop-asus',     fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/asus',     cpsUrl: 'https://cellphones.com.vn/laptop/asus.html'     },
   { name: 'Acer',     mbwUrl: 'https://www.thegioididong.com/laptop-acer',     fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/acer',     cpsUrl: 'https://cellphones.com.vn/laptop/acer.html'     },
@@ -43,17 +42,11 @@ const HEADERS = [
 // ── Helpers ───────────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// [BUG1 FIX] Format ngày cố định DD/MM/YYYY để tránh locale mismatch
 function formatDate(d) {
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 function formatTime(d) {
-  const hh = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return `${hh}:${min}`;
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
 async function scrollToBottom(page) {
@@ -69,18 +62,39 @@ async function scrollToBottom(page) {
   });
 }
 
+// [BUG4 FIX] Safe goto với retry
+async function safeGoto(page, url, opts = {}) {
+  const maxRetries = 2;
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000, ...opts });
+      return true;
+    } catch (e) {
+      if (i === maxRetries) {
+        console.log(`    ⚠ goto failed after ${maxRetries+1} tries: ${e.message.substring(0,60)}`);
+        return false;
+      }
+      console.log(`    ↻ Retry ${i+1}: ${url.substring(0,50)}`);
+      await sleep(2000);
+    }
+  }
+}
+
 // ── FPT: fetch specs từ detail page ──────────────────────
 async function fetchSpecsFPT(page, url) {
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await sleep(1500);
+    const ok = await safeGoto(page, url);
+    if (!ok) return {};
+    await sleep(1200);
+
     const clicked = await page.evaluate(() => {
       const btn = [...document.querySelectorAll('span, button, a')]
         .find(b => b.innerText?.trim() === 'Xem tất cả thông số');
       if (btn) { btn.click(); return true; }
       return false;
-    });
-    if (clicked) await sleep(800);
+    }).catch(() => false);
+    if (clicked) await sleep(700);
+
     const rawSpecs = await page.evaluate(() => {
       const specs = {};
       document.querySelectorAll('.flex.gap-2.border-b').forEach(row => {
@@ -92,10 +106,11 @@ async function fetchSpecsFPT(page, url) {
         }
       });
       return specs;
-    });
+    }).catch(() => ({}));
+
     return mapSpecsFPT(rawSpecs);
   } catch (e) {
-    console.log(`    ⚠ FPT spec fetch failed: ${e.message.substring(0, 60)}`);
+    console.log(`    ⚠ FPT spec error: ${e.message.substring(0,50)}`);
     return {};
   }
 }
@@ -114,8 +129,10 @@ function mapSpecsFPT(raw) {
 // ── CPS: fetch specs từ detail page ──────────────────────
 async function fetchSpecsCPS(page, url) {
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await sleep(1500);
+    const ok = await safeGoto(page, url);
+    if (!ok) return {};
+    await sleep(1200);
+
     const rawSpecs = await page.evaluate(() => {
       const specs = {};
       document.querySelectorAll('tr.technical-content-item').forEach(row => {
@@ -127,10 +144,11 @@ async function fetchSpecsCPS(page, url) {
         }
       });
       return specs;
-    });
+    }).catch(() => ({}));
+
     return mapSpecsCPS(rawSpecs);
   } catch (e) {
-    console.log(`    ⚠ CPS spec fetch failed: ${e.message.substring(0, 60)}`);
+    console.log(`    ⚠ CPS spec error: ${e.message.substring(0,50)}`);
     return {};
   }
 }
@@ -144,6 +162,25 @@ function mapSpecsCPS(raw) {
     gpu:     raw['Loại card đồ họa'] || '',
     weight:  raw['Trọng lượng'] || raw['Khối lượng'] || '',
   };
+}
+
+// ── Fetch specs với giới hạn số lượng mỗi lần chạy ───────
+// [BUG5] specFetchCount dùng chung giữa FPT và CPS
+async function enrichSpecs(products, specCache, fetchFn, page, specFetchCount) {
+  for (const p of products) {
+    if (specCache.has(p.link)) {
+      Object.assign(p, specCache.get(p.link));
+    } else if (specFetchCount.value < MAX_SPEC_FETCH_PER_RUN) {
+      console.log(`    → Specs [${specFetchCount.value+1}/${MAX_SPEC_FETCH_PER_RUN}]: ${p.name.substring(0,40)}`);
+      const specs = await fetchFn(page, p.link);
+      Object.assign(p, specs);
+      // Lưu vào cache kể cả khi empty (tránh retry vô ích)
+      specCache.set(p.link, specs);
+      specFetchCount.value++;
+      await sleep(600);
+    }
+    // Nếu đã đạt giới hạn → để trống specs, lần sau sẽ fetch
+  }
 }
 
 // ── SCRAPER 1 — MBW ──────────────────────────────────────
@@ -183,8 +220,7 @@ async function scrapeMBW(page, brand) {
 
       const name      = aEl.getAttribute('data-name') || aEl.querySelector('h3')?.innerText?.trim() || '';
       const salePrice = parseInt((aEl.getAttribute('data-price') || '0').replace(/\D/g,'')) || 0;
-      const origEl    = item.querySelector('p.price-old');
-      const origPrice = origEl ? parseInt(origEl.innerText.replace(/\D/g,'')) || 0 : 0;
+      const origPrice = parseInt((item.querySelector('p.price-old')?.innerText || '').replace(/\D/g,'')) || 0;
       const discount  = item.querySelector('span.percent')?.innerText?.trim() || '';
       const specs     = [...item.querySelectorAll('div.utility p')].map(p => p.innerText.trim());
       const compare   = [...item.querySelectorAll('div.item-compare span')].map(s => s.innerText.trim());
@@ -203,8 +239,7 @@ async function scrapeMBW(page, brand) {
 }
 
 // ── SCRAPER 2 — FPT Retail ────────────────────────────────
-// [BUG2 FIX] Dùng div.cardInfo để lấy đúng tên + giá
-async function scrapeFPT(page, brand, specCache) {
+async function scrapeFPT(page, brand, specCache, specFetchCount) {
   console.log(`  [FPT] ${brand.name}`);
   try {
     await page.goto(brand.fptUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -214,7 +249,6 @@ async function scrapeFPT(page, brand, specCache) {
   }
   await sleep(2000);
 
-  // Scroll để load lazy products
   let prevCount = 0;
   for (let i = 0; i < 8; i++) {
     await scrollToBottom(page);
@@ -227,10 +261,8 @@ async function scrapeFPT(page, brand, specCache) {
   const products = await page.evaluate((brandName, BASE) => {
     const out  = [];
     const seen = new Set();
-
-    // [BUG2 FIX] div.cardInfo chứa đúng: link, tên (h3), giá bán, giá gốc
     document.querySelectorAll('div.cardInfo').forEach(card => {
-      const linkEl  = card.querySelector('a[href*="may-tinh-xach-tay/"]');
+      const linkEl = card.querySelector('a[href*="may-tinh-xach-tay/"]');
       if (!linkEl) return;
       const href = linkEl.getAttribute('href') || '';
       const link = href.startsWith('http') ? href : BASE + href;
@@ -238,49 +270,27 @@ async function scrapeFPT(page, brand, specCache) {
       seen.add(link);
 
       const name      = card.querySelector('h3, h2')?.innerText?.trim() || '';
-      // Giá bán: p.b1-semibold (không có line-through)
-      const salePrice = parseInt((card.querySelector('p.b1-semibold, [class*="b1-semibold"]')
-                          ?.innerText || '').replace(/\D/g,'')) || 0;
-      // Giá gốc: span có class line-through
-      const origPrice = parseInt((card.querySelector('span[class*="line-through"]')
-                          ?.innerText || '').replace(/\D/g,'')) || 0;
-      // Discount: span có class discount hoặc percent
-      const discount  = card.querySelector('[class*="discount"], [class*="percent"]')
-                          ?.innerText?.trim() || '';
+      const salePrice = parseInt((card.querySelector('p.b1-semibold, [class*="b1-semibold"]')?.innerText||'').replace(/\D/g,'')) || 0;
+      const origPrice = parseInt((card.querySelector('span[class*="line-through"]')?.innerText||'').replace(/\D/g,'')) || 0;
+      const discount  = card.querySelector('[class*="discount"], [class*="percent"]')?.innerText?.trim() || '';
 
       if (!name || name.length < 5) return;
       out.push({
         dealer: 'FPT Retail', name, brand: brandName,
-        cpu: '', ram: '', storage: '', screen: '', gpu: '', weight: '',
-        origPrice, salePrice, discount, sold: '', rating: '', link,
+        cpu:'', ram:'', storage:'', screen:'', gpu:'', weight:'',
+        origPrice, salePrice, discount, sold:'', rating:'', link,
       });
     });
     return out;
   }, brand.name, 'https://fptshop.com.vn');
 
-  console.log(`    → ${products.length} sản phẩm tìm thấy`);
-
-  // Fetch specs chỉ cho sản phẩm mới
-  let fetched = 0;
-  for (const p of products) {
-    if (specCache.has(p.link)) {
-      Object.assign(p, specCache.get(p.link));
-    } else {
-      console.log(`    → Specs: ${p.name.substring(0, 45)}`);
-      const specs = await fetchSpecsFPT(page, p.link);
-      Object.assign(p, specs);
-      specCache.set(p.link, specs);
-      fetched++;
-      await sleep(800);
-    }
-  }
-  if (fetched) console.log(`    → Fetch specs xong: ${fetched} SP mới`);
+  console.log(`    → ${products.length} SP`);
+  await enrichSpecs(products, specCache, fetchSpecsFPT, page, specFetchCount);
   return products;
 }
 
 // ── SCRAPER 3 — CellPhone S ───────────────────────────────
-// [BUG3 FIX] URL đúng + selector đúng (.product__price--show / --through)
-async function scrapeCPS(page, brand, specCache) {
+async function scrapeCPS(page, brand, specCache, specFetchCount) {
   console.log(`  [CPS] ${brand.name}`);
   try {
     await page.goto(brand.cpsUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -290,7 +300,6 @@ async function scrapeCPS(page, brand, specCache) {
   }
   await sleep(2000);
 
-  // Scroll + load more
   let clicks = 0;
   while (true) {
     await scrollToBottom(page);
@@ -313,8 +322,6 @@ async function scrapeCPS(page, brand, specCache) {
   const products = await page.evaluate((brandName, BASE) => {
     const out  = [];
     const seen = new Set();
-
-    // [BUG3 FIX] .product-item là selector đúng trên CPS
     document.querySelectorAll('.product-item').forEach(card => {
       const linkEl = card.querySelector('a[href]');
       if (!linkEl) return;
@@ -324,50 +331,29 @@ async function scrapeCPS(page, brand, specCache) {
       seen.add(link);
 
       const name      = card.querySelector('h3, h2')?.innerText?.trim() || '';
-      // [BUG3 FIX] Selectors giá đúng đã verify
-      const salePrice = parseInt((card.querySelector('.product__price--show')
-                          ?.innerText || '').replace(/\D/g,'')) || 0;
-      const origPrice = parseInt((card.querySelector('.product__price--through')
-                          ?.innerText || '').replace(/\D/g,'')) || 0;
-      const discount  = card.querySelector('[class*="percent"], [class*="discount"]')
-                          ?.innerText?.trim() || '';
-      const rating    = card.querySelector('[class*="rating"] b, .rating b')
-                          ?.innerText?.trim() || '';
-      const soldEl    = [...card.querySelectorAll('span, p')]
-                          .find(el => /[Đđ]ã bán/.test(el.innerText));
+      const salePrice = parseInt((card.querySelector('.product__price--show')?.innerText||'').replace(/\D/g,'')) || 0;
+      const origPrice = parseInt((card.querySelector('.product__price--through')?.innerText||'').replace(/\D/g,'')) || 0;
+      const discount  = card.querySelector('[class*="percent"], [class*="discount"]')?.innerText?.trim() || '';
+      const rating    = card.querySelector('[class*="rating"] b, .rating b')?.innerText?.trim() || '';
+      const soldEl    = [...card.querySelectorAll('span, p')].find(el => /[Đđ]ã bán/.test(el.innerText));
       const sold      = soldEl?.innerText?.replace(/[Đđ]ã bán\s*/i,'')?.trim() || '';
 
       if (!name || name.length < 5) return;
       out.push({
         dealer: 'CellPhone S', name, brand: brandName,
-        cpu: '', ram: '', storage: '', screen: '', gpu: '', weight: '',
+        cpu:'', ram:'', storage:'', screen:'', gpu:'', weight:'',
         origPrice, salePrice, discount, sold, rating, link,
       });
     });
     return out;
   }, brand.name, 'https://cellphones.com.vn');
 
-  console.log(`    → ${products.length} sản phẩm tìm thấy`);
-
-  // Fetch specs chỉ cho sản phẩm mới
-  let fetched = 0;
-  for (const p of products) {
-    if (specCache.has(p.link)) {
-      Object.assign(p, specCache.get(p.link));
-    } else {
-      console.log(`    → Specs: ${p.name.substring(0, 45)}`);
-      const specs = await fetchSpecsCPS(page, p.link);
-      Object.assign(p, specs);
-      specCache.set(p.link, specs);
-      fetched++;
-      await sleep(800);
-    }
-  }
-  if (fetched) console.log(`    → Fetch specs xong: ${fetched} SP mới`);
+  console.log(`    → ${products.length} SP`);
+  await enrichSpecs(products, specCache, fetchSpecsCPS, page, specFetchCount);
   return products;
 }
 
-// ── Google Sheets: đọc spec cache ────────────────────────
+// ── Google Sheets: load spec cache ───────────────────────
 async function loadSpecCacheFromSheet(sheets) {
   const cache = new Map();
   try {
@@ -378,15 +364,15 @@ async function loadSpecCacheFromSheet(sheets) {
     (res.data.values || []).forEach(row => {
       const link = row[17];
       if (!link) return;
-      const cpu = row[6]||'', ram = row[7]||'', storage = row[8]||'';
-      const screen = row[9]||'', gpu = row[10]||'', weight = row[11]||'';
-      if (cpu || ram || storage || screen || gpu || weight) {
+      const cpu=row[6]||'', ram=row[7]||'', storage=row[8]||'';
+      const screen=row[9]||'', gpu=row[10]||'', weight=row[11]||'';
+      if (cpu||ram||storage||screen||gpu||weight) {
         cache.set(link, { cpu, ram, storage, screen, gpu, weight });
       }
     });
     console.log(`📋 Spec cache: ${cache.size} SP đã có specs`);
   } catch(e) {
-    console.log(`⚠ Không đọc được spec cache: ${e.message}`);
+    console.log(`⚠ Spec cache load failed: ${e.message}`);
   }
   return cache;
 }
@@ -394,38 +380,34 @@ async function loadSpecCacheFromSheet(sheets) {
 // ── Google Sheets: ghi data ───────────────────────────────
 async function writeToSheet(sheets, allProducts) {
   const today   = new Date();
-  // [BUG1 FIX] Format cố định DD/MM/YYYY
   const dateStr = formatDate(today);
   const timeStr = formatTime(today);
 
-  // Giữ lại rows ngày khác
   let existingRows = [];
   try {
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A2:R`,
     });
-    // [BUG1 FIX] So sánh chính xác với dateStr cùng format
-    existingRows = (res.data.values || []).filter(row => row[0] && row[0] !== dateStr);
+    existingRows = (res.data.values||[]).filter(row => row[0] && row[0] !== dateStr);
   } catch(e) {
-    console.log('⚠ Không đọc được dữ liệu cũ:', e.message);
+    console.log('⚠ Read existing rows failed:', e.message);
   }
 
   const newRows = allProducts.map((p, i) => [
-    dateStr, timeStr, i + 1,
+    dateStr, timeStr, i+1,
     p.dealer, p.name, p.brand,
     p.cpu, p.ram, p.storage, p.screen, p.gpu, p.weight,
-    p.origPrice || '', p.salePrice || '', p.discount,
+    p.origPrice||'', p.salePrice||'', p.discount,
     p.sold, p.rating, p.link,
   ]);
-
-  const allRows = [...existingRows, ...newRows];
 
   await sheets.spreadsheets.values.clear({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A2:R`,
   });
 
+  const allRows = [...existingRows, ...newRows];
   if (allRows.length > 0) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
@@ -435,7 +417,6 @@ async function writeToSheet(sheets, allProducts) {
     });
   }
 
-  // Ghi header
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A1:R1`,
@@ -443,13 +424,13 @@ async function writeToSheet(sheets, allProducts) {
     requestBody: { values: [HEADERS] },
   });
 
-  console.log(`✅ Đã ghi ${newRows.length} dòng mới | Giữ ${existingRows.length} dòng cũ`);
+  console.log(`✅ Ghi ${newRows.length} dòng mới | Giữ ${existingRows.length} dòng cũ`);
 }
 
 // ── MAIN ──────────────────────────────────────────────────
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v2.2 bắt đầu...');
+  console.log('🚀 Multi-Dealer Scraper v2.3');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
 
   fs.writeFileSync(CREDS_PATH, process.env.GOOGLE_CREDENTIALS);
@@ -458,21 +439,23 @@ async function writeToSheet(sheets, allProducts) {
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
   const sheets = google.sheets({ version: 'v4', auth });
-
   const specCache = await loadSpecCacheFromSheet(sheets);
 
+  // [BUG4 FIX] protocolTimeout tăng lên 180s
   const browser = await puppeteer.launch({
     headless: true,
-    protocolTimeout: 120000,
+    protocolTimeout: 180000,
     args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage',
            '--disable-gpu','--window-size=1280,900'],
   });
 
-  const allProducts = [];
+  const allProducts  = [];
+  // [BUG5] Counter dùng chung cho FPT + CPS
+  const specFetchCount = { value: 0 };
 
   try {
     // ── MBW ──
-    console.log('\n═══ MBW (thegioididong.com) ═══');
+    console.log('\n═══ MBW ═══');
     const pageMBW = await browser.newPage();
     await pageMBW.setViewport({ width: 1280, height: 900 });
     await pageMBW.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
@@ -485,26 +468,26 @@ async function writeToSheet(sheets, allProducts) {
     await pageMBW.close();
 
     // ── FPT ──
-    console.log('\n═══ FPT Retail (fptshop.com.vn) ═══');
+    console.log('\n═══ FPT Retail ═══');
     const pageFPT = await browser.newPage();
     await pageFPT.setViewport({ width: 1280, height: 900 });
     await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
     for (const brand of BRANDS) {
-      const products = await scrapeFPT(pageFPT, brand, specCache);
+      const products = await scrapeFPT(pageFPT, brand, specCache, specFetchCount);
       allProducts.push(...products);
-      await sleep(1000);
+      await sleep(800);
     }
     await pageFPT.close();
 
     // ── CPS ──
-    console.log('\n═══ CellPhone S (cellphones.com.vn) ═══');
+    console.log('\n═══ CellPhone S ═══');
     const pageCPS = await browser.newPage();
     await pageCPS.setViewport({ width: 1280, height: 900 });
     await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
     for (const brand of BRANDS) {
-      const products = await scrapeCPS(pageCPS, brand, specCache);
+      const products = await scrapeCPS(pageCPS, brand, specCache, specFetchCount);
       allProducts.push(...products);
-      await sleep(1000);
+      await sleep(800);
     }
     await pageCPS.close();
 
@@ -512,19 +495,20 @@ async function writeToSheet(sheets, allProducts) {
     await browser.close();
   }
 
-  const byDealer = { MBW: 0, 'FPT Retail': 0, 'CellPhone S': 0 };
+  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0 };
   allProducts.forEach(p => { if (p.dealer in byDealer) byDealer[p.dealer]++; });
   console.log('\n📊 Kết quả:');
-  Object.entries(byDealer).forEach(([d, c]) => console.log(`   ${d}: ${c} SP`));
+  Object.entries(byDealer).forEach(([d,c]) => console.log(`   ${d}: ${c} SP`));
   console.log(`   TỔNG: ${allProducts.length} SP`);
+  console.log(`   Specs fetched: ${specFetchCount.value}/${MAX_SPEC_FETCH_PER_RUN}`);
 
-  console.log('\n📝 Ghi vào Google Sheets...');
+  console.log('\n📝 Ghi Sheets...');
   await writeToSheet(sheets, allProducts);
 
-  const elapsed = Math.round((Date.now() - startTime) / 1000);
-  console.log(`\n✅ Hoàn thành trong ${Math.floor(elapsed/60)}p${elapsed%60}s`);
+  const elapsed = Math.round((Date.now()-startTime)/1000);
+  console.log(`\n✅ Xong trong ${Math.floor(elapsed/60)}p${elapsed%60}s`);
   fs.unlinkSync(CREDS_PATH);
 })().catch(err => {
-  console.error('💥 Fatal error:', err);
+  console.error('💥 Fatal:', err);
   process.exit(1);
 });
