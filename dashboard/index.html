@@ -176,6 +176,32 @@ tbody tr:hover{background:#fafafa}
 .btn-chgpwd{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:5px 11px;border-radius:8px;font-size:11px;cursor:pointer;transition:all .15s}
 .btn-chgpwd:hover{color:#fff;background:rgba(255,255,255,.15)}
 
+
+/* ── ALL PRICES TABLE ── */
+#allPriceTable thead th{
+  background:#f0f2f5;padding:8px 10px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--text2);
+  text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;
+  cursor:pointer;user-select:none;position:sticky;top:0;z-index:1;
+}
+#allPriceTable thead th:hover{background:#e5e7eb;color:var(--text)}
+#allPriceTable thead th.sort-asc::after{content:' ↑'}
+#allPriceTable thead th.sort-desc::after{content:' ↓'}
+#allPriceTable tbody td{
+  padding:7px 10px;border-bottom:1px solid #f3f4f6;
+  font-size:12px;vertical-align:middle;max-width:320px;
+}
+#allPriceTable tbody tr:hover{background:#fafafa}
+#allPriceTable tbody tr:last-child td{border-bottom:none}
+.td-sku{font-weight:600;line-height:1.3;color:var(--text)}
+.td-price{font-weight:700;color:var(--text);white-space:nowrap}
+.td-price-drop{color:var(--drop);font-weight:700;white-space:nowrap}
+.td-price-rise{color:var(--rise);font-weight:700;white-space:nowrap}
+.td-na{color:#d1d5db;font-size:11px}
+.td-seg-g{background:#fef3c7;color:#92400e;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;white-space:nowrap}
+.td-seg-b{background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;white-space:nowrap}
+.tbl-wrap.rank-wrap{overflow-x:auto;max-height:70vh;overflow-y:auto}
+
 </style>
 </head>
 <body>
@@ -259,6 +285,7 @@ tbody tr:hover{background:#fafafa}
   <div class="tab" onclick="sw('drops')">📉 Top Price Changes</div>
   <div class="tab" onclick="sw('gaming')">🎮 Gaming by Series (T)</div>
   <div class="tab" onclick="sw('bp')">💼 B&amp;P by Series (T)</div>
+  <div class="tab" onclick="sw('all')">📋 All Prices</div>
 </div>
 
 <div class="main">
@@ -353,6 +380,39 @@ tbody tr:hover{background:#fafafa}
     <input id="b_search" type="text" placeholder="🔍 Search model…" oninput="renderBP()" style="min-width:180px"/>
   </div>
   <div id="bpContainer"></div>
+</div>
+
+
+<!-- ─── TAB 5: ALL PRICES ─── -->
+<div class="section" id="sec-all">
+  <div class="filter-bar">
+    <span class="filter-lbl">Filter</span>
+    <div class="filter-sep"></div>
+    <select id="al_dealer" onchange="renderAll()">
+      <option value="">All Dealers</option>
+      <option value="MBW">MBW</option>
+      <option value="FPT Retail">FPT Retail</option>
+      <option value="CellPhone S">CellPhone S</option>
+    </select>
+    <select id="al_seg" onchange="renderAll()">
+      <option value="">All Segments</option>
+      <option value="Gaming">Gaming</option>
+      <option value="bp">Business &amp; Productivity</option>
+    </select>
+    <select id="al_brand" onchange="renderAll()"><option value="">All Vendors</option></select>
+    <select id="al_series" onchange="renderAll()"><option value="">All Series</option></select>
+    <input id="al_search" type="text" placeholder="🔍 Search SKU…" oninput="renderAll()" style="min-width:200px"/>
+    <div class="filter-sep"></div>
+    <span id="al_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
+  </div>
+  <div class="tbl-wrap rank-wrap" style="margin-bottom:0">
+    <table id="allPriceTable">
+      <thead>
+        <tr id="allPriceHead"></tr>
+      </thead>
+      <tbody id="allPriceBody"></tbody>
+    </table>
+  </div>
 </div>
 
 </div>
@@ -580,10 +640,163 @@ function renderBP(){
 
 // ── TAB SWITCH ──────────────────────────────────────────
 function sw(name){
-  const map={alerts:0,drops:1,gaming:2,bp:3};
+  const map={alerts:0,drops:1,gaming:2,bp:3,all:4};
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===map[name]));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('sec-'+name).classList.add('active');
+  const sec=document.getElementById('sec-'+name);
+  if(sec) sec.classList.add('active');
+  if(name==='all') renderAll();
+}
+
+
+// ═══════════════════════════════════════
+// ALL PRICES TABLE (Tab 5)
+// ═══════════════════════════════════════
+(function initAllPricesDropdowns() {
+  // Populate vendor and series dropdowns
+  const brands  = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort();
+  const series  = [...new Set(allToday.map(p=>p.seriesGroup).filter(Boolean))].sort();
+  const bSel = document.getElementById('al_brand');
+  const sSel = document.getElementById('al_series');
+  brands.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;bSel.appendChild(o);});
+  series.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sSel.appendChild(o);});
+})();
+
+// Sort state for All Prices table
+let _alSortCol = null;
+let _alSortDir = 1; // 1=asc, -1=desc
+
+function renderAll() {
+  const dF  = document.getElementById('al_dealer').value;
+  const sgF = document.getElementById('al_seg').value;
+  const brF = document.getElementById('al_brand').value;
+  const srF = document.getElementById('al_series').value;
+  const sF  = document.getElementById('al_search').value.toLowerCase();
+
+  let data = allToday.filter(p => {
+    if (dF  && p.dealer !== dF) return false;
+    if (sgF && !isBP_or_gaming(p, sgF)) return false;
+    if (brF && p.brand !== brF) return false;
+    if (srF && p.seriesGroup !== srF) return false;
+    if (sF  && !p.model.toLowerCase().includes(sF)) return false;
+    return true;
+  });
+
+  // Apply sort
+  if (_alSortCol !== null) {
+    data = [...data].sort((a, b) => {
+      const va = getAlSortVal(a, _alSortCol);
+      const vb = getAlSortVal(b, _alSortCol);
+      if (va < vb) return -_alSortDir;
+      if (va > vb) return  _alSortDir;
+      return 0;
+    });
+  }
+
+  document.getElementById('al_count').textContent = `${data.length} SKUs`;
+  renderAllHead();
+  renderAllBody(data);
+}
+
+function isBP_or_gaming(p, filter) {
+  if (filter === 'Gaming') return p.segment === 'Gaming';
+  if (filter === 'bp')     return isBP(p);
+  return true;
+}
+
+// Column definitions: [key, header label]
+const AL_COLS = [
+  ['dealer',      'Dealer'],
+  ['seriesGroup', 'Series Group'],
+  ['segment',     'Segment'],
+  ['model',       'SKU'],
+  ['brand',       'Vendor'],
+  ['cpuFamily',   'CPU'],
+  ['screen',      'Screen'],
+  ['ram',         'RAM'],
+  ['ssd',         'SSD'],
+  ['gpuTag',      'VGA'],
+  ['prevPrice',   `Price ${prevDate}`],
+  ['todayPrice',  `Price ${todayDate}`],
+  ['delta',       'Change'],
+  ['link',        'Link'],
+];
+
+function getAlSortVal(item, colIdx) {
+  const key = AL_COLS[colIdx][0];
+  if (key === 'delta') {
+    const d = (item.todayPrice || 0) - (item.prevPrice || 0);
+    return d;
+  }
+  if (key === 'todayPrice' || key === 'prevPrice') return item[key] || 0;
+  return (item[key] || '').toString().toLowerCase();
+}
+
+function renderAllHead() {
+  const tr = document.getElementById('allPriceHead');
+  tr.innerHTML = AL_COLS.map(([key, label], i) =>
+    `<th onclick="alSort(${i})" class="${_alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):''}">${label}</th>`
+  ).join('');
+}
+
+function alSort(colIdx) {
+  if (_alSortCol === colIdx) {
+    _alSortDir *= -1;
+  } else {
+    _alSortCol = colIdx;
+    _alSortDir = colIdx >= 10 ? -1 : 1; // price cols default desc, text cols asc
+  }
+  renderAll();
+}
+
+function renderAllBody(data) {
+  const tbody = document.getElementById('allPriceBody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="${AL_COLS.length}" class="empty">No data matches the current filters.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(p => {
+    const today = p.todayPrice || 0;
+    const prev  = p.prevPrice  || 0;
+    const delta = today - prev;
+    const pct   = prev ? ((delta / prev) * 100).toFixed(1) : null;
+    const isDrop = delta < 0;
+    const isRise = delta > 0;
+
+    const segHtml = p.segment === 'Gaming'
+      ? `<span class="td-seg-g">Gaming</span>`
+      : `<span class="td-seg-b">B&amp;P</span>`;
+
+    const prevHtml  = prev  ? `<span class="td-price">${vnd(prev)}</span>`  : `<span class="td-na">–</span>`;
+    const todayHtml = today ? `<span class="td-price ${isDrop?'td-price-drop':isRise?'td-price-rise':''}">${vnd(today)}</span>` : `<span class="td-na">–</span>`;
+    const deltaHtml = delta && prev
+      ? `<span class="${isDrop?'chg-drop':'chg-rise'}" style="font-size:11px">
+           ${isDrop?'▼':'▲'} ${vnd(Math.abs(delta))} (${isDrop?'':'+'}${pct}%)
+         </span>`
+      : `<span class="td-na">–</span>`;
+
+    const linkHtml = p.link
+      ? `<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`
+      : `<span class="td-na">–</span>`;
+
+    return `<tr>
+      <td><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
+      <td>${p.seriesGroup||'–'}</td>
+      <td>${segHtml}</td>
+      <td class="td-sku">${p.model}</td>
+      <td>${p.brand||'–'}</td>
+      <td>${p.cpuFamily||'<span class="td-na">–</span>'}</td>
+      <td>${p.screen||'<span class="td-na">–</span>'}</td>
+      <td>${p.ram||'<span class="td-na">–</span>'}</td>
+      <td>${p.ssd||'<span class="td-na">–</span>'}</td>
+      <td>${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:(p.gpuTag==='UMA'?'Integrated':'<span class="td-na">–</span>')}</td>
+      <td>${prevHtml}</td>
+      <td>${todayHtml}</td>
+      <td>${deltaHtml}</td>
+      <td>${linkHtml}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════
