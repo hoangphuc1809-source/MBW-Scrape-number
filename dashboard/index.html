@@ -139,8 +139,8 @@ tbody tr:hover{background:#fafafa}
 <div class="tabs">
   <div class="tab active" onclick="sw('alerts')">🔔 Price Alerts</div>
   <div class="tab" onclick="sw('drops')">📉 Top Price Changes</div>
-  <div class="tab" onclick="sw('gaming')">🎮 Gaming by GPU</div>
-  <div class="tab" onclick="sw('bp')">💼 B&amp;P by CPU</div>
+  <div class="tab" onclick="sw('gaming')">🎮 Gaming by Series (T)</div>
+  <div class="tab" onclick="sw('bp')">💼 B&amp;P by Series (T)</div>
 </div>
 
 <div class="main">
@@ -208,7 +208,7 @@ tbody tr:hover{background:#fafafa}
   <div class="filter-bar">
     <span class="filter-lbl">Filter</span>
     <div class="filter-sep"></div>
-    <select id="g_vga" onchange="renderGaming()"><option value="">All GPUs</option></select>
+    <select id="g_vga" onchange="renderGaming()"><option value="">All Series</option></select>
     <select id="g_dealer" onchange="renderGaming()">
       <option value="">All Dealers</option>
       <option value="MBW">MBW</option>
@@ -225,7 +225,7 @@ tbody tr:hover{background:#fafafa}
   <div class="filter-bar">
     <span class="filter-lbl">Filter</span>
     <div class="filter-sep"></div>
-    <select id="b_cpu" onchange="renderBP()"><option value="">All CPUs</option></select>
+    <select id="b_cpu" onchange="renderBP()"><option value="">All Series</option></select>
     <select id="b_dealer" onchange="renderBP()">
       <option value="">All Dealers</option>
       <option value="MBW">MBW</option>
@@ -259,13 +259,13 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('todayLbl').textContent = todayDate;
   document.getElementById('prevLbl').textContent  = prevDate;
 
-  // GPU options (Gaming, non-UMA)
-  const gpus = [...new Set(allToday.filter(p=>p.segment==='Gaming'&&p.gpuTag&&p.gpuTag!=='UMA').map(p=>p.gpuTag))].sort();
+  // Series Group options (Gaming, col T)
+  const gpus = [...new Set(allToday.filter(p=>p.segment==='Gaming'&&p.seriesGroup).map(p=>p.seriesGroup))].sort();
   const gSel = document.getElementById('g_vga');
   gpus.forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;gSel.appendChild(o);});
 
-  // CPU options (B&P, clean values)
-  const cpuSet = [...new Set(allToday.filter(p=>isBP(p)&&p.cpuFamily&&p.cpuFamily.length<25&&!p.cpuFamily.startsWith('#')).map(p=>p.cpuFamily))].sort();
+  // Series Group options (B&P, col T)
+  const cpuSet = [...new Set(allToday.filter(p=>isBP(p)&&p.seriesGroup).map(p=>p.seriesGroup))].sort();
   const cSel = document.getElementById('b_cpu');
   cpuSet.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cSel.appendChild(o);});
 
@@ -376,10 +376,10 @@ function renderGaming(){
   const dF=document.getElementById('g_dealer').value;
   const sF=document.getElementById('g_search').value.toLowerCase();
   const ef = p=>p.todayPrice||0;
-  let data=allToday.filter(p=>p.segment==='Gaming'&&(!dF||p.dealer===dF)&&(!vF||p.gpuTag===vF)&&(!sF||p.model.toLowerCase().includes(sF)));
+  let data=allToday.filter(p=>p.segment==='Gaming'&&(!dF||p.dealer===dF)&&(!vF||p.seriesGroup===vF)&&(!sF||p.model.toLowerCase().includes(sF)));
 
   const gpuMap={};
-  data.forEach(p=>{const g=p.gpuTag||'Other';if(!gpuMap[g])gpuMap[g]=[];gpuMap[g].push(p);});
+  data.forEach(p=>{const g=p.seriesGroup||'Other';if(!gpuMap[g])gpuMap[g]=[];gpuMap[g].push(p);});
   const gpuList=Object.entries(gpuMap).filter(([,a])=>a.length>0)
     .sort((a,b)=>Math.min(...a[1].map(ef))-Math.min(...b[1].map(ef)));
 
@@ -420,11 +420,11 @@ function renderBP(){
   const dF=document.getElementById('b_dealer').value;
   const sF=document.getElementById('b_search').value.toLowerCase();
   const ef=p=>p.todayPrice||0;
-  let data=allToday.filter(p=>isBP(p)&&(!dF||p.dealer===dF)&&(!cF||p.cpuFamily===cF)&&(!sF||p.model.toLowerCase().includes(sF)));
+  let data=allToday.filter(p=>isBP(p)&&(!dF||p.dealer===dF)&&(!cF||p.seriesGroup===cF)&&(!sF||p.model.toLowerCase().includes(sF)));
 
   const cpuMap={};
   data.forEach(p=>{
-    const c=(p.cpuFamily&&p.cpuFamily.length<25&&!p.cpuFamily.startsWith('#'))?p.cpuFamily:'Other';
+    const c=p.seriesGroup||'Other';
     if(!cpuMap[c])cpuMap[c]=[];cpuMap[c].push(p);
   });
   const cpuList=Object.entries(cpuMap).filter(([,a])=>a.length>0)
