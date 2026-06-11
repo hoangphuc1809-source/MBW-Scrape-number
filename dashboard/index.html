@@ -401,6 +401,8 @@ tbody tr:hover{background:#fafafa}
     </select>
     <select id="al_brand" onchange="renderAll()"><option value="">All Vendors</option></select>
     <select id="al_series" onchange="renderAll()"><option value="">All Series</option></select>
+    <select id="al_gpu" onchange="renderAll()"><option value="">All VGA</option></select>
+    <select id="al_cpu" onchange="renderAll()"><option value="">All CPU</option></select>
     <input id="al_search" type="text" placeholder="🔍 Search SKU…" oninput="renderAll()" style="min-width:200px"/>
     <div class="filter-sep"></div>
     <span id="al_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
@@ -653,13 +655,19 @@ function sw(name){
 // ALL PRICES TABLE (Tab 5)
 // ═══════════════════════════════════════
 (function initAllPricesDropdowns() {
-  // Populate vendor and series dropdowns
+  // Populate vendor, series, VGA and CPU dropdowns
   const brands  = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort();
   const series  = [...new Set(allToday.map(p=>p.seriesGroup).filter(Boolean))].sort();
+  const gpus    = [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort();
+  const cpus    = [...new Set(allToday.map(p=>p.cpuFamily).filter(p=>p&&p.length<30&&!p.startsWith('#')&&!p.startsWith('Intel Core i')&&!p.startsWith('AMD Ryzen')&&p!=='#N/A'))].sort();
   const bSel = document.getElementById('al_brand');
   const sSel = document.getElementById('al_series');
+  const gSel = document.getElementById('al_gpu');
+  const cSel = document.getElementById('al_cpu');
   brands.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;bSel.appendChild(o);});
   series.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sSel.appendChild(o);});
+  gpus.forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;gSel.appendChild(o);});
+  cpus.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cSel.appendChild(o);});
 })();
 
 // Sort state for All Prices table
@@ -671,6 +679,8 @@ function renderAll() {
   const sgF = document.getElementById('al_seg').value;
   const brF = document.getElementById('al_brand').value;
   const srF = document.getElementById('al_series').value;
+  const gpF = document.getElementById('al_gpu').value;
+  const cpF = document.getElementById('al_cpu').value;
   const sF  = document.getElementById('al_search').value.toLowerCase();
 
   let data = allToday.filter(p => {
@@ -678,6 +688,8 @@ function renderAll() {
     if (sgF && !isBP_or_gaming(p, sgF)) return false;
     if (brF && p.brand !== brF) return false;
     if (srF && p.seriesGroup !== srF) return false;
+    if (gpF && p.gpuTag !== gpF) return false;
+    if (cpF && p.cpuFamily !== cpF) return false;
     if (sF  && !p.model.toLowerCase().includes(sF)) return false;
     return true;
   });
