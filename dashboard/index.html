@@ -160,6 +160,22 @@ tbody tr:hover{background:#fafafa}
 .wf-result.ok{background:#dcfce7;color:#166534}
 .wf-result.err{background:#fee2e2;color:#991b1b}
 
+
+/* ── CHANGE PASSWORD MODAL ── */
+#chgPwdModal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9000}
+#chgPwdModal.hidden{display:none}
+.chgpwd-box{background:#fff;border-radius:12px;padding:28px 28px 22px;width:380px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.chgpwd-box h3{font-size:16px;font-weight:700;color:var(--hdr);margin-bottom:18px}
+.chgpwd-box .login-field{margin-bottom:13px}
+.chgpwd-box label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);display:block;margin-bottom:5px}
+.chgpwd-box input{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);outline:none;transition:border .15s;box-sizing:border-box}
+.chgpwd-box input:focus{border-color:var(--accent)}
+.chgpwd-row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.chgpwd-err{font-size:12px;color:#dc2626;min-height:16px;margin-top:4px}
+.chgpwd-ok{font-size:12px;color:#16a34a;min-height:16px;margin-top:4px;font-weight:600}
+.btn-chgpwd{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:5px 11px;border-radius:8px;font-size:11px;cursor:pointer;transition:all .15s}
+.btn-chgpwd:hover{color:#fff;background:rgba(255,255,255,.15)}
+
 </style>
 </head>
 <body>
@@ -196,6 +212,29 @@ tbody tr:hover{background:#fafafa}
   </div>
 </div>
 
+<!-- ── CHANGE PASSWORD MODAL ── -->
+<div id="chgPwdModal" class="hidden">
+  <div class="chgpwd-box">
+    <h3>🔑 Change Password</h3>
+    <div class="login-field">
+      <label>Current Password</label>
+      <input type="password" id="cpCurrent" placeholder="Enter current password"/>
+    </div>
+    <div class="login-field">
+      <label>New Password</label>
+      <input type="password" id="cpNew" placeholder="Min 8 characters"/>
+    </div>
+    <div class="login-field">
+      <label>Confirm New Password</label>
+      <input type="password" id="cpConfirm" placeholder="Repeat new password" onkeydown="if(event.key==='Enter')saveNewPassword()"/>
+    </div>
+    <div class="chgpwd-err" id="cpErr"></div>
+    <div class="chgpwd-row">
+      <button class="wf-btn-cancel" onclick="closeChgPwd()">Cancel</button>
+      <button class="wf-btn-run" onclick="saveNewPassword()">Save Password</button>
+    </div>
+  </div>
+</div>
 
 <div class="hdr">
   <div class="hdr-left">
@@ -210,6 +249,7 @@ tbody tr:hover{background:#fafafa}
       <span class="spin-icon">🔄</span> Refresh Data
     </button>
     <span class="refresh-status" id="refreshStatus"></span>
+    <button class="btn-chgpwd" onclick="openChgPwd()" title="Change password">🔑 Password</button>
     <button class="btn-logout" onclick="doLogout()">⎋ Logout</button>
   </div>
 </div>
@@ -550,10 +590,16 @@ function sw(name){
 // AUTH + WORKFLOW TRIGGER
 // ═══════════════════════════════════════
 const AUTH_USER = 'retail_admin';
-const AUTH_HASH = '1aa5f339ac72c82650bd296dbbe4e06eb289cba8eb76fb33202ada2e77b6d810'; // SHA-256 of password
+const AUTH_HASH_DEFAULT = '1aa5f339ac72c82650bd296dbbe4e06eb289cba8eb76fb33202ada2e77b6d810'; // SHA-256 of LaptopVN@2026
 const SESSION_KEY = 'lpd_auth_v1';
-const WF_ID = 291045989; // Multi-Dealer Laptop Scraper workflow ID
+const PWD_KEY = 'lpd_pwd_v1'; // localStorage key for custom password hash
+const WF_ID = 291045989;
 const REPO = 'hoangphuc1809-source/MBW-Scrape-number';
+
+// Get active password hash (custom overrides default)
+function getAuthHash() {
+  return localStorage.getItem(PWD_KEY) || AUTH_HASH_DEFAULT;
+}
 
 // Simple SHA-256 using SubtleCrypto
 async function sha256(str) {
@@ -561,22 +607,19 @@ async function sha256(str) {
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
+// ── LOGIN ──────────────────────────────
 async function doLogin() {
   const user = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
   const errEl = document.getElementById('loginErr');
   errEl.textContent = '';
-
   if (!user || !pass) { errEl.textContent = 'Please enter username and password.'; return; }
-
   const hash = await sha256(pass);
-  if (user !== AUTH_USER || hash !== AUTH_HASH) {
+  if (user !== AUTH_USER || hash !== getAuthHash()) {
     errEl.textContent = 'Incorrect username or password.';
     document.getElementById('loginPass').value = '';
     return;
   }
-
-  // Store session (sessionStorage — cleared on tab close)
   sessionStorage.setItem(SESSION_KEY, JSON.stringify({ user, ts: Date.now() }));
   document.getElementById('loginOverlay').classList.add('hidden');
 }
@@ -591,11 +634,55 @@ function checkSession() {
   if (!raw) return false;
   try {
     const s = JSON.parse(raw);
-    // Session valid for 8 hours
     return s.user === AUTH_USER && (Date.now() - s.ts) < 8 * 3600 * 1000;
   } catch { return false; }
 }
 
+// ── CHANGE PASSWORD ─────────────────────
+function openChgPwd() {
+  ['cpCurrent','cpNew','cpConfirm'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('cpErr').textContent = '';
+  document.getElementById('cpErr').className = 'chgpwd-err';
+  document.getElementById('chgPwdModal').classList.remove('hidden');
+  document.getElementById('cpCurrent').focus();
+}
+
+function closeChgPwd() {
+  document.getElementById('chgPwdModal').classList.add('hidden');
+}
+
+async function saveNewPassword() {
+  const current = document.getElementById('cpCurrent').value;
+  const newPwd  = document.getElementById('cpNew').value;
+  const confirm = document.getElementById('cpConfirm').value;
+  const errEl   = document.getElementById('cpErr');
+  errEl.className = 'chgpwd-err';
+  errEl.textContent = '';
+
+  if (!current || !newPwd || !confirm) {
+    errEl.textContent = 'All fields are required.'; return;
+  }
+  if (newPwd.length < 8) {
+    errEl.textContent = 'New password must be at least 8 characters.'; return;
+  }
+  if (newPwd !== confirm) {
+    errEl.textContent = 'New passwords do not match.'; return;
+  }
+
+  const currentHash = await sha256(current);
+  if (currentHash !== getAuthHash()) {
+    errEl.textContent = 'Current password is incorrect.'; return;
+  }
+
+  const newHash = await sha256(newPwd);
+  localStorage.setItem(PWD_KEY, newHash);
+
+  errEl.className = 'chgpwd-ok';
+  errEl.textContent = '✅ Password changed successfully!';
+  setTimeout(closeChgPwd, 1500);
+}
+
+// ── WORKFLOW TRIGGER (BACKGROUND) ───────
 function openWfModal() {
   document.getElementById('wfResult').innerHTML = '';
   document.getElementById('wfRunBtn').disabled = false;
@@ -607,20 +694,22 @@ function closeWfModal() {
   document.getElementById('wfModal').classList.add('hidden');
 }
 
+function setRunStatus(msg, isError) {
+  const el = document.getElementById('refreshStatus');
+  el.textContent = msg;
+  el.style.color = isError ? '#fca5a5' : 'rgba(255,255,255,.6)';
+}
+
 async function triggerWorkflow() {
   const runBtn = document.getElementById('wfRunBtn');
-  const resultEl = document.getElementById('wfResult');
   runBtn.disabled = true;
   runBtn.textContent = '⏳ Triggering...';
-  resultEl.innerHTML = '';
 
   try {
-    // Use GitHub API to trigger workflow_dispatch
-    // NOTE: This requires a PAT with 'repo' scope stored in sessionStorage
-    // The user provides their PAT once via a prompt (never stored in code)
     let pat = sessionStorage.getItem('lpd_pat');
     if (!pat) {
-      pat = prompt('Enter your GitHub Personal Access Token (repo scope):\n(stored in session only, never sent to third parties)');
+      pat = prompt('Enter your GitHub Personal Access Token (repo scope):
+(stored in session only, never sent to third parties)');
       if (!pat) { runBtn.disabled = false; runBtn.textContent = '▶ Run Scraper'; return; }
       sessionStorage.setItem('lpd_pat', pat.trim());
     }
@@ -639,27 +728,48 @@ async function triggerWorkflow() {
     );
 
     if (resp.status === 204) {
-      resultEl.innerHTML = '<div class="wf-result ok">✅ Scraper triggered! Check GitHub Actions for status. Data will update in ~5 minutes.</div>';
-      runBtn.textContent = '✅ Triggered';
-      document.getElementById('refreshStatus').textContent = 'Scraper running…';
-      // Check run status after 10s
-      setTimeout(checkLatestRun, 10000);
+      // ✅ SUCCESS — close modal immediately, show status in header
+      closeWfModal();
+      document.getElementById('btnRefresh').classList.add('spinning');
+      document.getElementById('btnRefresh').disabled = true;
+      setRunStatus('⏳ Scraper running…');
+      pollRunStatus();
     } else {
-      const err = await resp.json();
+      const err = await resp.json().catch(()=>({}));
       if (resp.status === 401) {
         sessionStorage.removeItem('lpd_pat');
-        resultEl.innerHTML = '<div class="wf-result err">❌ Invalid PAT token. Please try again.</div>';
+        document.getElementById('wfResult').innerHTML = '<div class="wf-result err">❌ Invalid PAT. Token cleared — please try again.</div>';
       } else {
-        resultEl.innerHTML = `<div class="wf-result err">❌ Error ${resp.status}: ${err.message||'Unknown error'}</div>`;
+        document.getElementById('wfResult').innerHTML = `<div class="wf-result err">❌ Error ${resp.status}: ${err.message||'Unknown'}</div>`;
       }
       runBtn.disabled = false;
       runBtn.textContent = '▶ Run Scraper';
     }
   } catch(e) {
-    resultEl.innerHTML = `<div class="wf-result err">❌ Network error: ${e.message}</div>`;
+    document.getElementById('wfResult').innerHTML = `<div class="wf-result err">❌ Network error: ${e.message}</div>`;
     runBtn.disabled = false;
     runBtn.textContent = '▶ Run Scraper';
   }
+}
+
+// Poll run status in background every 15s
+let _pollTimer = null;
+let _pollCount = 0;
+
+async function pollRunStatus() {
+  _pollCount = 0;
+  clearInterval(_pollTimer);
+  _pollTimer = setInterval(async () => {
+    _pollCount++;
+    if (_pollCount > 24) { // stop after 6 min
+      clearInterval(_pollTimer);
+      document.getElementById('btnRefresh').classList.remove('spinning');
+      document.getElementById('btnRefresh').disabled = false;
+      setRunStatus('⚠️ Timeout — check GitHub Actions');
+      return;
+    }
+    await checkLatestRun();
+  }, 15000);
 }
 
 async function checkLatestRun() {
@@ -673,26 +783,30 @@ async function checkLatestRun() {
     if (!resp.ok) return;
     const data = await resp.json();
     const run = data.workflow_runs?.[0];
-    if (run) {
-      const status = run.status === 'completed' 
-        ? `✅ Done (${run.conclusion})` 
-        : `⏳ ${run.status}`;
-      document.getElementById('refreshStatus').textContent = `Last run: ${status}`;
+    if (!run) return;
+
+    if (run.status === 'completed') {
+      clearInterval(_pollTimer);
+      document.getElementById('btnRefresh').classList.remove('spinning');
+      document.getElementById('btnRefresh').disabled = false;
+      const ok = run.conclusion === 'success';
+      setRunStatus(ok ? '✅ Done! Reload page for fresh data' : `⚠️ Run ${run.conclusion}`, !ok);
+    } else {
+      // in_progress / queued
+      const labels = { queued: '⏳ Queued…', in_progress: '⚙️ Running…', waiting: '⏳ Waiting…' };
+      setRunStatus(labels[run.status] || `⏳ ${run.status}…`);
     }
   } catch {}
 }
 
-// Init: check session on load
+// ── INIT ────────────────────────────────
 (function init() {
   if (checkSession()) {
     document.getElementById('loginOverlay').classList.add('hidden');
-    // Check last workflow run
-    checkLatestRun();
+    checkLatestRun(); // show last run status on load
   }
-  // Enter key on username field
   document.getElementById('loginUser')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('loginPass')?.focus();
   });
 })();
-
 </script>
