@@ -120,9 +120,82 @@ tbody tr:hover{background:#fafafa}
   .kpi-row{grid-template-columns:repeat(2,1fr)}
   .filter-bar{gap:6px}
 }
+
+/* ── LOGIN OVERLAY ── */
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#0f1729 0%,#1e2d4a 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+#loginOverlay.hidden{display:none}
+.login-box{background:#fff;border-radius:16px;padding:40px 36px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.login-logo{font-size:32px;text-align:center;margin-bottom:6px}
+.login-title{font-size:18px;font-weight:700;text-align:center;color:var(--hdr);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text2);text-align:center;margin-bottom:24px}
+.login-box label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);display:block;margin-bottom:5px}
+.login-box input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);outline:none;transition:border .15s;box-sizing:border-box}
+.login-box input:focus{border-color:var(--accent)}
+.login-field{margin-bottom:16px}
+.login-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .15s}
+.login-btn:hover{opacity:.88}
+.login-err{color:#dc2626;font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+
+/* ── REFRESH BUTTON ── */
+.btn-refresh{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-refresh:hover{background:rgba(255,255,255,.2)}
+.btn-refresh:disabled{opacity:.5;cursor:not-allowed}
+.btn-refresh.spinning .spin-icon{animation:spin 1s linear infinite}
+.btn-logout{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;transition:all .15s}
+.btn-logout:hover{color:#fff;background:rgba(255,255,255,.15)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.refresh-status{font-size:11px;color:rgba(255,255,255,.55);margin-left:4px}
+
+/* ── WORKFLOW MODAL ── */
+#wfModal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:8888}
+#wfModal.hidden{display:none}
+.wf-box{background:#fff;border-radius:12px;padding:28px 28px 24px;width:420px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.wf-box h3{font-size:16px;font-weight:700;color:var(--hdr);margin-bottom:8px}
+.wf-box p{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5}
+.wf-box .wf-row{display:flex;gap:8px;justify-content:flex-end}
+.wf-btn-cancel{padding:8px 16px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--text)}
+.wf-btn-run{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
+.wf-btn-run:hover{opacity:.88}
+.wf-result{margin-top:14px;padding:10px 14px;border-radius:7px;font-size:12px;font-weight:600}
+.wf-result.ok{background:#dcfce7;color:#166534}
+.wf-result.err{background:#fee2e2;color:#991b1b}
+
 </style>
 </head>
 <body>
+
+<!-- ── LOGIN OVERLAY ── -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">📊</div>
+    <div class="login-title">Laptop Price Monitor</div>
+    <div class="login-sub">VN Retail Dashboard — Internal Access Only</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ── WORKFLOW CONFIRM MODAL ── -->
+<div id="wfModal" class="hidden">
+  <div class="wf-box">
+    <h3>🔄 Trigger Scraper Run</h3>
+    <p>This will start a new scrape of <strong>MBW · FPT Retail · CellPhone S</strong> and update the Google Sheet.<br><br>The runner <strong>BARACK</strong> must be online. Estimated time: ~5 minutes.</p>
+    <div id="wfResult"></div>
+    <div class="wf-row">
+      <button class="wf-btn-cancel" onclick="closeWfModal()">Cancel</button>
+      <button class="wf-btn-run" id="wfRunBtn" onclick="triggerWorkflow()">▶ Run Scraper</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="hdr">
   <div class="hdr-left">
@@ -133,6 +206,11 @@ tbody tr:hover{background:#fafafa}
     <span class="badge mbw" id="bMBW">MBW –</span>
     <span class="badge fpt" id="bFPT">FPT –</span>
     <span class="badge cps" id="bCPS">CPS –</span>
+    <button class="btn-refresh" id="btnRefresh" onclick="openWfModal()" title="Trigger scraper on GitHub Actions">
+      <span class="spin-icon">🔄</span> Refresh Data
+    </button>
+    <span class="refresh-status" id="refreshStatus"></span>
+    <button class="btn-logout" onclick="doLogout()">⎋ Logout</button>
   </div>
 </div>
 
@@ -467,6 +545,154 @@ function sw(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+name).classList.add('active');
 }
+
+// ═══════════════════════════════════════
+// AUTH + WORKFLOW TRIGGER
+// ═══════════════════════════════════════
+const AUTH_USER = 'retail_admin';
+const AUTH_HASH = '1aa5f339ac72c82650bd296dbbe4e06eb289cba8eb76fb33202ada2e77b6d810'; // SHA-256 of password
+const SESSION_KEY = 'lpd_auth_v1';
+const WF_ID = 291045989; // Multi-Dealer Laptop Scraper workflow ID
+const REPO = 'hoangphuc1809-source/MBW-Scrape-number';
+
+// Simple SHA-256 using SubtleCrypto
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+
+  if (!user || !pass) { errEl.textContent = 'Please enter username and password.'; return; }
+
+  const hash = await sha256(pass);
+  if (user !== AUTH_USER || hash !== AUTH_HASH) {
+    errEl.textContent = 'Incorrect username or password.';
+    document.getElementById('loginPass').value = '';
+    return;
+  }
+
+  // Store session (sessionStorage — cleared on tab close)
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ user, ts: Date.now() }));
+  document.getElementById('loginOverlay').classList.add('hidden');
+}
+
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+function checkSession() {
+  const raw = sessionStorage.getItem(SESSION_KEY);
+  if (!raw) return false;
+  try {
+    const s = JSON.parse(raw);
+    // Session valid for 8 hours
+    return s.user === AUTH_USER && (Date.now() - s.ts) < 8 * 3600 * 1000;
+  } catch { return false; }
+}
+
+function openWfModal() {
+  document.getElementById('wfResult').innerHTML = '';
+  document.getElementById('wfRunBtn').disabled = false;
+  document.getElementById('wfRunBtn').textContent = '▶ Run Scraper';
+  document.getElementById('wfModal').classList.remove('hidden');
+}
+
+function closeWfModal() {
+  document.getElementById('wfModal').classList.add('hidden');
+}
+
+async function triggerWorkflow() {
+  const runBtn = document.getElementById('wfRunBtn');
+  const resultEl = document.getElementById('wfResult');
+  runBtn.disabled = true;
+  runBtn.textContent = '⏳ Triggering...';
+  resultEl.innerHTML = '';
+
+  try {
+    // Use GitHub API to trigger workflow_dispatch
+    // NOTE: This requires a PAT with 'repo' scope stored in sessionStorage
+    // The user provides their PAT once via a prompt (never stored in code)
+    let pat = sessionStorage.getItem('lpd_pat');
+    if (!pat) {
+      pat = prompt('Enter your GitHub Personal Access Token (repo scope):\n(stored in session only, never sent to third parties)');
+      if (!pat) { runBtn.disabled = false; runBtn.textContent = '▶ Run Scraper'; return; }
+      sessionStorage.setItem('lpd_pat', pat.trim());
+    }
+
+    const resp = await fetch(
+      `https://api.github.com/repos/${REPO}/actions/workflows/${WF_ID}/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${pat.trim()}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }
+    );
+
+    if (resp.status === 204) {
+      resultEl.innerHTML = '<div class="wf-result ok">✅ Scraper triggered! Check GitHub Actions for status. Data will update in ~5 minutes.</div>';
+      runBtn.textContent = '✅ Triggered';
+      document.getElementById('refreshStatus').textContent = 'Scraper running…';
+      // Check run status after 10s
+      setTimeout(checkLatestRun, 10000);
+    } else {
+      const err = await resp.json();
+      if (resp.status === 401) {
+        sessionStorage.removeItem('lpd_pat');
+        resultEl.innerHTML = '<div class="wf-result err">❌ Invalid PAT token. Please try again.</div>';
+      } else {
+        resultEl.innerHTML = `<div class="wf-result err">❌ Error ${resp.status}: ${err.message||'Unknown error'}</div>`;
+      }
+      runBtn.disabled = false;
+      runBtn.textContent = '▶ Run Scraper';
+    }
+  } catch(e) {
+    resultEl.innerHTML = `<div class="wf-result err">❌ Network error: ${e.message}</div>`;
+    runBtn.disabled = false;
+    runBtn.textContent = '▶ Run Scraper';
+  }
+}
+
+async function checkLatestRun() {
+  try {
+    const pat = sessionStorage.getItem('lpd_pat');
+    if (!pat) return;
+    const resp = await fetch(
+      `https://api.github.com/repos/${REPO}/actions/runs?workflow_id=${WF_ID}&per_page=1`,
+      { headers: { 'Authorization': `token ${pat}`, 'Accept': 'application/vnd.github+json' } }
+    );
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const run = data.workflow_runs?.[0];
+    if (run) {
+      const status = run.status === 'completed' 
+        ? `✅ Done (${run.conclusion})` 
+        : `⏳ ${run.status}`;
+      document.getElementById('refreshStatus').textContent = `Last run: ${status}`;
+    }
+  } catch {}
+}
+
+// Init: check session on load
+(function init() {
+  if (checkSession()) {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    // Check last workflow run
+    checkLatestRun();
+  }
+  // Enter key on username field
+  document.getElementById('loginUser')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass')?.focus();
+  });
+})();
+
 </script>
-</body>
-</html>
