@@ -708,8 +708,7 @@ async function triggerWorkflow() {
   try {
     let pat = sessionStorage.getItem('lpd_pat');
     if (!pat) {
-      pat = prompt('Enter your GitHub Personal Access Token (repo scope):
-(stored in session only, never sent to third parties)');
+      pat = prompt('Enter your GitHub PAT (repo scope). Stored in session only.');
       if (!pat) { runBtn.disabled = false; runBtn.textContent = '▶ Run Scraper'; return; }
       sessionStorage.setItem('lpd_pat', pat.trim());
     }
