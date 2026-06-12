@@ -286,7 +286,7 @@ tbody tr:hover{background:#fafafa}
 
 #allPriceTable th{white-space:nowrap;font-size:10px;padding:5px 6px}
 
-/* ── number/% columns: center align ── */
+
 #allPriceTable td.col-ram,
 #allPriceTable td.col-ssd,
 #allPriceTable td.col-sold { text-align:center; }
@@ -304,6 +304,37 @@ tbody tr:hover{background:#fafafa}
 #allPriceTable col.c-change { width:130px }
 #allPriceTable col.c-sold   { width:42px  }
 #allPriceTable col.c-link   { width:44px  }
+
+/* ── number/% center & right align ── */
+/* TD align */
+#allPriceTable td.col-ram,
+#allPriceTable td.col-ssd,
+#allPriceTable td.col-sold  { text-align:center; }
+#allPriceTable td.col-pprev,
+#allPriceTable td.col-ptoday{ text-align:right; white-space:nowrap; font-weight:700; }
+#allPriceTable td.col-change{
+  text-align:right;
+  white-space:normal !important;
+  word-break:break-word;
+  overflow-wrap:break-word;
+  line-height:1.4;
+  font-size:11px;
+}
+#allPriceTable td.col-vga {
+  text-align:center;
+  white-space:normal !important;
+  word-break:break-word;
+  overflow-wrap:break-word;
+  line-height:1.3;
+}
+/* TH align */
+#allPriceTable th.th-center { text-align:center; }
+#allPriceTable th.th-right  { text-align:right;  }
+/* colgroup override for change+vga */
+#allPriceTable col.c-change { width:115px }
+#allPriceTable col.c-vga    { width:68px  }
+#allPriceTable col.c-pprev  { width:95px  }
+#allPriceTable col.c-ptoday { width:95px  }
 </style>
 </head>
 <body>
@@ -813,9 +844,9 @@ function renderAll() {
     if (sF) {
       // Also search in origPrice/kmPrice as strings (e.g. '5050' matches 'RTX 5050')
       const hay = [p.model, p.cpuFamily, p.cpuDetail, p.brand, p.segment, p.seriesGroup,
-                   p.gpuTag, p.ram, p.ssd, p.screen, p.dealer,
+                   p.gpuTag, p.ram, p.ssd, p.screen, p.dealer, p.disc||'',
                    String(p.origPrice||''), String(p.kmPrice||''), String(p.todayPrice||'')]
-        .map(v => (v||'').toLowerCase()).join(' ');
+        .filter(Boolean).map(v=>v.toString().toLowerCase()).join(' ');
       if (!hay.includes(sF)) return false;
     }
     return true;
@@ -884,13 +915,23 @@ function renderAllHead() {
   let cg=table.querySelector('colgroup');
   if(!cg){cg=document.createElement('colgroup');table.prepend(cg);}
   cg.innerHTML=AL_COLS.map(([key])=>`<col class="${colClasses[key]||''}">`).join('');
-  const numCols = new Set(['ram','ssd','sold','cpu_combo']);
-  const rightCols = new Set(['prevPrice','todayPrice','delta']);
-  const tr=document.getElementById('allPriceHead');
-  tr.innerHTML=AL_COLS.map(([key,label],i)=>{
-    const base = _alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):'';
-    const align = rightCols.has(key)?'th-right':numCols.has(key)?'th-num':'';
-    return `<th onclick="alSort(${i})" class="${[base,align].filter(Boolean).join(' ')}">${label}</th>`;
+  const centerCols = new Set(['ram','ssd','sold','gpuTag']);
+  const rightCols  = new Set(['prevPrice','todayPrice','delta']);
+  const colClasses = {
+    'dealer':'c-dealer','brand':'c-vendor','seriesGroup':'c-series','segment':'c-segment',
+    'model':'c-sku','cpu_combo':'c-cpu','ram':'c-ram','ssd':'c-ssd','gpuTag':'c-vga',
+    'screen':'c-screen','prevPrice':'c-pprev','todayPrice':'c-ptoday','delta':'c-change',
+    'link':'c-link','sold':'c-sold'
+  };
+  const table = document.getElementById('allPriceTable');
+  let cg = table.querySelector('colgroup');
+  if(!cg){ cg=document.createElement('colgroup'); table.prepend(cg); }
+  cg.innerHTML = AL_COLS.map(([key])=>`<col class="${colClasses[key]||''}">`).join('');
+  const tr = document.getElementById('allPriceHead');
+  tr.innerHTML = AL_COLS.map(([key,label],i)=>{
+    const sort  = _alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):'';
+    const align = rightCols.has(key)?'th-right':centerCols.has(key)?'th-center':'';
+    return `<th onclick="alSort(${i})" class="${[sort,align].filter(Boolean).join(' ')}">${label}</th>`;
   }).join('');
 }
 
