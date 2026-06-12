@@ -285,6 +285,25 @@ tbody tr:hover{background:#fafafa}
 .all-prices-mode .td-sku  { min-width:130px; max-width:200px; white-space:normal; word-break:break-word; }
 
 #allPriceTable th{white-space:nowrap;font-size:10px;padding:5px 6px}
+
+/* ── number/% columns: center align ── */
+#allPriceTable td.col-ram,
+#allPriceTable td.col-ssd,
+#allPriceTable td.col-sold { text-align:center; }
+#allPriceTable td.col-pprev,
+#allPriceTable td.col-ptoday { text-align:right; white-space:nowrap; }
+#allPriceTable td.col-change { text-align:right; white-space:normal; overflow-wrap:break-word; word-break:break-word; line-height:1.4; }
+#allPriceTable td.col-vga   { text-align:center; white-space:normal !important; overflow-wrap:break-word; word-break:break-word; line-height:1.3; }
+/* th center for numeric cols */
+#allPriceTable th.th-num { text-align:center; }
+#allPriceTable th.th-right { text-align:right; }
+/* colgroup sizes for price/change/vga */
+#allPriceTable col.c-vga    { width:72px  }
+#allPriceTable col.c-pprev  { width:100px }
+#allPriceTable col.c-ptoday { width:100px }
+#allPriceTable col.c-change { width:130px }
+#allPriceTable col.c-sold   { width:42px  }
+#allPriceTable col.c-link   { width:44px  }
 </style>
 </head>
 <body>
@@ -488,8 +507,12 @@ tbody tr:hover{background:#fafafa}
     </select>
     <select id="al_brand" onchange="renderAll()"><option value="">All Vendors</option></select>
     <select id="al_series" onchange="renderAll()"><option value="">All Series</option></select>
-    <select id="al_gpu" onchange="renderAll()"><option value="">All VGA</option></select>
-    <select id="al_cpu" onchange="renderAll()"><option value="">All CPU</option></select>
+    <input id="al_gpu" list="al_gpu_list" placeholder="All VGA" oninput="renderAll()" autocomplete="off"
+      style="min-width:90px;max-width:110px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
+    <datalist id="al_gpu_list"></datalist>
+    <input id="al_cpu" list="al_cpu_list" placeholder="All CPU" oninput="renderAll()" autocomplete="off"
+      style="min-width:90px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
+    <datalist id="al_cpu_list"></datalist>
     <input id="al_search" type="text" placeholder="🔍 Search SKU…" oninput="renderAll()" style="min-width:200px"/>
     <div class="filter-sep"></div>
     <span id="al_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
@@ -785,10 +808,13 @@ function renderAll() {
     if (sgF && !isBP_or_gaming(p, sgF)) return false;
     if (brF && p.brand !== brF) return false;
     if (srF && p.segment !== srF) return false;
-    if (gpF && p.gpuTag !== gpF) return false;
-    if (cpF && p.cpuFamily !== cpF) return false;
+    if (gpF) { const g=gpF.toLowerCase(); if(!p.gpuTag||!p.gpuTag.toLowerCase().includes(g)) return false; }
+    if (cpF) { const c=cpF.toLowerCase(); if(!p.cpuFamily||!p.cpuFamily.toLowerCase().includes(c)) return false; }
     if (sF) {
-      const hay = [p.model, p.cpuFamily, p.cpuDetail, p.brand, p.segment, p.seriesGroup, p.gpuTag, p.ram, p.ssd]
+      // Also search in origPrice/kmPrice as strings (e.g. '5050' matches 'RTX 5050')
+      const hay = [p.model, p.cpuFamily, p.cpuDetail, p.brand, p.segment, p.seriesGroup,
+                   p.gpuTag, p.ram, p.ssd, p.screen, p.dealer,
+                   String(p.origPrice||''), String(p.kmPrice||''), String(p.todayPrice||'')]
         .map(v => (v||'').toLowerCase()).join(' ');
       if (!hay.includes(sF)) return false;
     }
@@ -858,10 +884,14 @@ function renderAllHead() {
   let cg=table.querySelector('colgroup');
   if(!cg){cg=document.createElement('colgroup');table.prepend(cg);}
   cg.innerHTML=AL_COLS.map(([key])=>`<col class="${colClasses[key]||''}">`).join('');
+  const numCols = new Set(['ram','ssd','sold','cpu_combo']);
+  const rightCols = new Set(['prevPrice','todayPrice','delta']);
   const tr=document.getElementById('allPriceHead');
-  tr.innerHTML=AL_COLS.map(([key,label],i)=>
-    `<th onclick="alSort(${i})" class="${_alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):''}">${label}</th>`
-  ).join('');
+  tr.innerHTML=AL_COLS.map(([key,label],i)=>{
+    const base = _alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):'';
+    const align = rightCols.has(key)?'th-right':numCols.has(key)?'th-num':'';
+    return `<th onclick="alSort(${i})" class="${[base,align].filter(Boolean).join(' ')}">${label}</th>`;
+  }).join('');
 }
 
 function alSort(colIdx) {
@@ -924,21 +954,21 @@ function renderAllBody(data) {
     const segName = p.segment || '–';
 
     return `<tr style="${rowStyle}">
-      <td><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
-      <td style="font-weight:600">${p.brand||'–'}</td>
-      <td>${sgBadge}</td>
-      <td style="font-size:11px;color:var(--text2)">${segName}</td>
+      <td class="col-dealer"><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
+      <td class="col-vendor" style="font-weight:600;font-size:11px;white-space:normal;overflow-wrap:anywhere">${p.brand||'–'}</td>
+      <td class="col-series">${sgBadge}</td>
+      <td class="col-segment" style="font-size:11px;color:var(--text2)">${segName}</td>
       <td class="td-sku">${p.model}</td>
       <td class="col-cpu">${cpuCombo}</td>
-      <td class="col-ram">${p.ram||'<span class="td-na">–</span>'}</td>
-      <td class="col-ssd">${p.ssd||'<span class="td-na">–</span>'}</td>
-      <td class="col-vga">${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:(p.gpuTag==='UMA'?'Integrated':'<span class="td-na">–</span>')}</td>
+      <td class="col-ram">${p.ram ? p.ram.replace(/RAM\s*/i,'').trim() : '<span class="td-na">–</span>'}</td>
+      <td class="col-ssd">${p.ssd ? p.ssd.replace(/SSD\s*/i,'').trim() : '<span class="td-na">–</span>'}</td>
+      <td class="col-vga">${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag" style="white-space:normal;word-break:break-word;display:inline-block">${p.gpuTag}</span>`:(p.gpuTag==='UMA'?'Integrated':'<span class="td-na">–</span>')}</td>
       <td class="col-screen">${p.screen||'<span class="td-na">–</span>'}</td>
-      <td>${prevHtml}</td>
-      <td>${todayHtml}</td>
-      <td>${deltaHtml}</td>
-      <td>${linkHtml}</td>
-      <td>${p.sold?`<span style="font-size:11px;font-weight:600;color:var(--text2)">${p.sold}</span>`:'<span class="td-na">–</span>'}</td>
+      <td class="col-pprev">${prevHtml}</td>
+      <td class="col-ptoday">${todayHtml}</td>
+      <td class="col-change">${deltaHtml}</td>
+      <td class="col-link">${linkHtml}</td>
+      <td class="col-sold">${p.sold?`<span style="font-size:11px;font-weight:600">${p.sold}</span>`:'<span class="td-na">–</span>'}</td>
     </tr>`;
   }).join('');
 }
@@ -1122,10 +1152,14 @@ function rebuildDropdowns() {
   rebuildSel('al_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   // al_series: all segment names (Vivobook, TUF, Cyborg...)
   rebuildSel('al_series', [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  // al_gpu: GPU tags
-  rebuildSel('al_gpu', [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  // al_cpu: CPU families (fix variable shadow bug)
-  rebuildSel('al_cpu', [...new Set(allToday.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU');
+  // al_gpu: GPU tags → datalist
+  const gpuVals = [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort();
+  const gpuDl = document.getElementById('al_gpu_list');
+  if(gpuDl) gpuDl.innerHTML = gpuVals.map(v=>`<option value="${v}">`).join('');
+  // al_cpu: CPU families → datalist
+  const cpuVals = [...new Set(allToday.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
+  const cpuDl = document.getElementById('al_cpu_list');
+  if(cpuDl) cpuDl.innerHTML = cpuVals.map(v=>`<option value="${v}">`).join('');
 }
 
 function applyNewData(derived, csv) {
