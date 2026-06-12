@@ -178,7 +178,42 @@ tbody tr:hover{background:#fafafa}
 
 
 /* ── ALL PRICES TABLE ── */
-#allPriceTable thead th{
+#/* ── All Prices: full-width layout ── */
+.main.all-prices-mode{
+  max-width:100% !important;
+  padding:16px 12px !important;
+}
+#sec-all .filter-bar{
+  max-width:100%;
+}
+#sec-all .tbl-wrap{
+  width:100%;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  background:var(--card);
+  overflow-x:auto;
+}
+#allPriceTable{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:auto;
+}
+#allPriceTable td{
+  padding:5px 8px;
+  white-space:nowrap;
+  font-size:12px;
+  border-bottom:1px solid var(--border);
+}
+.td-sku{
+  white-space:normal !important;
+  min-width:160px;
+  max-width:260px;
+  font-size:11px;
+  line-height:1.4;
+  word-break:break-word;
+}
+
+allPriceTable thead th{
   background:#f0f2f5;padding:8px 10px;font-size:10px;font-weight:700;
   text-transform:uppercase;letter-spacing:.5px;color:var(--text2);
   text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;
@@ -662,6 +697,12 @@ function sw(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   const sec=document.getElementById('sec-'+name);
   if(sec) sec.classList.add('active');
+  // Full-width mode cho All Prices tab
+  const mainEl=document.querySelector('.main');
+  if(mainEl){
+    if(name==='all'){mainEl.classList.add('all-prices-mode');}
+    else{mainEl.classList.remove('all-prices-mode');}
+  }
   if(name==='all') renderAll();
 }
 
