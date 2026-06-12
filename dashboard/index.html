@@ -233,7 +233,7 @@ tbody tr:hover{background:#fafafa}
   width:100%;
   border-collapse:collapse;
   table-layout:fixed;
-  min-width:1100px;
+  min-width:900px;
 }
 .all-prices-mode #allPriceTable td{
   padding:4px 6px;
@@ -242,16 +242,7 @@ tbody tr:hover{background:#fafafa}
   vertical-align:top;
   white-space:nowrap;
 }
-/* Override nowrap cho các cột wrap text */
-#allPriceTable td.col-cpu,
-#allPriceTable td.col-ram,
-#allPriceTable td.col-ssd,
-#allPriceTable td.col-vga,
-#allPriceTable td.col-screen {
-  white-space:normal !important;
-  word-break:break-word;
-  line-height:1.3;
-}
+
 .all-prices-mode .td-sku{
   white-space:normal !important;
   min-width:160px;
@@ -261,14 +252,50 @@ tbody tr:hover{background:#fafafa}
 }
 
 
-/* ── All Prices: compact columns ── */
-#allPriceTable .col-cpu   { width:120px; min-width:80px;  max-width:130px; }
-#allPriceTable .col-ram   { width:65px;  min-width:55px;  max-width:75px;  }
-#allPriceTable .col-ssd   { width:75px;  min-width:60px;  max-width:90px;  }
-#allPriceTable .col-vga   { width:90px;  min-width:70px;  max-width:110px; }
-#allPriceTable .col-screen{ width:130px; min-width:90px;  max-width:150px; }
-#allPriceTable th         { white-space:nowrap; font-size:10px; padding:5px 6px; }
-.all-prices-mode .td-sku  { min-width:130px; max-width:200px; white-space:normal; word-break:break-word; }
+/* ── All Prices: column widths via colgroup ── */
+/* Fixed-width cols: wrap text, no overflow */
+#allPriceTable col.c-dealer   { width:62px  }
+#allPriceTable col.c-vendor   { width:58px  }
+#allPriceTable col.c-series   { width:52px  }
+#allPriceTable col.c-segment  { width:70px  }
+#allPriceTable col.c-cpu      { width:90px  }
+#allPriceTable col.c-ram      { width:52px  }
+#allPriceTable col.c-ssd      { width:62px  }
+#allPriceTable col.c-vga      { width:72px  }
+#allPriceTable col.c-screen   { width:90px  }
+#allPriceTable col.c-link     { width:46px  }
+#allPriceTable col.c-sold     { width:40px  }
+/* Flex cols: SKU, Price prev, Price today, Change — auto width */
+#allPriceTable col.c-sku,
+#allPriceTable col.c-pprev,
+#allPriceTable col.c-ptoday,
+#allPriceTable col.c-change   { width:auto  }
+
+/* th */
+#allPriceTable th { white-space:nowrap; font-size:10px; padding:5px 6px; }
+
+/* td wrap for fixed cols */
+#allPriceTable td.col-cpu,
+#allPriceTable td.col-ram,
+#allPriceTable td.col-ssd,
+#allPriceTable td.col-vga,
+#allPriceTable td.col-screen,
+#allPriceTable td.col-dealer,
+#allPriceTable td.col-vendor,
+#allPriceTable td.col-series,
+#allPriceTable td.col-segment {
+  white-space:normal !important;
+  word-break:break-word;
+  overflow-wrap:break-word;
+  line-height:1.3;
+}
+/* SKU wrap */
+#allPriceTable td.td-sku {
+  white-space:normal !important;
+  word-break:break-word;
+  line-height:1.3;
+  font-size:11px;
+}
 
 </style>
 </head>
@@ -836,6 +863,21 @@ function getAlSortVal(item, colIdx) {
 }
 
 function renderAllHead() {
+  // Build colgroup — order matches AL_COLS
+  const colClasses = {
+    'dealer':'c-dealer','brand':'c-vendor','seriesGroup':'c-series',
+    'segment':'c-segment','model':'c-sku','cpu_combo':'c-cpu',
+    'ram':'c-ram','ssd':'c-ssd','gpuTag':'c-vga','screen':'c-screen',
+    'prevPrice':'c-pprev','todayPrice':'c-ptoday','delta':'c-change',
+    'link':'c-link','sold':'c-sold'
+  };
+  const table = document.getElementById('allPriceTable');
+  let cg = table.querySelector('colgroup');
+  if (!cg) { cg = document.createElement('colgroup'); table.prepend(cg); }
+  cg.innerHTML = AL_COLS.map(([key]) =>
+    `<col class="${colClasses[key]||''}">`
+  ).join('');
+
   const tr = document.getElementById('allPriceHead');
   tr.innerHTML = AL_COLS.map(([key, label], i) =>
     `<th onclick="alSort(${i})" class="${_alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):''}">${label}</th>`
@@ -902,10 +944,10 @@ function renderAllBody(data) {
     const segName = p.segment || '–';
 
     return `<tr style="${rowStyle}">
-      <td><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
-      <td style="font-weight:600">${p.brand||'–'}</td>
-      <td>${sgBadge}</td>
-      <td style="font-size:11px;color:var(--text2)">${segName}</td>
+      <td class="col-dealer"><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
+      <td class="col-vendor" style="font-weight:600;font-size:11px">${p.brand||'–'}</td>
+      <td class="col-series">${sgBadge}</td>
+      <td class="col-segment" style="font-size:11px;color:var(--text2)">${segName}</td>
       <td class="td-sku">${p.model}</td>
       <td class="col-cpu">${cpuCombo}</td>
       <td class="col-ram">${p.ram||'<span class="td-na">–</span>'}</td>
