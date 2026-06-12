@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0,user-scalable=yes"/>
 <title>Laptop Price Monitor – VN Retail</title>
 <style>
 :root{
@@ -224,9 +224,10 @@ tbody tr:hover{background:#fafafa}
   min-width:1400px;
 }
 .all-prices-mode #allPriceTable td{
-  padding:5px 8px;
-  font-size:12px;
+  padding:4px 6px;
+  font-size:11px;
   border-bottom:1px solid var(--border);
+  vertical-align:middle;
   white-space:nowrap;
 }
 .all-prices-mode .td-sku{
@@ -236,6 +237,16 @@ tbody tr:hover{background:#fafafa}
   font-size:11px;
   line-height:1.4;
 }
+
+
+/* ── All Prices: compact columns ── */
+#allPriceTable .col-cpu   { max-width:140px; white-space:normal; word-break:break-word; font-size:11px; }
+#allPriceTable .col-ram,
+#allPriceTable .col-ssd   { max-width:80px;  white-space:normal; word-break:break-word; font-size:11px; }
+#allPriceTable .col-vga   { max-width:100px; white-space:normal; word-break:break-word; font-size:11px; }
+#allPriceTable .col-screen{ max-width:160px; white-space:normal; word-break:break-word; font-size:11px; }
+#allPriceTable th { white-space:nowrap; font-size:10px; padding:5px 6px; }
+.all-prices-mode .td-sku  { min-width:140px; max-width:220px; }
 
 </style>
 </head>
@@ -739,7 +750,11 @@ function renderAll() {
     if (srF && p.segment !== srF) return false;
     if (gpF && p.gpuTag !== gpF) return false;
     if (cpF && p.cpuFamily !== cpF) return false;
-    if (sF  && !p.model.toLowerCase().includes(sF)) return false;
+    if (sF) {
+      const hay = [p.model, p.cpuFamily, p.cpuDetail, p.brand, p.segment, p.seriesGroup, p.gpuTag, p.ram, p.ssd]
+        .map(v => (v||'').toLowerCase()).join(' ');
+      if (!hay.includes(sF)) return false;
+    }
     return true;
   });
 
@@ -777,11 +792,8 @@ const AL_COLS = [
   ['ssd',         'SSD'],
   ['gpuTag',      'VGA'],
   ['screen',      'Screen'],
-  ['d4',          'T-4'],
-  ['d3',          'T-3'],
-  ['d2',          'T-2'],
-  ['d1',          `T-1 (${prevDate})`],
-  ['todayPrice',  `Today (${todayDate})`],
+  ['prevPrice',   prevDate || 'Prev'],
+  ['todayPrice',  todayDate || 'Today'],
   ['delta',       'Change'],
   ['link',        'Link'],
   ['sold',        'Sold'],
@@ -842,10 +854,7 @@ function renderAllBody(data) {
       ? (isDrop ? ' td-price-drop' : isRise ? ' td-price-rise' : '')
       : '';
 
-    const d4Html   = `<span class="td-na">–</span>`;
-    const d3Html   = `<span class="td-na">–</span>`;
-    const d2Html   = `<span class="td-na">–</span>`;
-    const d1Html   = prev  ? `<span class="td-price">${vnd(prev)}</span>`  : `<span class="td-na">–</span>`;
+    const prevHtml = prev  ? `<span class="td-price">${vnd(prev)}</span>`  : `<span class="td-na">–</span>`;
     const todayHtml= today ? `<span class="td-price${priceHistCls}" style="font-weight:700">${vnd(today)}</span>` : `<span class="td-na">–</span>`;
 
     // Row highlight: đỏ nhẹ nếu drop, xanh nhẹ nếu rise
@@ -876,15 +885,12 @@ function renderAllBody(data) {
       <td>${sgBadge}</td>
       <td style="font-size:11px;color:var(--text2)">${segName}</td>
       <td class="td-sku">${p.model}</td>
-      <td style="font-size:11px;white-space:nowrap">${cpuCombo}</td>
-      <td>${p.ram||'<span class="td-na">–</span>'}</td>
-      <td>${p.ssd||'<span class="td-na">–</span>'}</td>
-      <td>${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:(p.gpuTag==='UMA'?'Integrated':'<span class="td-na">–</span>')}</td>
-      <td style="font-size:11px">${p.screen||'<span class="td-na">–</span>'}</td>
-      <td>${d4Html}</td>
-      <td>${d3Html}</td>
-      <td>${d2Html}</td>
-      <td>${d1Html}</td>
+      <td class="col-cpu">${cpuCombo}</td>
+      <td class="col-ram">${p.ram||'<span class="td-na">–</span>'}</td>
+      <td class="col-ssd">${p.ssd||'<span class="td-na">–</span>'}</td>
+      <td class="col-vga">${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:(p.gpuTag==='UMA'?'Integrated':'<span class="td-na">–</span>')}</td>
+      <td class="col-screen">${p.screen||'<span class="td-na">–</span>'}</td>
+      <td>${prevHtml}</td>
       <td>${todayHtml}</td>
       <td>${deltaHtml}</td>
       <td>${linkHtml}</td>
