@@ -674,7 +674,7 @@ function sw(name){
   const brands  = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort();
   const series  = [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort();
   const gpus    = [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort();
-  const cpus    = [...new Set(allToday.map(p=>p.cpuFamily).filter(p=>p&&p.length<30&&!p.startsWith('#')&&!p.startsWith('Intel Core i')&&!p.startsWith('AMD Ryzen')&&p!=='#N/A'))].sort();
+  const cpus    = [...new Set(allToday.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&!c.startsWith('#')&&c!=='#N/A'))].sort();
   const bSel = document.getElementById('al_brand');
   const sSel = document.getElementById('al_series');
   const gSel = document.getElementById('al_gpu');
@@ -1003,12 +1003,18 @@ function rebuildDropdowns() {
     });
     if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
   };
-  rebuildSel('g_vga', [...new Set(allToday.filter(p=>p.segment==='Gaming'&&p.seriesGroup).map(p=>p.seriesGroup))].sort(), 'All Series');
-  rebuildSel('b_cpu', [...new Set(allToday.filter(p=>isBP(p)&&p.seriesGroup).map(p=>p.seriesGroup))].sort(), 'All Series');
+  // g_vga: Gaming series names (segment field, filtered by gamingGroup)
+  rebuildSel('g_vga', [...new Set(allToday.filter(p=>p.gamingGroup==='Gaming'&&p.segment).map(p=>p.segment))].sort(), 'All Series');
+  // b_cpu: B&P series names
+  rebuildSel('b_cpu', [...new Set(allToday.filter(p=>isBP(p)&&p.segment).map(p=>p.segment))].sort(), 'All Series');
+  // al_brand: all vendors
   rebuildSel('al_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
+  // al_series: all segment names (Vivobook, TUF, Cyborg...)
   rebuildSel('al_series', [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
+  // al_gpu: GPU tags
   rebuildSel('al_gpu', [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  rebuildSel('al_cpu', [...new Set(allToday.map(p=>p.cpuFamily).filter(p=>p&&p.length<30&&p!=='#N/A')).filter(Boolean)].sort(), 'All CPU');
+  // al_cpu: CPU families (fix variable shadow bug)
+  rebuildSel('al_cpu', [...new Set(allToday.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU');
 }
 
 function applyNewData(derived, csv) {
