@@ -767,23 +767,24 @@ function isBP_or_gaming(p, filter) {
 
 // Column definitions: [key, header label]
 const AL_COLS = [
-  ['dealer',     'Dealers'],
-  ['brand',      'Vendor'],
-  ['gamingGroup','Segment'],
-  ['model',      'SKUs'],
-  ['cpu_combo',  'CPU'],
-  ['ram',        'RAM'],
-  ['ssd',        'SSD'],
-  ['gpuTag',     'VGA'],
-  ['screen',     'Screen'],
-  ['d4',         `T-4`],
-  ['d3',         `T-3`],
-  ['d2',         `T-2`],
-  ['d1',         `T-1 (${prevDate})`],
-  ['todayPrice', `Today (${todayDate})`],
-  ['delta',      'Change'],
-  ['link',       'Link'],
-  ['sold',       'Sold'],
+  ['dealer',      'Dealers'],
+  ['brand',       'Vendor'],
+  ['seriesGroup', 'Series Group'],
+  ['segment',     'Segment'],
+  ['model',       'SKUs'],
+  ['cpu_combo',   'CPU'],
+  ['ram',         'RAM'],
+  ['ssd',         'SSD'],
+  ['gpuTag',      'VGA'],
+  ['screen',      'Screen'],
+  ['d4',          'T-4'],
+  ['d3',          'T-3'],
+  ['d2',          'T-2'],
+  ['d1',          `T-1 (${prevDate})`],
+  ['todayPrice',  `Today (${todayDate})`],
+  ['delta',       'Change'],
+  ['link',        'Link'],
+  ['sold',        'Sold'],
 ];
 
 function getAlSortVal(item, colIdx) {
@@ -865,10 +866,20 @@ function renderAllBody(data) {
       ? `<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`
       : `<span class="td-na">–</span>`;
 
+    // Series Group badge (col K): Gaming / Business& Productivity
+    const isGaming = (p.seriesGroup||p.gamingGroup||'').toLowerCase().includes('gaming');
+    const sgBadge  = isGaming
+      ? `<span class="td-seg-g">Gaming</span>`
+      : `<span class="td-seg-b">B&amp;P</span>`;
+
+    // Segment (col L): Vivobook / TUF / Katana / IdeaPad / ...
+    const segName = p.segment || '–';
+
     return `<tr style="${rowStyle}">
       <td><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
-      <td>${p.brand||'–'}</td>
-      <td>${segHtml}</td>
+      <td style="font-weight:600">${p.brand||'–'}</td>
+      <td>${sgBadge}</td>
+      <td style="font-size:11px;color:var(--text2)">${segName}</td>
       <td class="td-sku">${p.model}</td>
       <td style="font-size:11px;white-space:nowrap">${cpuCombo}</td>
       <td>${p.ram||'<span class="td-na">–</span>'}</td>
@@ -891,12 +902,12 @@ function renderAllBody(data) {
 // LIVE SHEET REFRESH
 // ═══════════════════════════════════════
 const SHEET_ID = '1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w';
-const SHEET_GID = '889472306';
+const SHEET_GID = '221053035'; // Dailly SRP Tracking
 
-// Column indices in the CSV (0-based)
-// Ngày(0) Giờ(1) STT(2) Dealer(3) Tên Model(4) Hãng(5) CPU(6) RAM(7) Ổ cứng(8)
-// Màn hình(9) Card đồ họa(10) Trọng lượng(11) Giá gốc(12) Giá KM(13) Giảm%(14)
-// Đã bán(15) Rating(16) Link(17) Segment(18) Series Group(19) GPU(20) CPU seg(21) CPU Detail(22)
+// Column indices — Dailly SRP Tracking (0-based)
+// Date(0) Hour(1) Dealers(2) SKU(3) SRP(4) Promotion Price(5) Change(6)
+// Sold(7) Rate(8) Vendor(9) Series Group(10) Segment(11) CPU Segment(12)
+// CPU(13) RAM(14) SSD(15) Screen(16) GPU(17) V-RAM(18) Weight(19) Products link(20)
 
 function parseCSV(text) {
   const rows = [];
@@ -950,12 +961,13 @@ function buildDerivedData(rows) {
   const newToday = dateSet[dateSet.length - 1] || '';
   const newPrev  = dateSet[dateSet.length - 2] || '';
 
-  // Build lookup: date+dealer+model -> row
+  // Build lookup: date+dealer+SKU -> row
+  // Dailly SRP Tracking: col2=Dealers, col3=SKU
   const lookup = {};
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r[0]) continue;
-    const key = r[0].trim() + '|' + r[3]?.trim() + '|' + r[4]?.trim().toLowerCase();
+    const key = r[0].trim() + '|' + r[2]?.trim() + '|' + r[3]?.trim().toLowerCase();
     lookup[key] = r;
   }
 
@@ -963,43 +975,50 @@ function buildDerivedData(rows) {
   const todayRows = rows.filter((r,i) => i>0 && r[0]?.trim() === newToday);
   
   const newAllToday = todayRows.map(r => {
-    const model = r[4]?.trim() || '';
-    const prevKey = newPrev + '|' + r[3]?.trim() + '|' + model.toLowerCase();
-    const prevRow = lookup[prevKey];
-    const km   = parsePrice(r[13]);
-    const orig = parsePrice(r[12]);
-    const prevKm = prevRow ? parsePrice(prevRow[13]) || parsePrice(prevRow[12]) : 0;
-    const todayP = km || orig;
-    
-    // gamingGroup: col T = index 19 = Gaming / Business& Productivity
-    let seg = r[19]?.trim() || '';
-    if (seg.toLowerCase().includes('gaming')) seg = 'Gaming';
-    else if (seg) seg = 'Business& Productivity';
-    else {
-      const gpu = (r[20]||r[10]||'').toUpperCase();
-      seg = (gpu.includes('RTX')||gpu.includes('GTX')) ? 'Gaming' : 'Business& Productivity';
+    // Dailly SRP Tracking columns:
+    // 0:Date 1:Hour 2:Dealers 3:SKU 4:SRP 5:Promotion Price 6:Change
+    // 7:Sold 8:Rate 9:Vendor 10:Series Group 11:Segment
+    // 12:CPU Segment 13:CPU 14:RAM 15:SSD 16:Screen 17:GPU 18:V-RAM 19:Weight 20:Products link
+    const model    = r[3]?.trim()  || '';
+    const prevKey  = newPrev + '|' + r[2]?.trim() + '|' + model.toLowerCase();
+    const prevRow  = lookup[prevKey];
+
+    const srp      = parsePrice(r[4]);   // SRP (giá gốc)
+    const promo    = parsePrice(r[5]);   // Promotion Price (giá KM)
+    const todayP   = promo || srp;       // dùng giá KM, fallback SRP
+
+    const prevPromo = prevRow ? parsePrice(prevRow[5]) || parsePrice(prevRow[4]) : 0;
+
+    // Series Group (col 10): Gaming / Business& Productivity
+    let seriesGroup = r[10]?.trim() || '';
+    if (!seriesGroup) {
+      const gpu = (r[17]||'').toUpperCase();
+      seriesGroup = (gpu.includes('RTX')||gpu.includes('GTX')) ? 'Gaming' : 'Business& Productivity';
     }
-    
+
     return {
       todayPrice:  todayP,
-      prevPrice:   prevKm,
-      dealer:      r[3]?.trim()  || '',
-      model:       model,
-      brand:       r[5]?.trim()  || '',
-      cpuFamily:   (r[21]||r[6]||'').trim(),
-      cpuDetail:   (r[22]||'').trim(),
-      ram:         r[7]?.trim()  || '',
-      ssd:         r[8]?.trim()  || '',
-      screen:      r[9]?.trim()  || '',
-      gpuTag:      (r[20]||r[10]||'').trim(),
-      origPrice:   orig,
-      kmPrice:     km,
-      disc:        r[14]?.trim() || '',
-      link:        r[17]?.trim() || '',
-      segment:     r[18]?.trim() || '',   // col S = Segment name (Vivobook, TUF, Cyborg...)
-      gamingGroup: seg,                   // col T = Gaming / Business& Productivity
-      sold:        cleanSold(r[15]),
-      prevSold:    prevRow ? cleanSold(prevRow[15]) : '',
+      prevPrice:   prevPromo,
+      dealer:      r[2]?.trim()  || '',   // col C: Dealers
+      model:       model,                  // col D: SKU
+      brand:       r[9]?.trim()  || '',   // col J: Vendor
+      seriesGroup: seriesGroup,            // col K: Series Group (Gaming / B&P)
+      segment:     r[11]?.trim() || '',   // col L: Segment (Vivobook/TUF/Katana...)
+      cpuFamily:   r[12]?.trim() || '',   // col M: CPU Segment
+      cpuDetail:   r[13]?.trim() || '',   // col N: CPU (detail)
+      ram:         r[14]?.trim() || '',   // col O: RAM
+      ssd:         r[15]?.trim() || '',   // col P: SSD
+      screen:      r[16]?.trim() || '',   // col Q: Screen
+      gpuTag:      r[17]?.trim() || '',   // col R: GPU
+      vram:        r[18]?.trim() || '',   // col S: V-RAM
+      origPrice:   srp,
+      kmPrice:     promo,
+      disc:        r[6]?.trim()  || '',   // col G: Change
+      link:        r[20]?.trim() || '',   // col U: Products link
+      sold:        cleanSold(r[7]),       // col H: Sold
+      prevSold:    prevRow ? cleanSold(prevRow[7]) : '',
+      // legacy aliases for other tabs that use gamingGroup
+      gamingGroup: seriesGroup,
     };
   }).filter(p => p.model && p.todayPrice > 0);
 
@@ -1024,8 +1043,8 @@ function buildDerivedData(rows) {
 
   const newStats = {
     totalToday: newAllToday.length,
-    gaming: newAllToday.filter(p => p.segment==='Gaming').length,
-    bp:     newAllToday.filter(p => p.segment!=='Gaming').length,
+    gaming: newAllToday.filter(p => p.seriesGroup==='Gaming').length,
+    bp:     newAllToday.filter(p => p.seriesGroup!=='Gaming').length,
     drops:  newDrops.length,
     rises:  newRises.length,
     mbw:    newAllToday.filter(p => p.dealer==='MBW').length,
