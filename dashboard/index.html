@@ -908,29 +908,24 @@ function getAlSortVal(item, colIdx) {
 }
 
 function renderAllHead() {
-  const colClasses={'dealer':'c-dealer','brand':'c-vendor','seriesGroup':'c-series','segment':'c-segment',
-    'model':'c-sku','cpu_combo':'c-cpu','ram':'c-ram','ssd':'c-ssd','gpuTag':'c-vga','screen':'c-screen',
-    'prevPrice':'c-pprev','todayPrice':'c-ptoday','delta':'c-change','link':'c-link','sold':'c-sold'};
-  const table=document.getElementById('allPriceTable');
-  let cg=table.querySelector('colgroup');
-  if(!cg){cg=document.createElement('colgroup');table.prepend(cg);}
-  cg.innerHTML=AL_COLS.map(([key])=>`<col class="${colClasses[key]||''}">`).join('');
-  const centerCols = new Set(['ram','ssd','sold','gpuTag']);
-  const rightCols  = new Set(['prevPrice','todayPrice','delta']);
-  const colClasses = {
+  const COL_CLASS = {
     'dealer':'c-dealer','brand':'c-vendor','seriesGroup':'c-series','segment':'c-segment',
     'model':'c-sku','cpu_combo':'c-cpu','ram':'c-ram','ssd':'c-ssd','gpuTag':'c-vga',
     'screen':'c-screen','prevPrice':'c-pprev','todayPrice':'c-ptoday','delta':'c-change',
     'link':'c-link','sold':'c-sold'
   };
-  const table = document.getElementById('allPriceTable');
-  let cg = table.querySelector('colgroup');
-  if(!cg){ cg=document.createElement('colgroup'); table.prepend(cg); }
-  cg.innerHTML = AL_COLS.map(([key])=>`<col class="${colClasses[key]||''}">`).join('');
+  const CENTER = new Set(['ram','ssd','sold','gpuTag']);
+  const RIGHT  = new Set(['prevPrice','todayPrice','delta']);
+  // inject colgroup
+  const tbl = document.getElementById('allPriceTable');
+  let cg = tbl.querySelector('colgroup');
+  if (!cg) { cg = document.createElement('colgroup'); tbl.prepend(cg); }
+  cg.innerHTML = AL_COLS.map(([k]) => `<col class="${COL_CLASS[k]||''}">`).join('');
+  // build headers
   const tr = document.getElementById('allPriceHead');
-  tr.innerHTML = AL_COLS.map(([key,label],i)=>{
-    const sort  = _alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):'';
-    const align = rightCols.has(key)?'th-right':centerCols.has(key)?'th-center':'';
+  tr.innerHTML = AL_COLS.map(([k,label],i) => {
+    const sort  = _alSortCol===i ? (_alSortDir===1?'sort-asc':'sort-desc') : '';
+    const align = RIGHT.has(k) ? 'th-right' : CENTER.has(k) ? 'th-center' : '';
     return `<th onclick="alSort(${i})" class="${[sort,align].filter(Boolean).join(' ')}">${label}</th>`;
   }).join('');
 }
