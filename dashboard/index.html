@@ -39,6 +39,10 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-se
 
 /* MAIN */
 .main{padding:16px 20px;max-width:1600px;margin:0 auto}
+#mainWrapper.all-prices-mode{max-width:100vw !important;width:100% !important;padding:12px 8px !important;box-sizing:border-box;min-height:calc(100vh - 100px);}
+html,body{height:100%;}
+#mainWrapper.all-prices-mode #sec-all{display:flex;flex-direction:column;min-height:calc(100vh - 130px);}
+#mainWrapper.all-prices-mode #sec-all .tbl-wrap{flex:1;min-height:0;}
 #mainWrapper.all-prices-mode{
   max-width:100vw !important;
   width:100% !important;
@@ -280,6 +284,7 @@ tbody tr:hover{background:#fafafa}
 #allPriceTable th         { white-space:nowrap; font-size:10px; padding:5px 6px; }
 .all-prices-mode .td-sku  { min-width:130px; max-width:200px; white-space:normal; word-break:break-word; }
 
+#allPriceTable th{white-space:nowrap;font-size:10px;padding:5px 6px}
 </style>
 </head>
 <body>
@@ -846,8 +851,15 @@ function getAlSortVal(item, colIdx) {
 }
 
 function renderAllHead() {
-  const tr = document.getElementById('allPriceHead');
-  tr.innerHTML = AL_COLS.map(([key, label], i) =>
+  const colClasses={'dealer':'c-dealer','brand':'c-vendor','seriesGroup':'c-series','segment':'c-segment',
+    'model':'c-sku','cpu_combo':'c-cpu','ram':'c-ram','ssd':'c-ssd','gpuTag':'c-vga','screen':'c-screen',
+    'prevPrice':'c-pprev','todayPrice':'c-ptoday','delta':'c-change','link':'c-link','sold':'c-sold'};
+  const table=document.getElementById('allPriceTable');
+  let cg=table.querySelector('colgroup');
+  if(!cg){cg=document.createElement('colgroup');table.prepend(cg);}
+  cg.innerHTML=AL_COLS.map(([key])=>`<col class="${colClasses[key]||''}">`).join('');
+  const tr=document.getElementById('allPriceHead');
+  tr.innerHTML=AL_COLS.map(([key,label],i)=>
     `<th onclick="alSort(${i})" class="${_alSortCol===i?(_alSortDir===1?'sort-asc':'sort-desc'):''}">${label}</th>`
   ).join('');
 }
