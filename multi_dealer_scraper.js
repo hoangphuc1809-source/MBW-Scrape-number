@@ -276,8 +276,8 @@ async function scrapeMBW(page) {
       const name      = aEl.getAttribute('data-name') || aEl.querySelector('h3')?.innerText?.trim() || '';
       // data-brand từ data attribute hoặc từ tên model
       const brandName = aEl.getAttribute('data-brand') || aEl.getAttribute('data-trademark') || '';
-      // data-price trên MBW đã là đơn vị đồng (VD: 16790000 = 16,790,000đ)
-      const salePrice = parseInt((aEl.getAttribute('data-price') || '0').replace(/\D/g,'')) || 0;
+      // data-price trên MBW là float string (VD: "16790000.0") → dùng parseFloat+Math.round, KHÔNG dùng parseInt+replace (sẽ xóa dấu . → sai x10)
+      const salePrice = Math.round(parseFloat(aEl.getAttribute('data-price') || '0')) || 0;
       const origPrice = parseInt((item.querySelector('p.price-old')?.innerText || '').replace(/\D/g,'')) || 0;
       const discount  = item.querySelector('span.percent')?.innerText?.trim() || '';
       const specs     = [...item.querySelectorAll('div.utility p')].map(p => p.innerText.trim());
