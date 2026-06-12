@@ -733,33 +733,32 @@ function isBP_or_gaming(p, filter) {
 
 // Column definitions: [key, header label]
 const AL_COLS = [
-  ['dealer',      'Dealer'],
-  ['gamingGroup', 'Gaming Group'],
-  ['segment',     'Segment'],
-  ['model',       'SKU'],
-  ['brand',       'Vendor'],
-  ['cpuFamily',   'CPU'],
-  ['cpuDetail',   'CPU Detail'],
-  ['screen',      'Screen'],
-  ['ram',         'RAM'],
-  ['ssd',         'SSD'],
-  ['gpuTag',      'VGA'],
-  ['sold',        'Sold'],
-  ['prevPrice',   `Price ${prevDate}`],
-  ['todayPrice',  `Price ${todayDate}`],
-  ['delta',       'Change'],
-  ['link',        'Link'],
+  ['dealer',     'Dealers'],
+  ['brand',      'Vendor'],
+  ['gamingGroup','Segment'],
+  ['model',      'SKUs'],
+  ['cpu_combo',  'CPU'],
+  ['ram',        'RAM'],
+  ['ssd',        'SSD'],
+  ['gpuTag',     'VGA'],
+  ['screen',     'Screen'],
+  ['d4',         `T-4`],
+  ['d3',         `T-3`],
+  ['d2',         `T-2`],
+  ['d1',         `T-1 (${prevDate})`],
+  ['todayPrice', `Today (${todayDate})`],
+  ['delta',      'Change'],
+  ['link',       'Link'],
+  ['sold',       'Sold'],
 ];
 
 function getAlSortVal(item, colIdx) {
   const key = AL_COLS[colIdx][0];
-  if (key === 'delta') {
-    const d = (item.todayPrice || 0) - (item.prevPrice || 0);
-    return d;
-  }
-  if (key === 'todayPrice' || key === 'prevPrice') return item[key] || 0;
+  if (key === 'delta') return (item.todayPrice||0) - (item.prevPrice||0);
+  if (key === 'todayPrice' || key === 'prevPrice' || key === 'd1') return item.prevPrice || 0;
+  if (key === 'd4' || key === 'd3' || key === 'd2') return 0;
+  if (key === 'cpu_combo') return ((item.cpuFamily||'') + ' ' + (item.cpuDetail||'')).toLowerCase();
   if (key === 'sold') {
-    // Convert '4,6k'->4600, '1,2k'->1200, '98'->98 for numeric sort
     const s = (item.sold||'').replace(',','.');
     if (s.endsWith('k')) return parseFloat(s)*1000 || 0;
     return parseFloat(s) || 0;
@@ -793,21 +792,35 @@ function renderAllBody(data) {
 
   tbody.innerHTML = data.map(p => {
     const today = p.todayPrice || 0;
-    const prev  = p.prevPrice  || 0;
+    const prev  = p.prevPrice  || 0;    // today-1
     const delta = today - prev;
     const pct   = prev ? ((delta / prev) * 100).toFixed(1) : null;
     const isDrop = delta < 0;
     const isRise = delta > 0;
 
-    // Segment col = series name (Vivobook, TUF, Cyborg...)
-    // gamingGroup col = Gaming / B&P (for badge color)
+    // CPU combo: "CPU Segment, CPU Detail"
+    const cpuCombo = [p.cpuFamily, p.cpuDetail].filter(Boolean).join(', ') || '–';
+
+    // Segment badge (dùng gamingGroup: Gaming / B&P)
     const isGaming = p.gamingGroup === 'Gaming';
     const segHtml = isGaming
-      ? `<span class="td-seg-g">${p.segment||'Gaming'}</span>`
-      : `<span class="td-seg-b">${p.segment||'B&amp;P'}</span>`;
+      ? `<span class="td-seg-g">${p.gamingGroup}</span>`
+      : `<span class="td-seg-b">${p.gamingGroup||'B&amp;P'}</span>`;
 
-    const prevHtml  = prev  ? `<span class="td-price">${vnd(prev)}</span>`  : `<span class="td-na">–</span>`;
-    const todayHtml = today ? `<span class="td-price ${isDrop?'td-price-drop':isRise?'td-price-rise':''}">${vnd(today)}</span>` : `<span class="td-na">–</span>`;
+    // Price history: today có highlight, d1 = prevPrice, d2-d4 = –
+    const priceHistCls = today && prev
+      ? (isDrop ? ' td-price-drop' : isRise ? ' td-price-rise' : '')
+      : '';
+
+    const d4Html   = `<span class="td-na">–</span>`;
+    const d3Html   = `<span class="td-na">–</span>`;
+    const d2Html   = `<span class="td-na">–</span>`;
+    const d1Html   = prev  ? `<span class="td-price">${vnd(prev)}</span>`  : `<span class="td-na">–</span>`;
+    const todayHtml= today ? `<span class="td-price${priceHistCls}" style="font-weight:700">${vnd(today)}</span>` : `<span class="td-na">–</span>`;
+
+    // Row highlight: đỏ nhẹ nếu drop, xanh nhẹ nếu rise
+    const rowStyle = isDrop ? 'background:rgba(239,68,68,0.05)' : isRise ? 'background:rgba(34,197,94,0.05)' : '';
+
     const deltaHtml = delta && prev
       ? `<span class="${isDrop?'chg-drop':'chg-rise'}" style="font-size:11px">
            ${isDrop?'▼':'▲'} ${vnd(Math.abs(delta))} (${isDrop?'':'+'}${pct}%)
@@ -818,27 +831,27 @@ function renderAllBody(data) {
       ? `<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`
       : `<span class="td-na">–</span>`;
 
-    return `<tr>
+    return `<tr style="${rowStyle}">
       <td><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
-      <td>${p.seriesGroup||'–'}</td>
+      <td>${p.brand||'–'}</td>
       <td>${segHtml}</td>
       <td class="td-sku">${p.model}</td>
-      <td>${p.brand||'–'}</td>
-      <td>${p.cpuFamily||'<span class="td-na">–</span>'}</td>
-      <td style="font-size:11px;color:var(--text2)">${p.cpuDetail||'<span class="td-na">–</span>'}</td>
-      <td>${p.screen||'<span class="td-na">–</span>'}</td>
+      <td style="font-size:11px;white-space:nowrap">${cpuCombo}</td>
       <td>${p.ram||'<span class="td-na">–</span>'}</td>
       <td>${p.ssd||'<span class="td-na">–</span>'}</td>
       <td>${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:(p.gpuTag==='UMA'?'Integrated':'<span class="td-na">–</span>')}</td>
-      <td>${p.sold?`<span style="font-size:11px;font-weight:600;color:var(--text2)">${p.sold}</span>`:'<span class="td-na">–</span>'}</td>
-      <td>${prevHtml}</td>
+      <td style="font-size:11px">${p.screen||'<span class="td-na">–</span>'}</td>
+      <td>${d4Html}</td>
+      <td>${d3Html}</td>
+      <td>${d2Html}</td>
+      <td>${d1Html}</td>
       <td>${todayHtml}</td>
       <td>${deltaHtml}</td>
       <td>${linkHtml}</td>
+      <td>${p.sold?`<span style="font-size:11px;font-weight:600;color:var(--text2)">${p.sold}</span>`:'<span class="td-na">–</span>'}</td>
     </tr>`;
   }).join('');
 }
-
 
 // ═══════════════════════════════════════
 // LIVE SHEET REFRESH
