@@ -836,11 +836,6 @@ function renderAllBody(data) {
     // CPU combo: "CPU Segment, CPU Detail"
     const cpuCombo = [p.cpuFamily, p.cpuDetail].filter(Boolean).join(', ') || '–';
 
-    // Segment badge (dùng gamingGroup: Gaming / B&P)
-    const isGaming = p.gamingGroup === 'Gaming';
-    const segHtml = isGaming
-      ? `<span class="td-seg-g">${p.gamingGroup}</span>`
-      : `<span class="td-seg-b">${p.gamingGroup||'B&amp;P'}</span>`;
 
     // Price history: today có highlight, d1 = prevPrice, d2-d4 = –
     const priceHistCls = today && prev
