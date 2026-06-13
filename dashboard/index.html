@@ -541,10 +541,10 @@ window.addEventListener('DOMContentLoaded', () => {
   const initALBrand = document.getElementById('al_brand_list');
   if(initALBrand) initALBrand.innerHTML = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort().map(v=>`<option value="${v}">`).join('');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  const dGpuVals0 = [...new Set(changes.map(p=>p.gpuTag).filter(Boolean))].sort();
+  const dGpuVals0 = [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort();
   const dGpuDl0 = document.getElementById('d_gpu_list');
   if(dGpuDl0) dGpuDl0.innerHTML = dGpuVals0.map(v=>`<option value="${v}">`).join('');
-  const dCpuVals0 = [...new Set(changes.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
+  const dCpuVals0 = [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
   const dCpuDl0 = document.getElementById('d_cpu_list');
   if(dCpuDl0) dCpuDl0.innerHTML = dCpuVals0.map(v=>`<option value="${v}">`).join('');
 
@@ -625,8 +625,8 @@ function renderDrops(){
     if (segF && !isBP_or_gaming(c, segF)) return false;
     if (brF) { const b=brF.toLowerCase(); if(!c.brand||!c.brand.toLowerCase().includes(b)) return false; }
     if (srF  && c.segment !== srF) return false;
-    if (gpF) { const g=gpF.toLowerCase(); if(!c.gpuTag||!c.gpuTag.toLowerCase().includes(g)) return false; }
-    if (cpF) { const cp=cpF.toLowerCase(); if(!c.cpuFamily||!c.cpuFamily.toLowerCase().includes(cp)) return false; }
+    if (gpF) { const g=gpF.toLowerCase(); const _gl=c.gpuLabel||c.gpuTag||''; if(!_gl||!_gl.toLowerCase().includes(g)) return false; }
+    if (cpF) { const cp=cpF.toLowerCase(); if(!c.cpuDetail||!c.cpuDetail.toLowerCase().includes(cp)) return false; }
     if (sF   && !c.model.toLowerCase().includes(sF)) return false;
     return true;
   };
@@ -653,7 +653,7 @@ function mkTable(title,sub,data,mode){
   const rows=data.map((c,i)=>{
     const isDrop=c.delta<0, sign=isDrop?'':'+', chgCls=isDrop?'chg-drop':'chg-rise';
     const cpuLabel = [c.cpuFamily, c.cpuDetail].filter(Boolean).join(' ') || '–';
-    const gpuLabel = c.gpuTag&&c.gpuTag!=='UMA' ? `<span class="gtag">${c.gpuTag}</span>` : '–';
+    const _gDisp = c.gpuLabel||c.gpuTag||''; const gpuLabel = _gDisp&&_gDisp!=='UMA' ? `<span class="gtag">${_gDisp}</span>` : '–';
     const p2Cell   = has3 ? `<td style="${C};color:var(--text2)">${c.prev2Price?vnd(c.prev2Price):'–'}</td>` : '';
     return `<tr>
       <td style="${L}"><span class="rn ${rnCls(i)}">${i+1}</span></td>
@@ -816,8 +816,8 @@ function renderAll() {
     if (sgF && !isBP_or_gaming(p, sgF)) return false;
     if (brF) { const b=brF.toLowerCase(); if(!p.brand||!p.brand.toLowerCase().includes(b)) return false; }
     if (srF && p.segment !== srF) return false;
-    if (gpF) { const g=gpF.toLowerCase(); if(!p.gpuTag||!p.gpuTag.toLowerCase().includes(g)) return false; }
-    if (cpF) { const c=cpF.toLowerCase(); if(!p.cpuFamily||!p.cpuFamily.toLowerCase().includes(c)) return false; }
+    if (gpF) { const g=gpF.toLowerCase(); const _gl=p.gpuLabel||p.gpuTag||''; if(!_gl||!_gl.toLowerCase().includes(g)) return false; }
+    if (cpF) { const c=cpF.toLowerCase(); if(!p.cpuDetail||!p.cpuDetail.toLowerCase().includes(c)) return false; }
     if (sF) {
       // Also search in origPrice/kmPrice as strings (e.g. '5050' matches 'RTX 5050')
       const hay = [p.model, p.cpuFamily, p.cpuDetail, p.brand, p.segment, p.seriesGroup,
@@ -977,7 +977,7 @@ function renderAllBody(data) {
       <td class="col-cpu">${cpuCombo}</td>
       <td class="col-ram">${p.ram ? p.ram.replace(/RAM\s*/i,'').trim() : '<span class="td-na">–</span>'}</td>
       <td class="col-ssd">${p.ssd ? p.ssd.replace(/SSD\s*/i,'').trim() : '<span class="td-na">–</span>'}</td>
-      <td class="col-vga">${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag" style="white-space:normal;word-break:break-word;display:inline-block">${p.gpuTag}</span>`:(p.gpuTag==='UMA'?'Integrated':'<span class="td-na">–</span>')}</td>
+      <td class="col-vga">${(()=>{const _g=p.gpuLabel||p.gpuTag||'';return _g&&_g!=='UMA'?`<span class="gtag" style="white-space:normal;word-break:break-word;display:inline-block">${_g}</span>`:(_g==='UMA'?'Integrated':'<span class="td-na">–</span>');})()}</td>
       <td class="col-screen">${p.screen||'<span class="td-na">–</span>'}</td>
       <td class="col-pprev">${prevHtml}</td>
       <td class="col-ptoday">${todayHtml}</td>
@@ -1105,6 +1105,7 @@ function buildDerivedData(rows) {
       screen:      r[16]?.trim() || '',   // col Q: Screen
       gpuTag:      r[17]?.trim() || '',   // col R: GPU
       vram:        r[18]?.trim() || '',   // col S: V-RAM
+      gpuLabel:    (() => { const _g = r[17]?.trim() || '', _v = r[18]?.trim() || ''; return _g ? (_v ? _g + ' ' + _v : _g) : ''; })(),
       prev2Price:  prev2Promo,
       origPrice:   srp,
       kmPrice:     promo,
@@ -1176,11 +1177,11 @@ function rebuildDropdowns() {
   // al_series: all segment names (Vivobook, TUF, Cyborg...)
   rebuildSel('al_series', [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
   // al_gpu: GPU tags → datalist
-  const gpuVals = [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort();
+  const gpuVals = [...new Set(allToday.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort();
   const gpuDl = document.getElementById('al_gpu_list');
   if(gpuDl) gpuDl.innerHTML = gpuVals.map(v=>`<option value="${v}">`).join('');
   // al_cpu: CPU families → datalist
-  const cpuVals = [...new Set(allToday.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
+  const cpuVals = [...new Set(allToday.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
   const cpuDl = document.getElementById('al_cpu_list');
   if(cpuDl) cpuDl.innerHTML = cpuVals.map(v=>`<option value="${v}">`).join('');
 
@@ -1189,10 +1190,10 @@ function rebuildDropdowns() {
   const dBrandDl = document.getElementById('d_brand_list');
   if(dBrandDl) dBrandDl.innerHTML = dBrandVals.map(v=>`<option value="${v}">`).join('');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  const dGpuVals = [...new Set(changes.map(p=>p.gpuTag).filter(Boolean))].sort();
+  const dGpuVals = [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort();
   const dGpuDl = document.getElementById('d_gpu_list');
   if(dGpuDl) dGpuDl.innerHTML = dGpuVals.map(v=>`<option value="${v}">`).join('');
-  const dCpuVals = [...new Set(changes.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
+  const dCpuVals = [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
   const dCpuDl = document.getElementById('d_cpu_list');
   if(dCpuDl) dCpuDl.innerHTML = dCpuVals.map(v=>`<option value="${v}">`).join('');
 }
