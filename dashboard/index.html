@@ -336,6 +336,9 @@ tbody tr:hover{background:#fafafa}
 #allPriceTable col.c-pprev  { width:95px  }
 #allPriceTable col.c-ptoday { width:95px  }
 </style>
+  <!-- Tom Select: searchable dropdowns -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 </head>
 <body>
 
@@ -451,15 +454,10 @@ tbody tr:hover{background:#fafafa}
       <option value="Gaming">Gaming</option>
       <option value="bp">Business &amp; Productivity</option>
     </select>
-    <input id="d_brand" list="d_brand_list" placeholder="All Vendors" oninput="renderDrops()" autocomplete="off" style="min-width:100px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
-    <datalist id="d_brand_list"></datalist>
+    <select id="d_brand" onchange="renderDrops()"><option value="">All Vendors</option></select>
     <select id="d_series" onchange="renderDrops()"><option value="">All Series</option></select>
-    <input id="d_gpu" list="d_gpu_list" placeholder="All VGA" oninput="renderDrops()" autocomplete="off"
-      style="min-width:90px;max-width:110px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
-    <datalist id="d_gpu_list"></datalist>
-    <input id="d_cpu" list="d_cpu_list" placeholder="All CPU" oninput="renderDrops()" autocomplete="off"
-      style="min-width:90px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
-    <datalist id="d_cpu_list"></datalist>
+    <select id="d_gpu" onchange="renderDrops()"><option value="">All VGA</option></select>
+    <select id="d_cpu" onchange="renderDrops()"><option value="">All CPU</option></select>
     <input id="d_search" type="text" placeholder="🔍 Search anything…" oninput="renderDrops()" style="min-width:180px"/>
     <div class="filter-sep"></div>
     <span id="d_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
@@ -536,17 +534,12 @@ window.addEventListener('DOMContentLoaded', () => {
     s.innerHTML = `<option value="">${lbl}</option>`;
     vals.forEach(v => { const o = document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o); });
   };
-  const initDLBrand = document.getElementById('d_brand_list');
-  if(initDLBrand) initDLBrand.innerHTML = [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort().map(v=>`<option value="${v}">`).join('');
   const initALBrand = document.getElementById('al_brand_list');
   if(initALBrand) initALBrand.innerHTML = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort().map(v=>`<option value="${v}">`).join('');
+  rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  const dGpuVals0 = [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort();
-  const dGpuDl0 = document.getElementById('d_gpu_list');
-  if(dGpuDl0) dGpuDl0.innerHTML = dGpuVals0.map(v=>`<option value="${v}">`).join('');
-  const dCpuVals0 = [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
-  const dCpuDl0 = document.getElementById('d_cpu_list');
-  if(dCpuDl0) dCpuDl0.innerHTML = dCpuVals0.map(v=>`<option value="${v}">`).join('');
+  rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
+  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A')).sort(), 'All CPU')
 
   // Update count display
   const cntEl = document.getElementById('d_count');
@@ -1192,17 +1185,11 @@ function rebuildDropdowns() {
   const cpuDl = document.getElementById('al_cpu_list');
   if(cpuDl) cpuDl.innerHTML = cpuVals.map(v=>`<option value="${v}">`).join('');
 
-  // drops tab — d_brand (datalist), d_series, d_gpu_list, d_cpu_list
-  const dBrandVals = [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort();
-  const dBrandDl = document.getElementById('d_brand_list');
-  if(dBrandDl) dBrandDl.innerHTML = dBrandVals.map(v=>`<option value="${v}">`).join('');
+  // drops tab — d_brand, d_series, d_gpu, d_cpu (all <select> + Tom Select)
+  rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  const dGpuVals = [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort();
-  const dGpuDl = document.getElementById('d_gpu_list');
-  if(dGpuDl) dGpuDl.innerHTML = dGpuVals.map(v=>`<option value="${v}">`).join('');
-  const dCpuVals = [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort();
-  const dCpuDl = document.getElementById('d_cpu_list');
-  if(dCpuDl) dCpuDl.innerHTML = dCpuVals.map(v=>`<option value="${v}">`).join('');
+  rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
+  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A')).sort(), 'All CPU');
 }
 
 function applyNewData(derived, csv) {
@@ -1298,11 +1285,11 @@ function resetAllFilters() {
 }
 
 function resetDropFilters() {
-  ['d_dealer','d_seg','d_brand','d_series'].forEach(id => {
+  ['d_dealer','d_seg','d_brand','d_series','d_gpu','d_cpu'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  ['d_gpu','d_cpu','d_search'].forEach(id => {
+  ['d_search'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1530,5 +1517,72 @@ async function checkLatestRun() {
   document.getElementById('loginUser')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('loginPass')?.focus();
   });
+})();
+</script>
+
+<!-- ── SEARCHABLE DROPDOWNS (Tom Select) ────────────────────────────
+     d_brand, d_gpu, d_cpu, d_series: all <select> → gõ-để-tìm on mobile + desktop  -->
+<script>
+(function () {
+  const SELECTS = {
+    'd_brand':  'All Vendors',
+    'd_gpu':    'All VGA',
+    'd_cpu':    'All CPU',
+    'd_series': 'All Series'
+  };
+  const OPTS = { maxOptions: null, allowEmptyOption: true, sortField: { field: '$order' } };
+
+  // Sync Tom Select from the underlying <select> (called after rebuildSel mutates children)
+  function syncFromSelect(el) {
+    const ts = el.tomselect;
+    if (!ts) return;
+    const cur = el.value;
+    ts.clearOptions();
+    [...el.options].forEach(o => ts.addOption({ value: o.value, text: o.textContent.trim() }));
+    ts.refreshOptions(false);
+    ts.setValue(cur, true);
+  }
+
+  function makeSearchable(id, placeholder) {
+    const el = document.getElementById(id);
+    if (!el || el.tomselect) return;
+    new TomSelect(el, { ...OPTS, placeholder });
+    let busy = false;
+    const obs = new MutationObserver(() => {
+      if (busy) return;
+      clearTimeout(el._tsTimer);
+      el._tsTimer = setTimeout(() => {
+        busy = true; obs.disconnect();
+        try { syncFromSelect(el); } catch(e) {}
+        obs.observe(el, { childList: true }); busy = false;
+      }, 80);
+    });
+    obs.observe(el, { childList: true });
+  }
+
+  // Patch resetDropFilters() so Tom Select display also clears
+  function patchReset() {
+    if (window._tsResetPatched || typeof window.resetDropFilters !== 'function') return;
+    const orig = window.resetDropFilters;
+    window.resetDropFilters = function () {
+      const r = orig.apply(this, arguments);
+      Object.keys(SELECTS).forEach(id => {
+        const e = document.getElementById(id);
+        if (e && e.tomselect) e.tomselect.setValue('', true);
+      });
+      return r;
+    };
+    window._tsResetPatched = true;
+  }
+
+  function boot() {
+    Object.entries(SELECTS).forEach(([id, ph]) => makeSearchable(id, ph));
+    patchReset();
+  }
+
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', boot);
+  else
+    boot();
 })();
 </script>
