@@ -418,49 +418,13 @@ tbody tr:hover{background:#fafafa}
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="sw('alerts')">🔔 Price Alerts</div>
-  <div class="tab" onclick="sw('drops')">📉 Top Price Changes</div>
-  <div class="tab" onclick="sw('gaming')">🎮 Gaming by Series (T)</div>
-  <div class="tab" onclick="sw('bp')">💼 B&amp;P by Series (T)</div>
-  <div class="tab" onclick="sw('all')">📋 All Prices</div>
+  <div class="tab active" onclick="sw('drops')">📉 Top Price Changes</div>
 </div>
 
 <div class="main" id="mainWrapper">
 
-<!-- ── TAB 1: PRICE ALERTS ── -->
-<div class="section active" id="sec-alerts">
-  <div class="kpi-row" id="kpiRow"></div>
-  <div class="filter-bar">
-    <span class="filter-lbl">Filter</span>
-    <div class="filter-sep"></div>
-    <select id="a_dealer" onchange="renderAlerts()">
-      <option value="">All Dealers</option>
-      <option value="MBW">MBW (TGDĐ)</option>
-      <option value="FPT Retail">FPT Retail</option>
-      <option value="CellPhone S">CellPhone S</option>
-    </select>
-    <select id="a_dir" onchange="renderAlerts()">
-      <option value="">Price ↑ &amp; ↓</option>
-      <option value="drop">Drops only ▼</option>
-      <option value="rise">Rises only ▲</option>
-    </select>
-    <select id="a_seg" onchange="renderAlerts()">
-      <option value="">All Segments</option>
-      <option value="Gaming">Gaming</option>
-      <option value="bp">Business &amp; Productivity</option>
-    </select>
-    <input id="a_search" type="text" placeholder="🔍 Search model…" oninput="renderAlerts()" style="min-width:180px"/>
-  </div>
-  <div class="sec-title">
-    Price changes: <b id="todayLbl"></b> vs <b id="prevLbl"></b>
-    <span class="cnt" id="alertCnt">0</span>
-    <small style="font-size:11px;font-weight:400;color:var(--text2)">&nbsp;· 🔴 = price drop&nbsp; 🟢 = price rise</small>
-  </div>
-  <div class="alert-grid" id="alertGrid"></div>
-</div>
-
 <!-- ── TAB 2: TOP PRICE CHANGES ── -->
-<div class="section" id="sec-drops">
+<div class="section active" id="sec-drops">
   <div class="filter-bar">
     <span class="filter-lbl">Show</span>
     <div class="filter-sep"></div>
@@ -506,87 +470,6 @@ tbody tr:hover{background:#fafafa}
   <div id="dropsContainer"></div>
 </div>
 
-<!-- ── TAB 3: GAMING by GPU ── -->
-<div class="section" id="sec-gaming">
-  <div class="filter-bar">
-    <span class="filter-lbl">Filter</span>
-    <div class="filter-sep"></div>
-    <select id="g_vga" onchange="renderGaming()"><option value="">All Series</option></select>
-    <select id="g_dealer" onchange="renderGaming()">
-      <option value="">All Dealers</option>
-      <option value="MBW">MBW</option>
-      <option value="FPT Retail">FPT Retail</option>
-      <option value="CellPhone S">CellPhone S</option>
-    </select>
-    <input id="g_search" type="text" placeholder="🔍 Search model…" oninput="renderGaming()" style="min-width:180px"/>
-  </div>
-  <div id="gamingContainer"></div>
-</div>
-
-<!-- ── TAB 4: B&P by CPU ── -->
-<div class="section" id="sec-bp">
-  <div class="filter-bar">
-    <span class="filter-lbl">Filter</span>
-    <div class="filter-sep"></div>
-    <select id="b_cpu" onchange="renderBP()"><option value="">All Series</option></select>
-    <select id="b_dealer" onchange="renderBP()">
-      <option value="">All Dealers</option>
-      <option value="MBW">MBW</option>
-      <option value="FPT Retail">FPT Retail</option>
-      <option value="CellPhone S">CellPhone S</option>
-    </select>
-    <input id="b_search" type="text" placeholder="🔍 Search model…" oninput="renderBP()" style="min-width:180px"/>
-  </div>
-  <div id="bpContainer"></div>
-</div>
-
-
-<!-- ─── TAB 5: ALL PRICES ─── -->
-<div class="section" id="sec-all">
-  <div class="filter-bar">
-    <span class="filter-lbl">Filter</span>
-    <div class="filter-sep"></div>
-    <select id="al_dealer" onchange="renderAll()">
-      <option value="">All Dealers</option>
-      <option value="MBW">MBW</option>
-      <option value="FPT Retail">FPT Retail</option>
-      <option value="CellPhone S">CellPhone S</option>
-    </select>
-    <select id="al_seg" onchange="renderAll()">
-      <option value="">All Segments</option>
-      <option value="Gaming">Gaming</option>
-      <option value="bp">Business &amp; Productivity</option>
-    </select>
-    <input id="al_brand" list="al_brand_list" placeholder="All Vendors" oninput="renderAll()" autocomplete="off" style="min-width:100px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
-    <datalist id="al_brand_list"></datalist>
-    <select id="al_series" onchange="renderAll()"><option value="">All Series</option></select>
-    <input id="al_gpu" list="al_gpu_list" placeholder="All VGA" oninput="renderAll()" autocomplete="off"
-      style="min-width:90px;max-width:110px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
-    <datalist id="al_gpu_list"></datalist>
-    <input id="al_cpu" list="al_cpu_list" placeholder="All CPU" oninput="renderAll()" autocomplete="off"
-      style="min-width:90px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
-    <datalist id="al_cpu_list"></datalist>
-    <input id="al_search" type="text" placeholder="🔍 Search SKU…" oninput="renderAll()" style="min-width:200px"/>
-    <div class="filter-sep"></div>
-    <span id="al_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
-    <button onclick="resetAllFilters()"
-      style="padding:6px 12px;background:#fff;border:1.5px solid var(--border);border-radius:7px;
-             font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;white-space:nowrap;
-             transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
-      ✕ Reset
-    </button>
-
-  </div>
-  <div class="tbl-wrap rank-wrap" style="margin-bottom:0">
-    <table id="allPriceTable">
-      <thead>
-        <tr id="allPriceHead"></tr>
-      </thead>
-      <tbody id="allPriceBody"></tbody>
-    </table>
-  </div>
-</div>
 
 </div>
 
@@ -640,17 +523,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('todayLbl').textContent = todayDate;
   document.getElementById('prevLbl').textContent  = prevDate;
 
-  // Series Group options (Gaming, col T)
-  const gpus = [...new Set(allToday.filter(p=>p.gamingGroup==='Gaming'&&p.segment).map(p=>p.segment))].sort();
-  const gSel = document.getElementById('g_vga');
-  gpus.forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;gSel.appendChild(o);});
-
-  // Series Group options (B&P, col T)
-  const cpuSet = [...new Set(allToday.filter(p=>isBP(p)&&p.segment).map(p=>p.segment))].sort();
-  const cSel = document.getElementById('b_cpu');
-  cpuSet.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cSel.appendChild(o);});
-
-  renderKPIs(); renderAlerts(); renderDrops(); renderGaming(); renderBP();
+  renderKPIs(); renderDrops();
 
   // Populate drops tab dropdowns from embedded DATA
   const rebuildSel = (id, vals, lbl) => {
@@ -905,35 +778,17 @@ function renderBP(){
 
 // ── TAB SWITCH ──────────────────────────────────────────
 function sw(name){
-  const map={alerts:0,drops:1,gaming:2,bp:3,all:4};
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===map[name]));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   const sec=document.getElementById('sec-'+name);
   if(sec) sec.classList.add('active');
-  const mw=document.getElementById('mainWrapper');
-  if(mw){name==='all'?mw.classList.add('all-prices-mode'):mw.classList.remove('all-prices-mode');}
-  if(name==='all') renderAll();
 }
 
 
 // ═══════════════════════════════════════
 // ALL PRICES TABLE (Tab 5)
 // ═══════════════════════════════════════
-(function initAllPricesDropdowns() {
-  // Populate vendor, series, VGA and CPU dropdowns
-  const brands  = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort();
-  const series  = [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort();
-  const gpus    = [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort();
-  const cpus    = [...new Set(allToday.map(p=>p.cpuFamily).filter(c=>c&&c.length<30&&!c.startsWith('#')&&c!=='#N/A'))].sort();
-  const bSel = document.getElementById('al_brand');
-  const sSel = document.getElementById('al_series');
-  const gSel = document.getElementById('al_gpu');
-  const cSel = document.getElementById('al_cpu');
-  brands.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;bSel.appendChild(o);});
-  series.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sSel.appendChild(o);});
-  gpus.forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;gSel.appendChild(o);});
-  cpus.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cSel.appendChild(o);});
-})();
+// All Prices tab removed
 
 // Sort state for All Prices table
 let _alSortCol = null;
@@ -1354,7 +1209,7 @@ function applyNewData(derived, csv) {
   rebuildDropdowns();
 
   // Re-render all tabs
-  renderKPIs(); renderAlerts(); renderDrops(); renderGaming(); renderBP();
+  renderKPIs(); renderDrops();
   
   // Re-render All Prices if it's active
   const allSec = document.getElementById('sec-all');
