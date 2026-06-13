@@ -291,8 +291,8 @@ tbody tr:hover{background:#fafafa}
 #allPriceTable td.col-ssd,
 #allPriceTable td.col-sold { text-align:center; }
 #allPriceTable td.col-pprev,
-#allPriceTable td.col-ptoday { text-align:right; white-space:nowrap; }
-#allPriceTable td.col-change { text-align:right; white-space:normal; overflow-wrap:break-word; word-break:break-word; line-height:1.4; }
+#allPriceTable td.col-ptoday { text-align:center; white-space:nowrap; }
+#allPriceTable td.col-change { text-align:center; white-space:normal; overflow-wrap:break-word; word-break:break-word; line-height:1.4; }
 #allPriceTable td.col-vga   { text-align:center; white-space:normal !important; overflow-wrap:break-word; word-break:break-word; line-height:1.3; }
 /* th center for numeric cols */
 #allPriceTable th.th-num { text-align:center; }
@@ -483,7 +483,8 @@ tbody tr:hover{background:#fafafa}
       <option value="Gaming">Gaming</option>
       <option value="bp">Business &amp; Productivity</option>
     </select>
-    <select id="d_brand" onchange="renderDrops()"><option value="">All Vendors</option></select>
+    <input id="d_brand" list="d_brand_list" placeholder="All Vendors" oninput="renderDrops()" autocomplete="off" style="min-width:100px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
+    <datalist id="d_brand_list"></datalist>
     <select id="d_series" onchange="renderDrops()"><option value="">All Series</option></select>
     <input id="d_gpu" list="d_gpu_list" placeholder="All VGA" oninput="renderDrops()" autocomplete="off"
       style="min-width:90px;max-width:110px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
@@ -556,7 +557,8 @@ tbody tr:hover{background:#fafafa}
       <option value="Gaming">Gaming</option>
       <option value="bp">Business &amp; Productivity</option>
     </select>
-    <select id="al_brand" onchange="renderAll()"><option value="">All Vendors</option></select>
+    <input id="al_brand" list="al_brand_list" placeholder="All Vendors" oninput="renderAll()" autocomplete="off" style="min-width:100px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
+    <datalist id="al_brand_list"></datalist>
     <select id="al_series" onchange="renderAll()"><option value="">All Series</option></select>
     <input id="al_gpu" list="al_gpu_list" placeholder="All VGA" oninput="renderAll()" autocomplete="off"
       style="min-width:90px;max-width:110px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
@@ -628,7 +630,10 @@ window.addEventListener('DOMContentLoaded', () => {
     s.innerHTML = `<option value="">${lbl}</option>`;
     vals.forEach(v => { const o = document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o); });
   };
-  rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
+  const initDLBrand = document.getElementById('d_brand_list');
+  if(initDLBrand) initDLBrand.innerHTML = [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort().map(v=>`<option value="${v}">`).join('');
+  const initALBrand = document.getElementById('al_brand_list');
+  if(initALBrand) initALBrand.innerHTML = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort().map(v=>`<option value="${v}">`).join('');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
   const dGpuVals0 = [...new Set(changes.map(p=>p.gpuTag).filter(Boolean))].sort();
   const dGpuDl0 = document.getElementById('d_gpu_list');
@@ -711,7 +716,7 @@ function renderDrops(){
   const filt = c => {
     if (dF  && c.dealer !== dF) return false;
     if (segF && !isBP_or_gaming(c, segF)) return false;
-    if (brF  && c.brand !== brF) return false;
+    if (brF) { const b=brF.toLowerCase(); if(!c.brand||!c.brand.toLowerCase().includes(b)) return false; }
     if (srF  && c.segment !== srF) return false;
     if (gpF) { const g=gpF.toLowerCase(); if(!c.gpuTag||!c.gpuTag.toLowerCase().includes(g)) return false; }
     if (cpF) { const cp=cpF.toLowerCase(); if(!c.cpuFamily||!c.cpuFamily.toLowerCase().includes(cp)) return false; }
@@ -801,22 +806,22 @@ function renderGaming(){
       const isRise=hasPrev&&p.todayPrice>p.prevPrice;
       const chgHtml=hasPrev?`<span class="badge-delta ${isDrop?'bd-drop':'bd-rise'}" style="font-size:10px">${isDrop?'':'+'}${((p.todayPrice-p.prevPrice)/p.prevPrice*100).toFixed(1)}%</span>`:'';
       return `<tr>
-        <td><span class="rn ${rnCls(i)}">${i+1}</span></td>
-        <td><div class="mname">${p.model}</div><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span></td>
-        <td>${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:'Integrated'}</td>
-        <td>${p.cpuFamily||'–'}</td>
-        <td>${p.ram||'–'}</td>
-        <td>${p.ssd||'–'}</td>
-        <td class="ptag">${vnd(ef(p))}</td>
-        <td>${hasPrev?`<span class="old-p">${vnd(p.prevPrice)}</span>`:'–'}</td>
-        <td>${chgHtml||'–'}</td>
-        <td>${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
+        <td style="text-align:left"><span class="rn ${rnCls(i)}">${i+1}</span></td>
+        <td style="text-align:left"><div class="mname">${p.model}</div><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span></td>
+        <td style="text-align:left">${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:'Integrated'}</td>
+        <td style="text-align:left">${p.cpuFamily||'–'}</td>
+        <td style="text-align:left">${p.ram||'–'}</td>
+        <td style="text-align:left">${p.ssd||'–'}</td>
+        <td style="text-align:center" class="ptag">${vnd(ef(p))}</td>
+        <td style="text-align:center">${hasPrev?`<span class="old-p">${vnd(p.prevPrice)}</span>`:'–'}</td>
+        <td style="text-align:center">${chgHtml||'–'}</td>
+        <td style="text-align:left">${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
       </tr>`;
     }).join('');
     return `<div class="rank-wrap">
       <div class="rank-hdr blue-hdr"><h3>🎮 ${gpu} — Price Ranking (Low → High)</h3><small>Top ${sorted.length}/${prods.length} SKUs · Price = Giá KM (Col N)</small></div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>#</th><th>Model</th><th>GPU</th><th>CPU</th><th>RAM</th><th>Storage</th><th>Price (${todayDate})</th><th>Prev Price</th><th>Change</th><th>Link</th></tr></thead>
+        <thead><tr><th style="text-align:left">#</th><th style="text-align:left">Model</th><th style="text-align:left">GPU</th><th style="text-align:left">CPU</th><th style="text-align:left">RAM</th><th style="text-align:left">Storage</th><th style="text-align:center">Price (${todayDate})</th><th style="text-align:center">Prev Price</th><th style="text-align:center">Change</th><th style="text-align:left">Link</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
     </div>`;
@@ -847,22 +852,22 @@ function renderBP(){
       const isDrop=hasPrev&&p.todayPrice<p.prevPrice;
       const chgHtml=hasPrev?`<span class="badge-delta ${isDrop?'bd-drop':'bd-rise'}" style="font-size:10px">${isDrop?'':'+'}${((p.todayPrice-p.prevPrice)/p.prevPrice*100).toFixed(1)}%</span>`:'';
       return `<tr>
-        <td><span class="rn ${rnCls(i)}">${i+1}</span></td>
-        <td><div class="mname">${p.model}</div><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span></td>
-        <td>${p.cpuFamily&&!p.cpuFamily.startsWith('#')?`<span class="ctag">${p.cpuFamily}</span>`:'–'}</td>
-        <td>${p.ram||'–'}</td>
-        <td>${p.ssd||'–'}</td>
-        <td>${(p.screen||'').replace(/"/g,'″')||'–'}</td>
-        <td class="ptag">${vnd(ef(p))}</td>
-        <td>${hasPrev?`<span class="old-p">${vnd(p.prevPrice)}</span>`:'–'}</td>
-        <td>${chgHtml||'–'}</td>
-        <td>${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
+        <td style="text-align:left"><span class="rn ${rnCls(i)}">${i+1}</span></td>
+        <td style="text-align:left"><div class="mname">${p.model}</div><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span></td>
+        <td style="text-align:left">${p.cpuFamily&&!p.cpuFamily.startsWith('#')?`<span class="ctag">${p.cpuFamily}</span>`:'–'}</td>
+        <td style="text-align:left">${p.ram||'–'}</td>
+        <td style="text-align:left">${p.ssd||'–'}</td>
+        <td style="text-align:left">${(p.screen||'').replace(/"/g,'″')||'–'}</td>
+        <td style="text-align:center" class="ptag">${vnd(ef(p))}</td>
+        <td style="text-align:center">${hasPrev?`<span class="old-p">${vnd(p.prevPrice)}</span>`:'–'}</td>
+        <td style="text-align:center">${chgHtml||'–'}</td>
+        <td style="text-align:left">${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
       </tr>`;
     }).join('');
     return `<div class="rank-wrap">
       <div class="rank-hdr teal-hdr"><h3>💼 ${cpu} — Price Ranking (Low → High)</h3><small>Top ${sorted.length}/${prods.length} SKUs · Price = Giá KM (Col N)</small></div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>#</th><th>Model</th><th>CPU</th><th>RAM</th><th>Storage</th><th>Display</th><th>Price (${todayDate})</th><th>Prev Price</th><th>Change</th><th>Link</th></tr></thead>
+        <thead><tr><th style="text-align:left">#</th><th style="text-align:left">Model</th><th style="text-align:left">CPU</th><th style="text-align:left">RAM</th><th style="text-align:left">Storage</th><th style="text-align:left">Display</th><th style="text-align:center">Price (${todayDate})</th><th style="text-align:center">Prev Price</th><th style="text-align:center">Change</th><th style="text-align:left">Link</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
     </div>`;
@@ -917,7 +922,7 @@ function renderAll() {
   let data = allToday.filter(p => {
     if (dF  && p.dealer !== dF) return false;
     if (sgF && !isBP_or_gaming(p, sgF)) return false;
-    if (brF && p.brand !== brF) return false;
+    if (brF) { const b=brF.toLowerCase(); if(!p.brand||!p.brand.toLowerCase().includes(b)) return false; }
     if (srF && p.segment !== srF) return false;
     if (gpF) { const g=gpF.toLowerCase(); if(!p.gpuTag||!p.gpuTag.toLowerCase().includes(g)) return false; }
     if (cpF) { const c=cpF.toLowerCase(); if(!p.cpuFamily||!p.cpuFamily.toLowerCase().includes(c)) return false; }
@@ -994,8 +999,8 @@ function renderAllHead() {
     'screen':'c-screen','prevPrice':'c-pprev','todayPrice':'c-ptoday','delta':'c-change',
     'link':'c-link','sold':'c-sold'
   };
-  const CENTER = new Set(['ram','ssd','sold','gpuTag']);
-  const RIGHT  = new Set(['prevPrice','todayPrice','delta']);
+  const CENTER = new Set(['ram','ssd','sold','gpuTag','prevPrice','todayPrice','delta']);
+  const RIGHT  = new Set();  // merged into CENTER
   // inject colgroup
   const tbl = document.getElementById('allPriceTable');
   let cg = tbl.querySelector('colgroup');
@@ -1005,7 +1010,7 @@ function renderAllHead() {
   const tr = document.getElementById('allPriceHead');
   tr.innerHTML = AL_COLS.map(([k,label],i) => {
     const sort  = _alSortCol===i ? (_alSortDir===1?'sort-asc':'sort-desc') : '';
-    const align = RIGHT.has(k) ? 'th-right' : CENTER.has(k) ? 'th-center' : '';
+    const align = CENTER.has(k) ? 'th-center' : '';
     return `<th onclick="alSort(${i})" class="${[sort,align].filter(Boolean).join(' ')}">${label}</th>`;
   }).join('');
 }
@@ -1270,7 +1275,10 @@ function rebuildDropdowns() {
   // b_cpu: B&P series names
   rebuildSel('b_cpu', [...new Set(allToday.filter(p=>isBP(p)&&p.segment).map(p=>p.segment))].sort(), 'All Series');
   // al_brand: all vendors
-  rebuildSel('al_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
+  // al_brand: vendor → datalist
+  const alBrandVals = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort();
+  const alBrandDl = document.getElementById('al_brand_list');
+  if(alBrandDl) alBrandDl.innerHTML = alBrandVals.map(v=>`<option value="${v}">`).join('');
   // al_series: all segment names (Vivobook, TUF, Cyborg...)
   rebuildSel('al_series', [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
   // al_gpu: GPU tags → datalist
@@ -1282,8 +1290,10 @@ function rebuildDropdowns() {
   const cpuDl = document.getElementById('al_cpu_list');
   if(cpuDl) cpuDl.innerHTML = cpuVals.map(v=>`<option value="${v}">`).join('');
 
-  // drops tab — d_brand, d_series, d_gpu_list, d_cpu_list
-  rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
+  // drops tab — d_brand (datalist), d_series, d_gpu_list, d_cpu_list
+  const dBrandVals = [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort();
+  const dBrandDl = document.getElementById('d_brand_list');
+  if(dBrandDl) dBrandDl.innerHTML = dBrandVals.map(v=>`<option value="${v}">`).join('');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
   const dGpuVals = [...new Set(changes.map(p=>p.gpuTag).filter(Boolean))].sort();
   const dGpuDl = document.getElementById('d_gpu_list');
@@ -1374,12 +1384,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function resetAllFilters() {
-  ['al_dealer','al_seg','al_brand','al_series','al_gpu','al_cpu'].forEach(id => {
+  ['al_dealer','al_seg','al_series','al_gpu','al_cpu'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
   const search = document.getElementById('al_search');
   if (search) search.value = '';
+  const brand = document.getElementById('al_brand');
+  if (brand) brand.value = '';
   renderAll();
 }
 
