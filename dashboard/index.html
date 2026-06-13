@@ -595,6 +595,35 @@ const DATA = {"todayDate":"11/06/2026","prevDate":"09/06/2026","allToday":[{"tod
 let {todayDate,prevDate,allToday,drops,rises,changes,stats} = DATA;
 let prev2Date = DATA.prev2Date || '';
 
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║              📌 DEV NOTES — QUY TẮC QUAN TRỌNG                     ║
+// ╠══════════════════════════════════════════════════════════════════════╣
+// ║                                                                      ║
+// ║  1. ALIGNMENT (áp dụng TOÀN BỘ bảng, tất cả tabs):                 ║
+// ║     • Price (bất kỳ ngày nào), Prev Price, Change (₫), Change (%)  ║
+// ║       → text-align: CENTER  (header + data cell)                    ║
+// ║     • Tất cả cột còn lại (#, Model, CPU, GPU, RAM, Storage,        ║
+// ║       Display, Vendor, Series, Link, Sold, ...)                     ║
+// ║       → text-align: LEFT                                            ║
+// ║                                                                      ║
+// ║  2. FILTER DROPDOWN — SEARCHABLE (type-to-search):                  ║
+// ║     • Vendor, VGA, CPU dùng <input list="datalist"> thay <select>   ║
+// ║     • Partial match, case-insensitive (.toLowerCase().includes())    ║
+// ║     • Các filter Dealer, Segment, Series vẫn dùng <select>          ║
+// ║                                                                      ║
+// ║  3. GIÁ 3 NGÀY (tab Top Price Changes):                             ║
+// ║     • Hiển thị prev2Date → prevDate → todayDate                     ║
+// ║     • Cột prev2Price ẩn tự động nếu chỉ có 2 ngày dữ liệu          ║
+// ║                                                                      ║
+// ║  4. SHEET SOURCE: Daily SRP Tracking (GID 221053035)                ║
+// ║     • Col 0:Date  1:Hour  2:Dealers  3:SKU  4:SRP  5:PromoPrice    ║
+// ║     • Col 6:Change  7:Sold  8:Rate  9:Vendor  10:Series Group       ║
+// ║     • Col 11:Segment  12:CPU Segment  13:CPU  14:RAM  15:SSD        ║
+// ║     • Col 16:Screen  17:GPU  18:V-RAM  19:Weight  20:Link           ║
+// ║                                                                      ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+
+
 // ── FORMAT ──────────────────────────────────────────────
 const vnd = n => n?Number(n).toLocaleString('vi-VN')+'₫':'–';
 const dlrCls = d => d==='MBW'?'dlr-mbw':d==='FPT Retail'?'dlr-fpt':'dlr-cps';
