@@ -338,7 +338,7 @@ tbody tr:hover{background:#fafafa}
 </style>
   <!-- Tom Select: searchable dropdowns -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js" defer></script>
 </head>
 <body>
 
@@ -1544,6 +1544,7 @@ async function checkLatestRun() {
   }
 
   function makeSearchable(id, placeholder) {
+    if (typeof TomSelect === 'undefined') return; // CDN not yet loaded
     const el = document.getElementById(id);
     if (!el || el.tomselect) return;
     new TomSelect(el, { ...OPTS, placeholder });
@@ -1580,9 +1581,7 @@ async function checkLatestRun() {
     patchReset();
   }
 
-  if (document.readyState === 'loading')
-    document.addEventListener('DOMContentLoaded', boot);
-  else
-    boot();
+  // defer scripts run before DOMContentLoaded → TomSelect is ready by then
+  document.addEventListener('DOMContentLoaded', boot);
 })();
 </script>
