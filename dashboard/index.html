@@ -425,6 +425,10 @@ tbody tr:hover{background:#fafafa}
 
 <!-- ── TAB 2: TOP PRICE CHANGES ── -->
 <div class="section active" id="sec-drops">
+  <div class="kpi-row" id="kpiRow"></div>
+  <div class="sec-title">
+    Price changes: <b id="todayLbl"></b> vs <b id="prevLbl"></b>
+  </div>
   <div class="filter-bar">
     <span class="filter-lbl">Show</span>
     <div class="filter-sep"></div>
@@ -520,8 +524,8 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bMBW').textContent = `MBW ${stats.mbw}`;
   document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
   document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
-  document.getElementById('todayLbl').textContent = todayDate;
-  document.getElementById('prevLbl').textContent  = prevDate;
+  const _todayLbl = document.getElementById('todayLbl'); if(_todayLbl) _todayLbl.textContent = todayDate;
+  const _prevLbl  = document.getElementById('prevLbl');  if(_prevLbl)  _prevLbl.textContent  = prevDate;
 
   renderKPIs(); renderDrops();
 
@@ -577,7 +581,7 @@ function renderAlerts(){
     return true;
   }).sort((a,b)=>a.pct-b.pct);
 
-  document.getElementById('alertCnt').textContent = data.length;
+  const alertCntEl = document.getElementById('alertCnt'); if(alertCntEl) alertCntEl.textContent = data.length;
   if(!data.length){
     document.getElementById('alertGrid').innerHTML='<div class="empty" style="grid-column:1/-1">No price changes match the current filters.</div>';
     return;
@@ -1202,8 +1206,8 @@ function applyNewData(derived, csv) {
   document.getElementById('bMBW').textContent = `MBW ${stats.mbw}`;
   document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
   document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
-  document.getElementById('todayLbl').textContent = todayDate;
-  document.getElementById('prevLbl').textContent  = prevDate;
+  const _todayLbl2 = document.getElementById('todayLbl'); if(_todayLbl2) _todayLbl2.textContent = todayDate;
+  const _prevLbl2  = document.getElementById('prevLbl');  if(_prevLbl2)  _prevLbl2.textContent  = prevDate;
 
   // Rebuild dropdowns
   rebuildDropdowns();
