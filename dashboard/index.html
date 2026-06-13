@@ -736,31 +736,44 @@ function renderDrops(){
 function mkTable(title,sub,data,mode){
   if(!data.length) return `<div class="empty">No data for current filters.</div>`;
   const has3 = !!prev2Date;
+  const C = 'text-align:center';
+  const L = 'text-align:left';
   const rows=data.map((c,i)=>{
     const isDrop=c.delta<0, sign=isDrop?'':'+', chgCls=isDrop?'chg-drop':'chg-rise';
     const cpuLabel = [c.cpuFamily, c.cpuDetail].filter(Boolean).join(' ') || '–';
     const gpuLabel = c.gpuTag&&c.gpuTag!=='UMA' ? `<span class="gtag">${c.gpuTag}</span>` : '–';
-    const p2Cell   = has3 ? `<td style="text-align:right;color:var(--text2)">${c.prev2Price?vnd(c.prev2Price):'–'}</td>` : '';
+    const p2Cell   = has3 ? `<td style="${C};color:var(--text2)">${c.prev2Price?vnd(c.prev2Price):'–'}</td>` : '';
     return `<tr>
-      <td><span class="rn ${rnCls(i)}">${i+1}</span></td>
-      <td><div class="mname">${c.model}</div><span class="dlr ${dlrCls(c.dealer)}" style="font-size:9px;padding:1px 4px">${c.dealer}</span></td>
-      <td style="font-size:11px;color:var(--text2);max-width:130px;white-space:normal;word-break:break-word;line-height:1.35">${cpuLabel}</td>
-      <td>${gpuLabel}</td>
+      <td style="${L}"><span class="rn ${rnCls(i)}">${i+1}</span></td>
+      <td style="${L}"><div class="mname">${c.model}</div><span class="dlr ${dlrCls(c.dealer)}" style="font-size:9px;padding:1px 4px">${c.dealer}</span></td>
+      <td style="${L};font-size:11px;color:var(--text2);max-width:130px;white-space:normal;word-break:break-word;line-height:1.35">${cpuLabel}</td>
+      <td style="${L}">${gpuLabel}</td>
       ${p2Cell}
-      <td style="text-align:right;color:var(--text2)">${vnd(c.prevPrice)}</td>
-      <td class="ptag">${vnd(c.todayPrice)}</td>
-      <td class="${chgCls}">${sign}${vnd(Math.abs(c.delta))}</td>
-      <td><span class="badge-delta ${isDrop?'bd-drop':'bd-rise'}">${c.pct>0?'+':''}${c.pct}%</span></td>
-      <td>${c.link?`<a class="lnk" href="${c.link}" target="_blank">View ↗</a>`:'–'}</td>
+      <td style="${C};color:var(--text2)">${vnd(c.prevPrice)}</td>
+      <td style="${C}" class="ptag">${vnd(c.todayPrice)}</td>
+      <td style="${C}" class="${chgCls}">${sign}${vnd(Math.abs(c.delta))}</td>
+      <td style="${C}"><span class="badge-delta ${isDrop?'bd-drop':'bd-rise'}">${c.pct>0?'+':''}${c.pct}%</span></td>
+      <td style="${L}">${c.link?`<a class="lnk" href="${c.link}" target="_blank">View ↗</a>`:'–'}</td>
     </tr>`;
   }).join('');
   const hdrCls=mode==='drop'?'drop-hdr':'rise-hdr';
-  const p2Hdr    = has3 ? `<th style="text-align:right">Price (${prev2Date})</th>` : '';
+  const p2Hdr    = has3 ? `<th style="${C}">Price (${prev2Date})</th>` : '';
   const dateRange = has3 ? `${prev2Date} → ${prevDate} → ${todayDate}` : `${prevDate} → ${todayDate}`;
   return `<div class="rank-wrap">
     <div class="rank-hdr ${hdrCls}"><h3>${title}</h3><small>${sub} · ${dateRange}</small></div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>#</th><th>Model (SKU)</th><th>CPU</th><th>GPU</th>${p2Hdr}<th style="text-align:right">Price (${prevDate})</th><th style="text-align:right">Price (${todayDate})</th><th>Change (₫)</th><th>Change (%)</th><th>Link</th></tr></thead>
+      <thead><tr>
+        <th style="${L}">#</th>
+        <th style="${L}">Model (SKU)</th>
+        <th style="${L}">CPU</th>
+        <th style="${L}">GPU</th>
+        ${p2Hdr}
+        <th style="${C}">Price (${prevDate})</th>
+        <th style="${C}">Price (${todayDate})</th>
+        <th style="${C}">Change (₫)</th>
+        <th style="${C}">Change (%)</th>
+        <th style="${L}">Link</th>
+      </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
   </div>`;
