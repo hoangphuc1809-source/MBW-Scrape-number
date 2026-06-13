@@ -1004,7 +1004,8 @@ function renderAllSkus() {
         const today  = p.todayPrice || p.kmPrice || 0;
         const prev   = p.prevPrice  || 0;
         const prev2  = p.prev2Price || 0;
-        const disc   = p.disc || '';
+        const origP  = p.origPrice || 0;
+        const discPct = (origP > 0 && today < origP) ? Math.round((origP - today) / origP * 100) : 0;
         const rowBg  = i%2===0 ? '' : 'background:rgba(0,0,0,0.018)';
 
         // today's vs yesterday's overall color for row highlight
@@ -1026,7 +1027,7 @@ function renderAllSkus() {
           <td style="${L};padding:5px 6px">
             <div class="mname" style="font-size:12px;line-height:1.35">${p.model}</div>
             <span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span>
-            ${disc ? `<span style="font-size:10px;color:#10b981;margin-left:4px">${disc}</span>` : ''}
+            ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">giảm giá theo SRP ${discPct}%</span>` : ''}
           </td>
           <td style="${L};padding:5px 4px;font-size:11px;line-height:1.3;vertical-align:top;word-break:break-word">${cpuLabel}</td>
           <td style="${L};padding:5px 4px;vertical-align:top">${gpuLabel}</td>
