@@ -652,7 +652,7 @@ function mkTable(title,sub,data,mode){
   const L = 'text-align:left';
   const rows=data.map((c,i)=>{
     const isDrop=c.delta<0, sign=isDrop?'':'+', chgCls=isDrop?'chg-drop':'chg-rise';
-    const cpuLabel = [c.cpuFamily, c.cpuDetail].filter(Boolean).join(' ') || '–';
+    const cpuLabel = c.cpuDetail || c.cpuFamily || '–';
     const _gDisp = c.gpuLabel||c.gpuTag||''; const gpuLabel = _gDisp&&_gDisp!=='UMA' ? `<span class="gtag">${_gDisp}</span>` : '–';
     const p2Cell   = has3 ? `<td style="${C};color:var(--text2)">${c.prev2Price?vnd(c.prev2Price):'–'}</td>` : '';
     return `<tr>
@@ -934,8 +934,8 @@ function renderAllBody(data) {
     const isDrop = delta < 0;
     const isRise = delta > 0;
 
-    // CPU combo: "CPU Segment, CPU Detail"
-    const cpuCombo = [p.cpuFamily, p.cpuDetail].filter(Boolean).join(', ') || '–';
+    // CPU column: col N (cpuDetail), fallback to cpuFamily
+    const cpuCombo = p.cpuDetail || p.cpuFamily || '–';
 
 
     // Price history: today có highlight, d1 = prevPrice, d2-d4 = –
