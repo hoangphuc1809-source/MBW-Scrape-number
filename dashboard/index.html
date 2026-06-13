@@ -489,6 +489,17 @@ tbody tr:hover{background:#fafafa}
       <option value="Gaming">Gaming</option>
       <option value="bp">Business &amp; Productivity</option>
     </select>
+    <select id="as_price" onchange="renderAllSkus()">
+      <option value="">All Prices</option>
+      <option value="u10">Dưới 10 tr</option>
+      <option value="10-15">10 – 15 tr</option>
+      <option value="15-20">15 – 20 tr</option>
+      <option value="20-25">20 – 25 tr</option>
+      <option value="25-30">25 – 30 tr</option>
+      <option value="30-40">30 – 40 tr</option>
+      <option value="40-50">40 – 50 tr</option>
+      <option value="ov50">Trên 50 tr</option>
+    </select>
     <select id="as_brand" onchange="renderAllSkus()"><option value="">All Vendors</option></select>
     <select id="as_series" onchange="renderAllSkus()"><option value="">All Series</option></select>
     <select id="as_gpu" onchange="renderAllSkus()"><option value="">All VGA</option></select>
@@ -830,44 +841,73 @@ function renderBP(){
 // ═══════════════════════════════════════
 // ALL SKUs TABLE
 // ═══════════════════════════════════════
-let _asSortCol = 9; // default: price col
-let _asSortDir = 1; // 1=asc
 
-const AS_COLS = [
-  ['#','#'],['dealer','Dealer'],['brand','Vendor'],['segment','Series'],
-  ['model','Model (SKU)'],['cpu_combo','CPU'],['gpuLabel','VGA'],
-  ['ram','RAM'],['ssd','SSD'],['kmPrice','Giá KM'],['link','Link']
-];
-
-function isBP_or_gaming(p, val) {
-  if (!val) return true;
-  const g = (p.seriesGroup||p.gamingGroup||'').toLowerCase();
-  if (val === 'Gaming') return g.includes('gaming');
-  if (val === 'bp') return !g.includes('gaming');
-  return true;
+// ── Helpers ──────────────────────────────────────────────────────
+function normSSD(raw) {
+  if (!raw) return '–';
+  const tbM = raw.match(/(\d+(?:\.\d+)?)\s*TB/i);
+  if (tbM) return tbM[1] + ' TB';
+  const gbM = raw.match(/(\d{2,})\s*G?B/i);
+  if (gbM) return parseInt(gbM[1]) + ' GB';
+  const smallGbM = raw.match(/^(\d)\s*GB/i);
+  if (smallGbM) return parseInt(smallGbM[1]) + ' TB';
+  return '–';
 }
 
+function normRAM(raw) {
+  if (!raw) return '–';
+  const m = raw.match(/(\d+)\s*GB/i);
+  if (m) return parseInt(m[1]) + ' GB';
+  return raw.replace(/RAM\s*/i,'').split('(')[0].trim() || '–';
+}
+
+function parsePriceSeg(val) {
+  // returns [min, max] in VND (max=0 means no upper bound)
+  if (!val) return [0, 0];
+  if (val === 'u10')   return [0,        10000000];
+  if (val === '10-15') return [10000000, 15000000];
+  if (val === '15-20') return [15000000, 20000000];
+  if (val === '20-25') return [20000000, 25000000];
+  if (val === '25-30') return [25000000, 30000000];
+  if (val === '30-40') return [30000000, 40000000];
+  if (val === '40-50') return [40000000, 50000000];
+  if (val === 'ov50')  return [50000000, 0];
+  return [0, 0];
+}
+
+let _asSortCol = 'price'; // field to sort by
+let _asSortDir = 1;       // 1=asc, -1=desc
+
 function renderAllSkus() {
-  const dF  = document.getElementById('as_dealer')?.value || '';
-  const sgF = document.getElementById('as_seg')?.value || '';
-  const brF = document.getElementById('as_brand')?.value || '';
-  const srF = document.getElementById('as_series')?.value || '';
-  const gpF = document.getElementById('as_gpu')?.value || '';
-  const cpF = document.getElementById('as_cpu')?.value || '';
-  const sF  = (document.getElementById('as_search')?.value || '').toLowerCase();
+  const dF   = document.getElementById('as_dealer')?.value  || '';
+  const sgF  = document.getElementById('as_seg')?.value     || '';
+  const brF  = document.getElementById('as_brand')?.value   || '';
+  const srF  = document.getElementById('as_series')?.value  || '';
+  const gpF  = document.getElementById('as_gpu')?.value     || '';
+  const cpF  = document.getElementById('as_cpu')?.value     || '';
+  const sF   = (document.getElementById('as_search')?.value || '').toLowerCase();
+  const psF  = document.getElementById('as_price')?.value   || '';
+
+  const [psMin, psMax] = parsePriceSeg(psF);
 
   let data = allToday.filter(p => {
     if (dF  && p.dealer !== dF) return false;
     if (sgF && !isBP_or_gaming(p, sgF)) return false;
     if (brF) { const b=brF.toLowerCase(); if(!p.brand||!p.brand.toLowerCase().includes(b)) return false; }
-    if (srF && p.segment !== srF) return false;
-    if (gpF) { const g=gpF.toLowerCase(); const _gl=p.gpuLabel||p.gpuTag||''; if(!_gl||!_gl.toLowerCase().includes(g)) return false; }
-    if (cpF) { const c=cpF.toLowerCase(); const cd=p.cpuDetail||p.cpuFamily||''; if(!cd||!cd.toLowerCase().includes(c)) return false; }
+    if (srF  && p.segment !== srF) return false;
+    if (gpF) { const g=gpF.toLowerCase(); const gl=p.gpuLabel||p.gpuTag||''; if(!gl.toLowerCase().includes(g)) return false; }
+    if (cpF) { const c=cpF.toLowerCase(); const cd=(p.cpuDetail||p.cpuFamily||''); if(!cd.toLowerCase().includes(c)) return false; }
+    if (psF) {
+      const price = p.todayPrice||p.kmPrice||0;
+      if (price < psMin) return false;
+      if (psMax > 0 && price >= psMax) return false;
+    }
     if (sF) {
-      const hay = [p.model,p.brand,p.cpuFamily,p.cpuDetail,p.gpuLabel,p.gpuTag,p.vram,
-                   p.ram,p.ssd,p.segment,p.dealer,p.disc||'',
-                   String(p.kmPrice||''),String(p.todayPrice||'')]
-        .filter(Boolean).map(v=>v.toString().toLowerCase()).join(' ');
+      const hay = [p.model,p.brand,p.cpuFamily,p.cpuDetail,
+                   p.gpuLabel||p.gpuTag,p.vram,p.ram,p.ssd,
+                   p.segment,p.dealer,p.disc||'',
+                   String(p.kmPrice||p.todayPrice||'')]
+        .filter(Boolean).map(v=>v.toLowerCase()).join(' ');
       if (!hay.includes(sF)) return false;
     }
     return true;
@@ -876,96 +916,163 @@ function renderAllSkus() {
   // sort
   data.sort((a,b) => {
     let va, vb;
-    if (_asSortCol === 0)  { return 0; }
-    if (_asSortCol === 9)  { va=a.kmPrice||a.todayPrice||0; vb=b.kmPrice||b.todayPrice||0; }
-    else {
-      const key = AS_COLS[_asSortCol][0];
-      if (key==='cpu_combo') { va=a.cpuDetail||a.cpuFamily||''; vb=b.cpuDetail||b.cpuFamily||''; }
-      else if (key==='gpuLabel') { va=a.gpuLabel||a.gpuTag||''; vb=b.gpuLabel||b.gpuTag||''; }
-      else { va=a[key]||''; vb=b[key]||''; }
-    }
-    if (typeof va==='number') return (va-vb)*_asSortDir;
+    const fn = _asSortCol;
+    if (fn === 'price')   { va=a.todayPrice||a.kmPrice||0;  vb=b.todayPrice||b.kmPrice||0; }
+    else if (fn === 'prev')  { va=a.prevPrice||0;  vb=b.prevPrice||0; }
+    else if (fn === 'prev2') { va=a.prev2Price||0; vb=b.prev2Price||0; }
+    else if (fn === 'gpu')   { va=a.gpuLabel||a.gpuTag||''; vb=b.gpuLabel||b.gpuTag||''; }
+    else if (fn === 'cpu')   { va=a.cpuDetail||a.cpuFamily||''; vb=b.cpuDetail||b.cpuFamily||''; }
+    else if (fn === 'ram')   { va=parseInt((a.ram||'0').match(/\d+/)?.[0])||0; vb=parseInt((b.ram||'0').match(/\d+/)?.[0])||0; }
+    else if (fn === 'ssd')   { va=parseInt((a.ssd||'0').match(/\d+/)?.[0])||0; vb=parseInt((b.ssd||'0').match(/\d+/)?.[0])||0; }
+    else if (fn === 'brand') { va=a.brand||''; vb=b.brand||''; }
+    else if (fn === 'model') { va=a.model||''; vb=b.model||''; }
+    else if (fn === 'dealer'){ va=a.dealer||''; vb=b.dealer||''; }
+    else { va=0; vb=0; }
+    if (typeof va==='number' && typeof vb==='number') return (va-vb)*_asSortDir;
     return va.toString().localeCompare(vb.toString(),'vi')*_asSortDir;
   });
 
-  // count
   const cnt = document.getElementById('as_count');
   if (cnt) cnt.textContent = data.length + ' SKUs';
 
-  // header
-  const thead = document.getElementById('allSkusHead');
-  if (thead) {
-    thead.innerHTML = AS_COLS.map(([k,lbl],i) => {
-      const s = _asSortCol===i ? (_asSortDir===1?'sort-asc':'sort-desc'):'';
-      const ctr = [9].includes(i) ? 'th-center' : '';
-      return `<th onclick="asSort(${i})" class="${[s,ctr].filter(Boolean).join(' ')}" 
-        style="padding:8px 6px;background:var(--card);border-bottom:2px solid var(--border);
-               font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap;
-               position:sticky;top:0;z-index:2">${lbl}</th>`;
-    }).join('');
+  // determine if we have 3-day data
+  const has3 = !!prev2Date && data.some(p=>p.prev2Price);
+
+  // ── Build table ──────────────────────────────────────────────────
+  const C = 'text-align:center';
+  const L = 'text-align:left';
+  const NW = 'white-space:nowrap';
+
+  // Sort indicator helper
+  const si = col => _asSortCol===col ? (_asSortDir===1?' ↑':' ↓') : '';
+  const thStyle = `background:var(--card);border-bottom:2px solid var(--border);font-weight:700;font-size:11px;cursor:pointer;${NW};padding:8px 6px;position:sticky;top:0;z-index:2`;
+
+  // Narrow col width for CPU/VGA/RAM/SSD
+  const NARROW = 'width:72px;min-width:72px;max-width:72px';
+
+  let thead = `<colgroup>
+    <col style="width:32px"><!-- # -->
+    <col><!-- Model -->
+    <col style="${NARROW}"><!-- CPU -->
+    <col style="${NARROW}"><!-- VGA -->
+    <col style="${NARROW}"><!-- RAM -->
+    <col style="${NARROW}"><!-- SSD -->
+    ${has3 ? '<col style="width:110px">' : ''}<!-- D-2 -->
+    <col style="width:110px"><!-- D-1 -->
+    <col style="width:110px"><!-- Today -->
+    <col style="width:60px"><!-- Link -->
+  </colgroup>
+  <thead><tr>
+    <th style="${C};${thStyle}" onclick="asSortBy('idx')">#</th>
+    <th style="${L};${thStyle}" onclick="asSortBy('model')">Model (SKU)${si('model')}</th>
+    <th style="${L};${thStyle};${NARROW}" onclick="asSortBy('cpu')">CPU${si('cpu')}</th>
+    <th style="${L};${thStyle};${NARROW}" onclick="asSortBy('gpu')">VGA${si('gpu')}</th>
+    <th style="${C};${thStyle};${NARROW}" onclick="asSortBy('ram')">RAM${si('ram')}</th>
+    <th style="${C};${thStyle};${NARROW}" onclick="asSortBy('ssd')">SSD${si('ssd')}</th>
+    ${has3 ? `<th style="${C};${thStyle}" onclick="asSortBy('prev2')">Giá (${prev2Date})${si('prev2')}</th>` : ''}
+    <th style="${C};${thStyle}" onclick="asSortBy('prev')">Giá (${prevDate})${si('prev')}</th>
+    <th style="${C};${thStyle};color:var(--accent)" onclick="asSortBy('price')">Giá (${todayDate})${si('price')}</th>
+    <th style="${L};${thStyle}">Link</th>
+  </tr></thead>`;
+
+  // ── Price cell helper ────────────────────────────────────────────
+  function priceCell(pNow, pPrev) {
+    if (!pNow) return `<td style="${C}"><span class="td-na">–</span></td>`;
+    const delta = pPrev ? pNow - pPrev : 0;
+    const pct   = pPrev ? ((delta/pPrev)*100).toFixed(1) : null;
+    const isUp  = delta > 0, isDn = delta < 0;
+    const clr   = isDn ? '#ef4444' : isUp ? '#10b981' : 'inherit';
+    const arrow = isDn ? '▼' : isUp ? '▲' : '';
+    const priceFmt = `<span style="font-weight:700;color:${clr};${NW}">${vnd(pNow)}</span>`;
+    const chgFmt  = pct
+      ? `<br><span style="font-size:10px;color:${clr};${NW}">${arrow} ${Math.abs(pct)}%</span>`
+      : '';
+    return `<td style="${C};vertical-align:top;padding:6px 4px">${priceFmt}${chgFmt}</td>`;
   }
 
-  // body
-  const tbody = document.getElementById('allSkusBody');
-  if (!tbody) return;
-  if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="${AS_COLS.length}" class="empty">Không có dữ liệu phù hợp.</td></tr>`;
-    return;
-  }
+  // ── Row builder ─────────────────────────────────────────────────
+  const rows = data.length === 0
+    ? `<tr><td colspan="${8 + (has3?1:0)}" class="empty">Không có dữ liệu phù hợp.</td></tr>`
+    : data.map((p, i) => {
+        const cpuLabel = p.cpuDetail || p.cpuFamily || '–';
+        const gpuRaw   = p.gpuLabel || p.gpuTag || '';
+        const gpuLabel = gpuRaw && gpuRaw !== 'UMA'
+          ? `<span class="gtag" style="white-space:normal;word-break:break-word;display:inline-block;font-size:10px">${gpuRaw}</span>`
+          : (gpuRaw==='UMA'?'<span style="color:var(--text2);font-size:10px">Intgr</span>':'–');
+        const ramTxt = normRAM(p.ram);
+        const ssdTxt = normSSD(p.ssd);
+        const today  = p.todayPrice || p.kmPrice || 0;
+        const prev   = p.prevPrice  || 0;
+        const prev2  = p.prev2Price || 0;
+        const disc   = p.disc || '';
+        const rowBg  = i%2===0 ? '' : 'background:rgba(0,0,0,0.018)';
 
-  tbody.innerHTML = data.map((p,idx) => {
-    const price  = p.kmPrice || p.todayPrice || 0;
-    const orig   = p.origPrice || 0;
-    const isDrop = orig > 0 && price < orig;
-    const disc   = p.disc || '';
-    const cpuTxt = p.cpuDetail || p.cpuFamily || '–';
-    const gpuTxt = (()=>{ const g=p.gpuLabel||p.gpuTag||''; return g&&g!=='UMA'?g:(g==='UMA'?'Integrated':'–'); })();
-    const ramTxt = p.ram ? p.ram.replace(/RAM\s*/i,'').trim() : '–';
-    const ssdTxt = p.ssd ? p.ssd.replace(/SSD\s*/i,'').trim() : '–';
-    const segTxt = p.segment || '–';
-    const priceHtml = price
-      ? `<span style="font-weight:700;color:${isDrop?'#ef4444':'inherit'}">${vnd(price)}</span>` +
-        (disc ? `<br><span style="font-size:10px;color:#10b981">${disc}</span>` : '')
-      : '–';
-    const linkHtml = p.link
-      ? `<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`
-      : '–';
+        // today's vs yesterday's overall color for row highlight
+        const todayDelta = prev ? today - prev : 0;
+        const rowHighlight = todayDelta < 0
+          ? 'background:rgba(239,68,68,0.04)'
+          : todayDelta > 0
+          ? 'background:rgba(16,185,129,0.04)'
+          : rowBg;
 
-    const rowBg = idx%2===0 ? '' : 'background:rgba(0,0,0,0.015)';
-    return `<tr style="${rowBg}">
-      <td style="padding:6px;text-align:center;color:var(--text2);font-size:11px">${idx+1}</td>
-      <td style="padding:6px"><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 5px">${p.dealer}</span></td>
-      <td style="padding:6px;font-weight:600;font-size:11px">${p.brand||'–'}</td>
-      <td style="padding:6px;font-size:11px;color:var(--text2)">${segTxt}</td>
-      <td class="td-sku" style="padding:6px;min-width:200px;max-width:320px">${p.model}</td>
-      <td style="padding:6px;font-size:11px">${cpuTxt}</td>
-      <td style="padding:6px;font-size:11px">${gpuTxt!=='–'&&gpuTxt!=='Integrated'?`<span class="gtag" style="white-space:normal;word-break:break-word;display:inline-block">${gpuTxt}</span>`:gpuTxt}</td>
-      <td style="padding:6px;font-size:11px;text-align:center">${ramTxt}</td>
-      <td style="padding:6px;font-size:11px;text-align:center">${ssdTxt}</td>
-      <td style="padding:6px;text-align:right;white-space:nowrap">${priceHtml}</td>
-      <td style="padding:6px">${linkHtml}</td>
-    </tr>`;
-  }).join('');
+        const p2Cell = has3
+          ? (prev2
+            ? `<td style="${C};vertical-align:top;padding:6px 4px"><span style="${NW}">${vnd(prev2)}</span></td>`
+            : `<td style="${C}"><span class="td-na">–</span></td>`)
+          : '';
+
+        return `<tr style="${rowHighlight}">
+          <td style="${C};padding:5px 4px;color:var(--text2);font-size:11px">${i+1}</td>
+          <td style="${L};padding:5px 6px">
+            <div class="mname" style="font-size:12px;line-height:1.35">${p.model}</div>
+            <span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span>
+            ${disc ? `<span style="font-size:10px;color:#10b981;margin-left:4px">${disc}</span>` : ''}
+          </td>
+          <td style="${L};padding:5px 4px;font-size:11px;line-height:1.3;vertical-align:top;word-break:break-word">${cpuLabel}</td>
+          <td style="${L};padding:5px 4px;vertical-align:top">${gpuLabel}</td>
+          <td style="${C};padding:5px 4px;font-size:11px;${NW}">${ramTxt}</td>
+          <td style="${C};padding:5px 4px;font-size:11px;${NW}">${ssdTxt}</td>
+          ${p2Cell}
+          ${priceCell(prev,  prev2)}
+          ${priceCell(today, prev)}
+          <td style="${L};padding:5px 4px">${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
+        </tr>`;
+      }).join('');
+
+  const dateRange = has3
+    ? `${prev2Date} → ${prevDate} → ${todayDate}`
+    : `${prevDate} → ${todayDate}`;
+
+  const container = document.getElementById('allSkusContainer');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="rank-wrap">
+      <div class="rank-hdr drop-hdr">
+        <h3>📋 All SKUs — ${data.length} sản phẩm</h3>
+        <small>Tất cả dealers · Giá ${dateRange} · % thay đổi so với ngày hôm trước</small>
+      </div>
+      <div class="tbl-wrap">
+        <table id="allSkusTable" style="border-collapse:collapse;font-size:12px;width:100%">
+          ${thead}
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
-function asSort(col) {
-  if (_asSortCol===col) _asSortDir*=-1;
-  else { _asSortCol=col; _asSortDir=col===9?1:1; }
+function asSortBy(col) {
+  if (_asSortCol === col) _asSortDir *= -1;
+  else { _asSortCol = col; _asSortDir = ['price','prev','prev2','ram','ssd'].includes(col) ? 1 : 1; }
   renderAllSkus();
 }
 
 function resetAllSkusFilters() {
-  ['as_dealer','as_seg','as_brand','as_series','as_gpu','as_cpu'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.value='';
+  ['as_dealer','as_seg','as_brand','as_series','as_gpu','as_cpu','as_price'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; if (el.tomselect) el.tomselect.setValue('', true); }
   });
-  const s=document.getElementById('as_search');
-  if(s) s.value='';
-  // also reset tom select
-  ['as_brand','as_series','as_gpu','as_cpu'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el&&el.tomselect) el.tomselect.setValue('',true);
-  });
+  const s = document.getElementById('as_search');
+  if (s) s.value = '';
   renderAllSkus();
 }
 
