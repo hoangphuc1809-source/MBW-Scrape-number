@@ -709,7 +709,7 @@ function mkTable(title,sub,data,mode){
   const rows=data.map((c,i)=>{
     const isDrop=c.delta<0, sign=isDrop?'':'+', chgCls=isDrop?'chg-drop':'chg-rise';
     const cpuLabel = c.cpuDetail || c.cpuFamily || '–';
-    const _gDisp = c.gpuLabel||c.gpuTag||''; const gpuLabel = _gDisp&&_gDisp!=='UMA' ? `<span class="gtag">${_gDisp}</span>` : '–';
+    const _gDisp = c.gpuLabel||c.gpuTag||''; const gpuLabel = _gDisp&&_gDisp!=='UMA' ? _gDisp : '–';
     const p2Cell   = has3 ? `<td style="${C};color:var(--text2)">${c.prev2Price?vnd(c.prev2Price):'–'}</td>` : '';
     return `<tr>
       <td style="${L}"><span class="rn ${rnCls(i)}">${i+1}</span></td>
@@ -772,7 +772,7 @@ function renderGaming(){
       return `<tr>
         <td style="text-align:left"><span class="rn ${rnCls(i)}">${i+1}</span></td>
         <td style="text-align:left"><div class="mname">${p.model}</div><span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span></td>
-        <td style="text-align:left">${p.gpuTag&&p.gpuTag!=='UMA'?`<span class="gtag">${p.gpuTag}</span>`:'Integrated'}</td>
+        <td style="text-align:left">${p.gpuTag&&p.gpuTag!=='UMA'?p.gpuTag:'Integrated'}</td>
         <td style="text-align:left">${p.cpuFamily||'–'}</td>
         <td style="text-align:left">${p.ram||'–'}</td>
         <td style="text-align:left">${p.ssd||'–'}</td>
@@ -1281,7 +1281,7 @@ function renderAllBody(data) {
       <td class="col-cpu">${cpuCombo}</td>
       <td class="col-ram">${p.ram ? p.ram.replace(/RAM\s*/i,'').trim() : '<span class="td-na">–</span>'}</td>
       <td class="col-ssd">${p.ssd ? p.ssd.replace(/SSD\s*/i,'').trim() : '<span class="td-na">–</span>'}</td>
-      <td class="col-vga">${(()=>{const _g=p.gpuLabel||p.gpuTag||'';return _g&&_g!=='UMA'?`<span class="gtag" style="white-space:normal;word-break:break-word;display:inline-block">${_g}</span>`:(_g==='UMA'?'Integrated':'<span class="td-na">–</span>');})()}</td>
+      <td class="col-vga">${(()=>{const _g=p.gpuLabel||p.gpuTag||'';return _g&&_g!=='UMA'?_g:(_g==='UMA'?'Integrated':'<span class="td-na">–</span>');})()}</td>
       <td class="col-screen">${p.screen||'<span class="td-na">–</span>'}</td>
       <td class="col-pprev">${prevHtml}</td>
       <td class="col-ptoday">${todayHtml}</td>
