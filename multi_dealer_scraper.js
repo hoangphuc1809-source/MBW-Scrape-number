@@ -24,7 +24,7 @@ const SHEET_NAME   = 'Dailly SRP Tracking';
 const CREDS_PATH     = path.join(os.tmpdir(), 'scraper_gcp.json');
 // Deadline: dừng fetch specs sau 50 phút kể từ lúc start
 // Đảm bảo còn đủ thời gian ghi sheet trước khi GitHub Actions timeout (6h)
-const DEADLINE_MS    = 50 * 60 * 1000;
+const DEADLINE_MS    = 75 * 60 * 1000;
 // Tăng version này mỗi khi thay đổi mapping FPT → force re-fetch toàn bộ FPT specs
 // CPS cache giữ nguyên (không bị ảnh hưởng)
 const FPT_MAPPING_VERSION = 2; // v2.9: fix GPU dual card + RAM/Storage/Screen fields
