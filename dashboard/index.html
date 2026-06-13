@@ -567,6 +567,7 @@ function renderKPIs(){
 
 // ── TAB 1: PRICE ALERTS ─────────────────────────────────
 function renderAlerts(){
+  if(!document.getElementById('alertGrid')) return; // tab removed
   const dF=document.getElementById('a_dealer').value;
   const dirF=document.getElementById('a_dir').value;
   const segF=document.getElementById('a_seg').value;
@@ -692,6 +693,7 @@ function mkTable(title,sub,data,mode){
 
 // ── TAB 3: GAMING by GPU ────────────────────────────────
 function renderGaming(){
+  if(!document.getElementById('gamingContainer')) return; // tab removed
   const vF=document.getElementById('g_vga').value;
   const dF=document.getElementById('g_dealer').value;
   const sF=document.getElementById('g_search').value.toLowerCase();
@@ -736,6 +738,7 @@ function renderGaming(){
 
 // ── TAB 4: B&P by CPU ───────────────────────────────────
 function renderBP(){
+  if(!document.getElementById('bpContainer')) return; // tab removed
   const cF=document.getElementById('b_cpu').value;
   const dF=document.getElementById('b_dealer').value;
   const sF=document.getElementById('b_search').value.toLowerCase();
@@ -799,6 +802,7 @@ let _alSortCol = null;
 let _alSortDir = 1; // 1=asc, -1=desc
 
 function renderAll() {
+  if(!document.getElementById('allPriceBody')) return; // tab removed
   const dF  = document.getElementById('al_dealer').value;
   const sgF = document.getElementById('al_seg').value;
   const brF = document.getElementById('al_brand').value;
@@ -881,6 +885,7 @@ function getAlSortVal(item, colIdx) {
 }
 
 function renderAllHead() {
+  if(!document.getElementById('allPriceHead')) return; // tab removed
   const COL_CLASS = {
     'dealer':'c-dealer','brand':'c-vendor','seriesGroup':'c-series','segment':'c-segment',
     'model':'c-sku','cpu_combo':'c-cpu','ram':'c-ram','ssd':'c-ssd','gpuTag':'c-vga',
@@ -915,6 +920,7 @@ function alSort(colIdx) {
 
 function renderAllBody(data) {
   const tbody = document.getElementById('allPriceBody');
+  if (!tbody) return; // tab removed
   if (!data.length) {
     tbody.innerHTML = `<tr><td colspan="${AL_COLS.length}" class="empty">No data matches the current filters.</td></tr>`;
     return;
