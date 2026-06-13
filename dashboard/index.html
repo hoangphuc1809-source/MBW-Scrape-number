@@ -460,7 +460,7 @@ tbody tr:hover{background:#fafafa}
     <input id="d_cpu" list="d_cpu_list" placeholder="All CPU" oninput="renderDrops()" autocomplete="off"
       style="min-width:90px;max-width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:#fff;outline:none"/>
     <datalist id="d_cpu_list"></datalist>
-    <input id="d_search" type="text" placeholder="🔍 Search model…" oninput="renderDrops()" style="min-width:180px"/>
+    <input id="d_search" type="text" placeholder="🔍 Search anything…" oninput="renderDrops()" style="min-width:180px"/>
     <div class="filter-sep"></div>
     <span id="d_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
     <button onclick="resetDropFilters()"
@@ -627,7 +627,14 @@ function renderDrops(){
     if (srF  && c.segment !== srF) return false;
     if (gpF) { const g=gpF.toLowerCase(); const _gl=c.gpuLabel||c.gpuTag||''; if(!_gl||!_gl.toLowerCase().includes(g)) return false; }
     if (cpF) { const cp=cpF.toLowerCase(); if(!c.cpuDetail||!c.cpuDetail.toLowerCase().includes(cp)) return false; }
-    if (sF   && !c.model.toLowerCase().includes(sF)) return false;
+    if (sF) {
+      const hay = [c.model, c.brand, c.cpuFamily, c.cpuDetail,
+                   c.gpuLabel||c.gpuTag, c.vram, c.ram, c.ssd,
+                   c.screen, c.segment, c.dealer, c.disc||'',
+                   String(c.origPrice||''), String(c.kmPrice||''), String(c.todayPrice||'')]
+        .filter(Boolean).map(v=>v.toString().toLowerCase()).join(' ');
+      if (!hay.includes(sF)) return false;
+    }
     return true;
   };
 
