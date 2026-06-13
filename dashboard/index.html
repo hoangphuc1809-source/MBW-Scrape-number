@@ -1000,8 +1000,8 @@ function renderAllSkus() {
         const cpuLabel = p.cpuDetail || p.cpuFamily || '–';
         const gpuRaw   = p.gpuLabel || p.gpuTag || '';
         const gpuLabel = gpuRaw && gpuRaw !== 'UMA'
-          ? `<span class="gtag" style="white-space:normal;word-break:break-word;display:inline-block;font-size:10px">${gpuRaw}</span>`
-          : (gpuRaw==='UMA'?'<span style="color:var(--text2);font-size:10px">Intgr</span>':'–');
+          ? gpuRaw
+          : (gpuRaw==='UMA' ? 'Integrated' : '–');
         const ramTxt = normRAM(p.ram);
         const ssdTxt = normSSD(p.ssd);
         const today  = p.todayPrice || p.kmPrice || 0;
