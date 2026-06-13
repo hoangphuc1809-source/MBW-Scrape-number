@@ -9,7 +9,7 @@
   --bg:#f0f2f5;--card:#fff;--hdr:#0f1729;--accent:#2563eb;--accent2:#7c3aed;
   --teal:#0d9488;
   /* PRICE LOGIC: drop = RED (bad for buyer = price went down is good, but Vietnamese retail context: 
-     user said giảm=đỏ, tăng=xanh */
+     user requested drop=red, rise=green */
   --drop:#dc2626;   /* red  = price drop */
   --rise:#16a34a;   /* green = price rise */
   --drop-bg:#fee2e2; --drop-light:#fef2f2;
@@ -50,7 +50,7 @@ html,body{height:100%;}
   box-sizing:border-box;
   min-height:calc(100vh - 100px);
 }
-/* stretch body để fill viewport */
+/* stretch body to fill viewport */
 html, body { height:100%; }
 #mainWrapper.all-prices-mode #sec-all {
   display:flex;
@@ -246,7 +246,7 @@ tbody tr:hover{background:#fafafa}
   vertical-align:top;
   white-space:nowrap;
 }
-/* Cột tên: wrap tại space, không bẻ giữa từ */
+/* Name column: wrap at spaces, don't break mid-word */
 #allPriceTable td.col-dealer,
 #allPriceTable td.col-vendor,
 #allPriceTable td.col-series,
@@ -255,7 +255,7 @@ tbody tr:hover{background:#fafafa}
   overflow-wrap:anywhere;
   line-height:1.3;
 }
-/* Cột specs: wrap + break */
+/* Specs columns: wrap + break */
 #allPriceTable td.col-cpu,
 #allPriceTable td.col-ram,
 #allPriceTable td.col-ssd,
@@ -500,14 +500,14 @@ tbody tr:hover{background:#fafafa}
     </select>
     <select id="as_price" onchange="renderAllSkus()">
       <option value="">All Prices</option>
-      <option value="u10">Dưới 10 tr</option>
-      <option value="10-15">10 – 15 tr</option>
-      <option value="15-20">15 – 20 tr</option>
-      <option value="20-25">20 – 25 tr</option>
-      <option value="25-30">25 – 30 tr</option>
-      <option value="30-40">30 – 40 tr</option>
-      <option value="40-50">40 – 50 tr</option>
-      <option value="ov50">Trên 50 tr</option>
+      <option value="u10">Under 10M</option>
+      <option value="10-15">10 – 15M</option>
+      <option value="15-20">15 – 20M</option>
+      <option value="20-25">20 – 25M</option>
+      <option value="25-30">25 – 30M</option>
+      <option value="30-40">30 – 40M</option>
+      <option value="40-50">40 – 50M</option>
+      <option value="ov50">Over 50M</option>
     </select>
     <select id="as_brand" onchange="renderAllSkus()"><option value="">All Vendors</option></select>
     <select id="as_series" onchange="renderAllSkus()"><option value="">All Series</option></select>
@@ -546,21 +546,21 @@ let prev2Date = DATA.prev2Date || '';
 // ║              📌 DEV NOTES — QUY TẮC QUAN TRỌNG                     ║
 // ╠══════════════════════════════════════════════════════════════════════╣
 // ║                                                                      ║
-// ║  1. ALIGNMENT (áp dụng TOÀN BỘ bảng, tất cả tabs):                 ║
-// ║     • Price (bất kỳ ngày nào), Prev Price, Change (₫), Change (%)  ║
+// ║  1. ALIGNMENT (applies to ALL tables, all tabs):                   ║
+// ║     • Price (any date), Prev Price, Change (₫), Change (%)        ║
 // ║       → text-align: CENTER  (header + data cell)                    ║
-// ║     • Tất cả cột còn lại (#, Model, CPU, GPU, RAM, Storage,        ║
+// ║     • All other columns (#, Model, CPU, GPU, RAM, Storage,         ║
 // ║       Display, Vendor, Series, Link, Sold, ...)                     ║
 // ║       → text-align: LEFT                                            ║
 // ║                                                                      ║
 // ║  2. FILTER DROPDOWN — SEARCHABLE (type-to-search):                  ║
-// ║     • Vendor, VGA, CPU dùng <input list="datalist"> thay <select>   ║
+// ║     • Vendor, VGA, CPU use <input list="datalist"> instead of <select> ║
 // ║     • Partial match, case-insensitive (.toLowerCase().includes())    ║
-// ║     • Các filter Dealer, Segment, Series vẫn dùng <select>          ║
+// ║     • Dealer, Segment, Series filters still use <select>            ║
 // ║                                                                      ║
 // ║  3. GIÁ 3 NGÀY (tab Top Price Changes):                             ║
-// ║     • Hiển thị prev2Date → prevDate → todayDate                     ║
-// ║     • Cột prev2Price ẩn tự động nếu chỉ có 2 ngày dữ liệu          ║
+// ║     • Displays prev2Date → prevDate → todayDate                     ║
+// ║     • prev2Price column auto-hides if only 2 days of data exist     ║
 // ║                                                                      ║
 // ║  4. SHEET SOURCE: Daily SRP Tracking (GID 221053035)                ║
 // ║     • Col 0:Date  1:Hour  2:Dealers  3:SKU  4:SRP  5:PromoPrice    ║
@@ -789,7 +789,7 @@ function renderGaming(){
       </tr>`;
     }).join('');
     return `<div class="rank-wrap">
-      <div class="rank-hdr blue-hdr"><h3>🎮 ${gpu} — Price Ranking (Low → High)</h3><small>Top ${sorted.length}/${prods.length} SKUs · Price = Giá KM (Col N)</small></div>
+      <div class="rank-hdr blue-hdr"><h3>🎮 ${gpu} — Price Ranking (Low → High)</h3><small>Top ${sorted.length}/${prods.length} SKUs · Price = Promo Price (Col N)</small></div>
       <div class="tbl-wrap"><table>
         <thead><tr><th style="text-align:left">#</th><th style="text-align:left">Model</th><th style="text-align:left">GPU</th><th style="text-align:left">CPU</th><th style="text-align:left">RAM</th><th style="text-align:left">Storage</th><th style="text-align:center">Price (${todayDate})</th><th style="text-align:center">Prev Price</th><th style="text-align:center">Change</th><th style="text-align:left">Link</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -836,7 +836,7 @@ function renderBP(){
       </tr>`;
     }).join('');
     return `<div class="rank-wrap">
-      <div class="rank-hdr teal-hdr"><h3>💼 ${cpu} — Price Ranking (Low → High)</h3><small>Top ${sorted.length}/${prods.length} SKUs · Price = Giá KM (Col N)</small></div>
+      <div class="rank-hdr teal-hdr"><h3>💼 ${cpu} — Price Ranking (Low → High)</h3><small>Top ${sorted.length}/${prods.length} SKUs · Price = Promo Price (Col N)</small></div>
       <div class="tbl-wrap"><table>
         <thead><tr><th style="text-align:left">#</th><th style="text-align:left">Model</th><th style="text-align:left">CPU</th><th style="text-align:left">RAM</th><th style="text-align:left">Storage</th><th style="text-align:left">Display</th><th style="text-align:center">Price (${todayDate})</th><th style="text-align:center">Prev Price</th><th style="text-align:center">Change</th><th style="text-align:left">Link</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -978,9 +978,9 @@ function renderAllSkus() {
     <th style="${L};${thStyle};${NARROW}" onclick="asSortBy('gpu')">VGA${si('gpu')}</th>
     <th style="${C};${thStyle};${NARROW}" onclick="asSortBy('ram')">RAM${si('ram')}</th>
     <th style="${C};${thStyle};${NARROW}" onclick="asSortBy('ssd')">SSD${si('ssd')}</th>
-    ${has3 ? `<th style="${C};${thStyle}" onclick="asSortBy('prev2')">Giá (${prev2Date})${si('prev2')}</th>` : ''}
-    <th style="${C};${thStyle}" onclick="asSortBy('prev')">Giá (${prevDate})${si('prev')}</th>
-    <th style="${C};${thStyle};color:var(--accent)" onclick="asSortBy('price')">Giá (${todayDate})${si('price')}</th>
+    ${has3 ? `<th style="${C};${thStyle}" onclick="asSortBy('prev2')">Price (${prev2Date})${si('prev2')}</th>` : ''}
+    <th style="${C};${thStyle}" onclick="asSortBy('prev')">Price (${prevDate})${si('prev')}</th>
+    <th style="${C};${thStyle};color:var(--accent)" onclick="asSortBy('price')">Price (${todayDate})${si('price')}</th>
     <th style="${L};${thStyle}">Link</th>
   </tr></thead>`;
 
@@ -1001,7 +1001,7 @@ function renderAllSkus() {
 
   // ── Row builder ─────────────────────────────────────────────────
   const rows = data.length === 0
-    ? `<tr><td colspan="${8 + (has3?1:0)}" class="empty">Không có dữ liệu phù hợp.</td></tr>`
+    ? `<tr><td colspan="${8 + (has3?1:0)}" class="empty">No matching data.</td></tr>`
     : data.map((p, i) => {
         const cpuLabel = p.cpuDetail || p.cpuFamily || '–';
         const gpuRaw   = p.gpuLabel || p.gpuTag || '';
@@ -1036,7 +1036,7 @@ function renderAllSkus() {
           <td style="${L};padding:5px 6px">
             <div class="mname" style="font-size:12px;line-height:1.35">${p.model}</div>
             <span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span>
-            ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">giảm giá theo SRP ${discPct}%</span>` : ''}
+            ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">${discPct}% off SRP</span>` : ''}
           </td>
           <td style="${L};padding:5px 4px;font-size:11px;line-height:1.3;vertical-align:top;word-break:break-word">${cpuLabel}</td>
           <td style="${L};padding:5px 4px;vertical-align:top">${gpuLabel}</td>
@@ -1058,8 +1058,8 @@ function renderAllSkus() {
   container.innerHTML = `
     <div class="rank-wrap">
       <div class="rank-hdr drop-hdr">
-        <h3>📋 All SKUs — ${data.length} sản phẩm</h3>
-        <small>Tất cả dealers · Giá ${dateRange} · % thay đổi so với ngày hôm trước</small>
+        <h3>📋 All SKUs — ${data.length} products</h3>
+        <small>All dealers · Price ${dateRange} · % change vs previous day</small>
       </div>
       <div class="tbl-wrap">
         <table id="allSkusTable" style="border-collapse:collapse;font-size:12px;width:100%">
@@ -1101,7 +1101,7 @@ function renderAlert() {
 
   // ── Build standard alert table (same design as mkTable) ────────
   function alertTable(title, sub, data, mode) {
-    if (!data.length) return `<div class="rank-wrap"><div class="rank-hdr ${mode==='rise'?'rise-hdr':'drop-hdr'}"><h3>${title}</h3><small>${sub}</small></div><div class="empty" style="padding:12px 16px;color:var(--text2)">Không có dữ liệu.</div></div>`;
+    if (!data.length) return `<div class="rank-wrap"><div class="rank-hdr ${mode==='rise'?'rise-hdr':'drop-hdr'}"><h3>${title}</h3><small>${sub}</small></div><div class="empty" style="padding:12px 16px;color:var(--text2)">No data.</div></div>`;
     const hdrCls = mode === 'rise' ? 'rise-hdr' : 'drop-hdr';
     const has3col = has3 && data.some(p => p.prev2Price);
     const rows = data.map((p, i) => {
@@ -1130,16 +1130,16 @@ function renderAlert() {
         <td style="${L}">${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
       </tr>`;
     }).join('');
-    const p2hdr = has3col ? `<th style="${C}">Giá (${prev2Date})</th>` : '';
+    const p2hdr = has3col ? `<th style="${C}">Price (${prev2Date})</th>` : '';
     return `<div class="rank-wrap">
       <div class="rank-hdr ${hdrCls}"><h3>${title}</h3><small>${sub}</small></div>
       <div class="tbl-wrap"><table>
         <thead><tr>
           <th style="${L}">#</th><th style="${L}">Model (SKU)</th><th style="${L}">CPU</th><th style="${L}">VGA</th>
           ${p2hdr}
-          <th style="${C}">Giá (${prevDate})</th>
-          <th style="${C}">Giá (${todayDate})</th>
-          <th style="${C}">Chênh lệch (₫)</th>
+          <th style="${C}">Price (${prevDate})</th>
+          <th style="${C}">Price (${todayDate})</th>
+          <th style="${C}">Change (₫)</th>
           <th style="${C}">%</th>
           <th style="${L}">Link</th>
         </tr></thead>
@@ -1190,7 +1190,7 @@ function renderAlert() {
     return `<div class="rank-wrap">
       <div class="rank-hdr" style="background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 100%)">
         <h3>🎮 ${gpuName} — ${items.length} SKUs · ${dealers} Dealers</h3>
-        <small>Ngày ${todayDate} · ▼ % = giảm hôm nay so với hôm qua</small>
+        <small>${todayDate} · ▼ % = drop today vs yesterday</small>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border)">
         <div style="border-right:1px solid var(--border)">
@@ -1225,11 +1225,11 @@ function renderAlert() {
 
   // ── KPI summary cards ─────────────────────────────────────────
   const kpis = [
-    {icon:'📉',lbl:'Giảm giá hôm nay',val:changes.filter(c=>c.delta<0).length,clr:'#ef4444'},
-    {icon:'📈',lbl:'Tăng giá hôm nay', val:changes.filter(c=>c.delta>0).length,clr:'#10b981'},
-    {icon:'⚠️',lbl:'Biến động >10%',   val:bigDrops.length+bigRises.length,     clr:'#f59e0b'},
-    {icon:'🔴',lbl:'Liên tục giảm',    val:consDrops.length,                    clr:'#ef4444'},
-    {icon:'🟢',lbl:'Liên tục tăng',    val:consRises.length,                    clr:'#10b981'},
+    {icon:'📉',lbl:'Price Drops Today',val:changes.filter(c=>c.delta<0).length,clr:'#ef4444'},
+    {icon:'📈',lbl:'Price Increases Today', val:changes.filter(c=>c.delta>0).length,clr:'#10b981'},
+    {icon:'⚠️',lbl:'Swings >10%',   val:bigDrops.length+bigRises.length,     clr:'#f59e0b'},
+    {icon:'🔴',lbl:'Continuous Drops',    val:consDrops.length,                    clr:'#ef4444'},
+    {icon:'🟢',lbl:'Continuous Rises',    val:consRises.length,                    clr:'#10b981'},
   ];
   const kpiHtml = `<div class="kpi-row" style="margin:12px 0 16px">
     ${kpis.map(k=>`<div class="kpi"><div class="kpi-lbl">${k.icon} ${k.lbl}</div><div class="kpi-val" style="color:${k.clr}">${k.val}</div></div>`).join('')}
@@ -1237,18 +1237,18 @@ function renderAlert() {
 
   // ── Assemble ──────────────────────────────────────────────────
   let out = kpiHtml;
-  out += alertTable('📉 Top 10 Giảm Giá Trong Ngày',  `Sắp xếp theo số tiền giảm lớn nhất · ${todayDate} vs ${prevDate}`, top10drops, 'drop');
-  out += alertTable('📈 Top 10 Tăng Giá Trong Ngày',  `Sắp xếp theo số tiền tăng lớn nhất · ${todayDate} vs ${prevDate}`, top10rises, 'rise');
-  out += alertTable('🔴 Giảm >10% So Với Hôm Qua',    `Giá hôm nay giảm hơn 10% · ${bigDrops.length} SKU bị ảnh hưởng`,  bigDrops, 'drop');
-  out += alertTable('🟢 Tăng >10% So Với Hôm Qua',    `Giá hôm nay tăng hơn 10% · ${bigRises.length} SKU`,               bigRises, 'rise');
+  out += alertTable('📉 Top 10 Price Drops Today',  `Sorted by largest price drop · ${todayDate} vs ${prevDate}`, top10drops, 'drop');
+  out += alertTable('📈 Top 10 Price Increases Today',  `Sorted by largest price increase · ${todayDate} vs ${prevDate}`, top10rises, 'rise');
+  out += alertTable('🔴 Drop >10% vs Yesterday',    `Today's price dropped more than 10% · ${bigDrops.length} SKUs affected`,  bigDrops, 'drop');
+  out += alertTable('🟢 Increase >10% vs Yesterday',    `Today's price increased more than 10% · ${bigRises.length} SKUs`,               bigRises, 'rise');
 
   if (has3) {
-    out += alertTable('⬇️ Liên Tục Giảm (3 Ngày)',  `Giảm liên tiếp: ${prev2Date} → ${prevDate} → ${todayDate}`, consDrops, 'drop');
-    out += alertTable('⬆️ Liên Tục Tăng (3 Ngày)',  `Tăng liên tiếp: ${prev2Date} → ${prevDate} → ${todayDate}`, consRises, 'rise');
+    out += alertTable('⬇️ Continuous Drop (3 Days)',  `Consecutive drop: ${prev2Date} → ${prevDate} → ${todayDate}`, consDrops, 'drop');
+    out += alertTable('⬆️ Continuous Rise (3 Days)',  `Consecutive rise: ${prev2Date} → ${prevDate} → ${todayDate}`, consRises, 'rise');
   } else {
     out += `<div class="rank-wrap"><div class="rank-hdr" style="background:var(--card);border:1.5px solid var(--border)">
-      <h3 style="color:var(--text)">📊 Biến Động Liên Tục (≥3 Ngày)</h3>
-      <small style="color:var(--text2)">Cần ít nhất 3 ngày dữ liệu. Hiện có: ${prevDate} và ${todayDate}. Tính năng sẽ tự kích hoạt khi có thêm ngày.</small>
+      <h3 style="color:var(--text)">📊 Continuous Trend (≥3 Days)</h3>
+      <small style="color:var(--text2)">Requires at least 3 days of data. Currently have: ${prevDate} and ${todayDate}. This feature will activate automatically once more days are available.</small>
     </div></div>`;
   }
 
@@ -1423,7 +1423,7 @@ function renderAllBody(data) {
     const cpuCombo = p.cpuDetail || p.cpuFamily || '–';
 
 
-    // Price history: today có highlight, d1 = prevPrice, d2-d4 = –
+    // Price history: today has highlight, d1 = prevPrice, d2-d4 = –
     const priceHistCls = today && prev
       ? (isDrop ? ' td-price-drop' : isRise ? ' td-price-rise' : '')
       : '';
@@ -1431,7 +1431,7 @@ function renderAllBody(data) {
     const prevHtml = prev  ? `<span class="td-price">${vnd(prev)}</span>`  : `<span class="td-na">–</span>`;
     const todayHtml= today ? `<span class="td-price${priceHistCls}" style="font-weight:700">${vnd(today)}</span>` : `<span class="td-na">–</span>`;
 
-    // Row highlight: đỏ nhẹ nếu drop, xanh nhẹ nếu rise
+    // Row highlight: light red if drop, light green if rise
     const rowStyle = isDrop ? 'background:rgba(239,68,68,0.05)' : isRise ? 'background:rgba(34,197,94,0.05)' : '';
 
     const deltaHtml = delta && prev
@@ -1561,9 +1561,9 @@ function buildDerivedData(rows) {
     const prev2Key = newPrev2 + '|' + r[2]?.trim() + '|' + model.toLowerCase();
     const prev2Row = newPrev2 ? lookup[prev2Key] : null;
 
-    const srp      = parsePrice(r[4]);   // SRP (giá gốc)
-    const promo    = parsePrice(r[5]);   // Promotion Price (giá KM)
-    const todayP   = promo || srp;       // dùng giá KM, fallback SRP
+    const srp      = parsePrice(r[4]);   // SRP (original price)
+    const promo    = parsePrice(r[5]);   // Promotion Price
+    const todayP   = promo || srp;       // use promo price, fallback to SRP
 
     const prevPromo  = prevRow  ? parsePrice(prevRow[5])  || parsePrice(prevRow[4])  : 0;
     const prev2Promo = prev2Row ? parsePrice(prev2Row[5]) || parsePrice(prev2Row[4]) : 0;
@@ -2012,7 +2012,7 @@ async function checkLatestRun() {
 </script>
 
 <!-- ── SEARCHABLE DROPDOWNS (Tom Select) ────────────────────────────
-     d_brand, d_gpu, d_cpu, d_series: all <select> → gõ-để-tìm on mobile + desktop  -->
+     d_brand, d_gpu, d_cpu, d_series: all <select> → type-to-search on mobile + desktop  -->
 <script>
 (function () {
   const SELECTS = {
