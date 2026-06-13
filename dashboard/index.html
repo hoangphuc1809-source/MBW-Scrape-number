@@ -539,7 +539,7 @@ window.addEventListener('DOMContentLoaded', () => {
   rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
   rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A')).sort(), 'All CPU')
+  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU')
 
   // Update count display
   const cntEl = document.getElementById('d_count');
@@ -1189,7 +1189,7 @@ function rebuildDropdowns() {
   rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
   rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A')).sort(), 'All CPU');
+  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU');
 }
 
 function applyNewData(derived, csv) {
