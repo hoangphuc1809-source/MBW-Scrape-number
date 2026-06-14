@@ -1736,39 +1736,56 @@ async function fetchSheetData(manual=false) {
   if (btn)    btn.disabled = true;
   if (status) status.textContent = 'Fetching…';
 
-  // Use Google Sheets published CSV export
-  // Requires the sheet to be published to web or accessible via service account
-  // For private sheets we use the Google Drive MCP token approach via fetch
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&t=${Date.now()}`;
-  
-  try {
-    const resp = await fetch(csvUrl, { cache: 'no-store' });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const text = await resp.text();
-    const rows = parseCSV(text);
-    
-    if (rows.length < 10) throw new Error('Too few rows — sheet may not be public');
-    
-    const derived = buildDerivedData(rows);
-    applyNewData(derived, text);
-    
-    const now = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
-    if (status) status.textContent = `✅ Updated ${now}`;
-    if (manual) console.log(`Sheet refreshed: ${derived.newAllToday.length} rows`);
-    
-  } catch (err) {
-    console.warn('Sheet fetch failed:', err.message);
-    if (status) status.textContent = manual ? `⚠️ ${err.message}` : '';
-    // On auto-refresh failure, silently keep existing embedded data
-  } finally {
-    if (icon) icon.className = '';
-    if (btn)  btn.disabled = false;
+  // Two endpoint variants — if one fails (CORS/cache), the other often works.
+  const stamp = () => Date.now();
+  const urlVariants = () => [
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&t=${stamp()}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}&t=${stamp()}`
+  ];
+
+  const MAX_TRIES = 5;
+  let lastErr = null;
+
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    for (const csvUrl of urlVariants()) {
+      try {
+        const resp = await fetch(csvUrl, { cache: 'no-store' });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const text = await resp.text();
+        const rows = parseCSV(text);
+        if (rows.length < 10) throw new Error('Too few rows — sheet may not be public');
+
+        const derived = buildDerivedData(rows);
+        applyNewData(derived, text);
+
+        const now = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
+        if (status) status.textContent = `✅ Updated ${now}`;
+        console.log(`Sheet refreshed: ${derived.newAllToday.length} rows (attempt ${attempt})`);
+        if (icon) icon.className = '';
+        if (btn)  btn.disabled = false;
+        return; // success — stop retrying
+      } catch (err) {
+        lastErr = err;
+        console.warn(`Sheet fetch attempt ${attempt} failed:`, err.message);
+      }
+    }
+    // failed this round — wait then retry (1s, 2s, 3s, 4s)
+    if (attempt < MAX_TRIES) {
+      if (status) status.textContent = `⏳ Đang thử lại (${attempt}/${MAX_TRIES})…`;
+      await new Promise(r => setTimeout(r, attempt * 1000));
+    }
   }
+
+  // All retries exhausted — surface clearly instead of silently keeping old data
+  console.warn('Sheet fetch failed after retries:', lastErr && lastErr.message);
+  if (status) status.textContent = `⚠️ Không tải được dữ liệu mới — đang dùng dữ liệu cũ (${typeof todayDate!=='undefined'?todayDate:'?'})`;
+  if (icon) icon.className = '';
+  if (btn)  btn.disabled = false;
 }
 
-// Auto-refresh on load (after DOMContentLoaded + 500ms)
+// Always fetch the latest data when the page opens or is refreshed.
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => fetchSheetData(false), 500);
+  setTimeout(() => fetchSheetData(false), 300);
 });
 
 
