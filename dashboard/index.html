@@ -601,8 +601,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if(initALBrand) initALBrand.innerHTML = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort().map(v=>`<option value="${v}">`).join('');
   rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU')
+  rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuTag).filter(Boolean))].sort(), 'All VGA');
+  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuFamily).filter(Boolean))].sort(), 'All CPU')
 
   // All SKUs tab dropdowns (Vendor/Series/VGA/CPU) — populated from allToday
   rebuildSel('as_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
@@ -687,8 +687,8 @@ function renderDrops(){
     if (segF.length && !segF.some(v=>isBP_or_gaming(c, v))) return false;
     if (brF.length) { const b=(c.brand||'').toLowerCase(); if(!brF.some(v=>b.includes(v.toLowerCase()))) return false; }
     if (srF.length  && !srF.includes(c.segment)) return false;
-    if (gpF.length) { const _gl=(c.gpuLabel||c.gpuTag||'').toLowerCase(); if(!_gl||!gpF.some(v=>_gl.includes(v.toLowerCase()))) return false; }
-    if (cpF.length) { const cp=(c.cpuDetail||'').toLowerCase(); if(!cp||!cpF.some(v=>cp.includes(v.toLowerCase()))) return false; }
+    if (gpF.length) { if(!gpF.includes(c.gpuTag)) return false; }            // col R: GPU
+    if (cpF.length) { if(!cpF.includes(c.cpuFamily)) return false; }          // col M: CPU Segment
     if (sF) {
       const hay = [c.model, c.brand, c.cpuFamily, c.cpuDetail,
                    c.gpuLabel||c.gpuTag, c.vram, c.ram, c.ssd,
@@ -1682,8 +1682,8 @@ function rebuildDropdowns() {
   // drops tab — d_brand, d_series, d_gpu, d_cpu (all <select> + Tom Select)
   rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU');
+  rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuTag).filter(Boolean))].sort(), 'All VGA');
+  rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuFamily).filter(Boolean))].sort(), 'All CPU');
 
   // All SKUs tab — as_brand, as_series, as_gpu, as_cpu
   rebuildSel('as_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
