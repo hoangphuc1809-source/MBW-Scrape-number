@@ -1021,6 +1021,7 @@ function renderAllSkus() {
         const today  = p.todayPrice || p.kmPrice || 0;
         const prev   = p.prevPrice  || 0;
         const prev2  = p.prev2Price || 0;
+        const prev3  = p.prev3Price || 0;
         const origP  = p.origPrice || 0;
         const discPct = (origP > 0 && today < origP) ? Math.round((origP - today) / origP * 100) : 0;
         const rowBg  = i%2===0 ? '' : 'background:rgba(0,0,0,0.018)';
@@ -1035,7 +1036,7 @@ function renderAllSkus() {
 
         const p2Cell = has3
           ? (prev2
-            ? `<td style="${C};vertical-align:top;padding:6px 4px"><span style="${NW}">${vnd(prev2)}</span></td>`
+            ? priceCell(prev2, prev3)
             : `<td style="${C}"><span class="td-na">–</span></td>`)
           : '';
 
@@ -1544,6 +1545,7 @@ function buildDerivedData(rows) {
   const newToday = dateSet[dateSet.length - 1] || '';
   const newPrev  = dateSet[dateSet.length - 2] || '';
   const newPrev2 = dateSet[dateSet.length - 3] || '';
+  const newPrev3 = dateSet[dateSet.length - 4] || '';   // day before prev2, used for prev2 column % change
 
   // Build lookup: date+dealer+SKU -> row
   // Dailly SRP Tracking: col2=Dealers, col3=SKU
@@ -1568,6 +1570,8 @@ function buildDerivedData(rows) {
     const prevRow  = lookup[prevKey];
     const prev2Key = newPrev2 + '|' + r[2]?.trim() + '|' + model.toLowerCase();
     const prev2Row = newPrev2 ? lookup[prev2Key] : null;
+    const prev3Key = newPrev3 + '|' + r[2]?.trim() + '|' + model.toLowerCase();
+    const prev3Row = newPrev3 ? lookup[prev3Key] : null;
 
     const srp      = parsePrice(r[4]);   // SRP (original price)
     const promo    = parsePrice(r[5]);   // Promotion Price
@@ -1575,6 +1579,7 @@ function buildDerivedData(rows) {
 
     const prevPromo  = prevRow  ? parsePrice(prevRow[5])  || parsePrice(prevRow[4])  : 0;
     const prev2Promo = prev2Row ? parsePrice(prev2Row[5]) || parsePrice(prev2Row[4]) : 0;
+    const prev3Promo = prev3Row ? parsePrice(prev3Row[5]) || parsePrice(prev3Row[4]) : 0;
 
     // Series Group (col 10): Gaming / Business& Productivity
     let seriesGroup = r[10]?.trim() || '';
@@ -1600,6 +1605,7 @@ function buildDerivedData(rows) {
       vram:        r[18]?.trim() || '',   // col S: V-RAM
       gpuLabel:    (() => { const _g = r[17]?.trim() || '', _v = r[18]?.trim() || ''; return _g ? (_v ? _g + ' ' + _v : _g) : ''; })(),
       prev2Price:  prev2Promo,
+      prev3Price:  prev3Promo,
       origPrice:   srp,
       kmPrice:     promo,
       disc:        r[6]?.trim()  || '',   // col G: Change
