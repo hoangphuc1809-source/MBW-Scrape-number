@@ -607,8 +607,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // All SKUs tab dropdowns (Vendor/Series/VGA/CPU) — populated from allToday
   rebuildSel('as_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('as_series', [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  rebuildSel('as_gpu', [...new Set(allToday.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  rebuildSel('as_cpu', [...new Set(allToday.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU');
+  rebuildSel('as_gpu', [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort(), 'All VGA');
+  rebuildSel('as_cpu', [...new Set(allToday.map(p=>p.cpuFamily).filter(Boolean))].sort(), 'All CPU');
 
   // Update count display
   const cntEl = document.getElementById('d_count');
@@ -909,8 +909,8 @@ function renderAllSkus() {
     if (sgF.length && !sgF.some(v=>isBP_or_gaming(p, v))) return false;
     if (brF.length) { const b=(p.brand||'').toLowerCase(); if(!brF.some(v=>b.includes(v.toLowerCase()))) return false; }
     if (srF.length  && !srF.includes(p.segment)) return false;
-    if (gpF.length) { const gl=(p.gpuLabel||p.gpuTag||'').toLowerCase(); if(!gl||!gpF.some(v=>gl.includes(v.toLowerCase()))) return false; }
-    if (cpF.length) { const cd=(p.cpuDetail||p.cpuFamily||'').toLowerCase(); if(!cd||!cpF.some(v=>cd.includes(v.toLowerCase()))) return false; }
+    if (gpF.length) { if(!gpF.includes(p.gpuTag)) return false; }            // col R: GPU
+    if (cpF.length) { if(!cpF.includes(p.cpuFamily)) return false; }          // col M: CPU Segment
     if (psF.length) {
       const price = p.todayPrice||p.kmPrice||0;
       const inAnySeg = psF.some(seg => {
@@ -1688,8 +1688,8 @@ function rebuildDropdowns() {
   // All SKUs tab — as_brand, as_series, as_gpu, as_cpu
   rebuildSel('as_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('as_series', [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
-  rebuildSel('as_gpu', [...new Set(allToday.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
-  rebuildSel('as_cpu', [...new Set(allToday.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU');
+  rebuildSel('as_gpu', [...new Set(allToday.map(p=>p.gpuTag).filter(Boolean))].sort(), 'All VGA');
+  rebuildSel('as_cpu', [...new Set(allToday.map(p=>p.cpuFamily).filter(Boolean))].sort(), 'All CPU');
 }
 
 function applyNewData(derived, csv) {
