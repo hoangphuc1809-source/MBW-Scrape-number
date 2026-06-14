@@ -604,6 +604,12 @@ window.addEventListener('DOMContentLoaded', () => {
   rebuildSel('d_gpu', [...new Set(changes.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
   rebuildSel('d_cpu', [...new Set(changes.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU')
 
+  // All SKUs tab dropdowns (Vendor/Series/VGA/CPU) — populated from allToday
+  rebuildSel('as_brand', [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
+  rebuildSel('as_series', [...new Set(allToday.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
+  rebuildSel('as_gpu', [...new Set(allToday.map(p=>p.gpuLabel||p.gpuTag).filter(Boolean))].sort(), 'All VGA');
+  rebuildSel('as_cpu', [...new Set(allToday.map(p=>p.cpuDetail).filter(c=>c&&c.length<30&&c!=='#N/A'))].sort(), 'All CPU');
+
   // Update count display
   const cntEl = document.getElementById('d_count');
   if (cntEl) cntEl.textContent = `${changes.length} changes`;
