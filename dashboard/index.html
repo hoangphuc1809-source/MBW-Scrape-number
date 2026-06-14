@@ -1749,7 +1749,14 @@ async function fetchSheetData(manual=false) {
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
     for (const csvUrl of urlVariants()) {
       try {
-        const resp = await fetch(csvUrl, { cache: 'no-store' });
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000); // 8s timeout — avoid hung requests
+        let resp;
+        try {
+          resp = await fetch(csvUrl, { cache: 'no-store', signal: ctrl.signal });
+        } finally {
+          clearTimeout(timer);
+        }
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const text = await resp.text();
         const rows = parseCSV(text);
@@ -1766,7 +1773,7 @@ async function fetchSheetData(manual=false) {
         return; // success — stop retrying
       } catch (err) {
         lastErr = err;
-        console.warn(`Sheet fetch attempt ${attempt} failed:`, err.message);
+        console.warn(`Sheet fetch attempt ${attempt} failed:`, err.name === 'AbortError' ? 'timeout' : err.message);
       }
     }
     // failed this round — wait then retry (1s, 2s, 3s, 4s)
