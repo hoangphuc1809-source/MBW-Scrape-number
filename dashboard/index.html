@@ -453,21 +453,21 @@ tbody tr:hover{background:#fafafa}
     <div class="filter-sep"></div>
     <span class="filter-lbl">Filter</span>
     <div class="filter-sep"></div>
-    <select id="d_dealer" onchange="renderDrops()">
+    <select id="d_dealer" multiple onchange="renderDrops()">
       <option value="">All Dealers</option>
       <option value="MBW">MBW</option>
       <option value="FPT Retail">FPT Retail</option>
       <option value="CellPhone S">CellPhone S</option>
     </select>
-    <select id="d_seg" onchange="renderDrops()">
+    <select id="d_seg" multiple onchange="renderDrops()">
       <option value="">All Segments</option>
       <option value="Gaming">Gaming</option>
       <option value="bp">Business &amp; Productivity</option>
     </select>
-    <select id="d_brand" onchange="renderDrops()"><option value="">All Vendors</option></select>
-    <select id="d_series" onchange="renderDrops()"><option value="">All Series</option></select>
-    <select id="d_gpu" onchange="renderDrops()"><option value="">All VGA</option></select>
-    <select id="d_cpu" onchange="renderDrops()"><option value="">All CPU</option></select>
+    <select id="d_brand" multiple onchange="renderDrops()"><option value="">All Vendors</option></select>
+    <select id="d_series" multiple onchange="renderDrops()"><option value="">All Series</option></select>
+    <select id="d_gpu" multiple onchange="renderDrops()"><option value="">All VGA</option></select>
+    <select id="d_cpu" multiple onchange="renderDrops()"><option value="">All CPU</option></select>
     <input id="d_search" type="text" placeholder="🔍 Search anything…" oninput="renderDrops()" style="min-width:180px"/>
     <div class="filter-sep"></div>
     <span id="d_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
@@ -487,18 +487,18 @@ tbody tr:hover{background:#fafafa}
   <div class="filter-bar">
     <span class="filter-lbl">Filter</span>
     <div class="filter-sep"></div>
-    <select id="as_dealer" onchange="renderAllSkus()">
+    <select id="as_dealer" multiple onchange="renderAllSkus()">
       <option value="">All Dealers</option>
       <option value="MBW">MBW</option>
       <option value="FPT Retail">FPT Retail</option>
       <option value="CellPhone S">CellPhone S</option>
     </select>
-    <select id="as_seg" onchange="renderAllSkus()">
+    <select id="as_seg" multiple onchange="renderAllSkus()">
       <option value="">All Segments</option>
       <option value="Gaming">Gaming</option>
       <option value="bp">Business &amp; Productivity</option>
     </select>
-    <select id="as_price" onchange="renderAllSkus()">
+    <select id="as_price" multiple onchange="renderAllSkus()">
       <option value="">All Prices</option>
       <option value="u10">Under 10M</option>
       <option value="10-15">10 – 15M</option>
@@ -509,10 +509,10 @@ tbody tr:hover{background:#fafafa}
       <option value="40-50">40 – 50M</option>
       <option value="ov50">Over 50M</option>
     </select>
-    <select id="as_brand" onchange="renderAllSkus()"><option value="">All Vendors</option></select>
-    <select id="as_series" onchange="renderAllSkus()"><option value="">All Series</option></select>
-    <select id="as_gpu" onchange="renderAllSkus()"><option value="">All VGA</option></select>
-    <select id="as_cpu" onchange="renderAllSkus()"><option value="">All CPU</option></select>
+    <select id="as_brand" multiple onchange="renderAllSkus()"><option value="">All Vendors</option></select>
+    <select id="as_series" multiple onchange="renderAllSkus()"><option value="">All Series</option></select>
+    <select id="as_gpu" multiple onchange="renderAllSkus()"><option value="">All VGA</option></select>
+    <select id="as_cpu" multiple onchange="renderAllSkus()"><option value="">All CPU</option></select>
     <input id="as_search" type="text" placeholder="🔍 Search anything…" oninput="renderAllSkus()" style="min-width:180px"/>
     <div class="filter-sep"></div>
     <span id="as_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
@@ -667,21 +667,21 @@ function renderAlerts(){
 // ── TAB 2: TOP PRICE CHANGES ────────────────────────────
 function renderDrops(){
   const N    = parseInt(document.getElementById('d_topN').value);
-  const dF   = document.getElementById('d_dealer').value;
-  const segF = document.getElementById('d_seg').value;
-  const brF  = document.getElementById('d_brand').value;
-  const srF  = document.getElementById('d_series').value;
-  const gpF  = document.getElementById('d_gpu').value;
-  const cpF  = document.getElementById('d_cpu').value;
+  const dF   = getMultiVal('d_dealer');
+  const segF = getMultiVal('d_seg');
+  const brF  = getMultiVal('d_brand');
+  const srF  = getMultiVal('d_series');
+  const gpF  = getMultiVal('d_gpu');
+  const cpF  = getMultiVal('d_cpu');
   const sF   = document.getElementById('d_search').value.toLowerCase();
 
   const filt = c => {
-    if (dF  && c.dealer !== dF) return false;
-    if (segF && !isBP_or_gaming(c, segF)) return false;
-    if (brF) { const b=brF.toLowerCase(); if(!c.brand||!c.brand.toLowerCase().includes(b)) return false; }
-    if (srF  && c.segment !== srF) return false;
-    if (gpF) { const g=gpF.toLowerCase(); const _gl=c.gpuLabel||c.gpuTag||''; if(!_gl||!_gl.toLowerCase().includes(g)) return false; }
-    if (cpF) { const cp=cpF.toLowerCase(); if(!c.cpuDetail||!c.cpuDetail.toLowerCase().includes(cp)) return false; }
+    if (dF.length  && !dF.includes(c.dealer)) return false;
+    if (segF.length && !segF.some(v=>isBP_or_gaming(c, v))) return false;
+    if (brF.length) { const b=(c.brand||'').toLowerCase(); if(!brF.some(v=>b.includes(v.toLowerCase()))) return false; }
+    if (srF.length  && !srF.includes(c.segment)) return false;
+    if (gpF.length) { const _gl=(c.gpuLabel||c.gpuTag||'').toLowerCase(); if(!_gl||!gpF.some(v=>_gl.includes(v.toLowerCase()))) return false; }
+    if (cpF.length) { const cp=(c.cpuDetail||'').toLowerCase(); if(!cp||!cpF.some(v=>cp.includes(v.toLowerCase()))) return false; }
     if (sF) {
       const hay = [c.model, c.brand, c.cpuFamily, c.cpuDetail,
                    c.gpuLabel||c.gpuTag, c.vram, c.ram, c.ssd,
@@ -888,28 +888,29 @@ let _asSortCol = 'price'; // field to sort by
 let _asSortDir = 1;       // 1=asc, -1=desc
 
 function renderAllSkus() {
-  const dF   = document.getElementById('as_dealer')?.value  || '';
-  const sgF  = document.getElementById('as_seg')?.value     || '';
-  const brF  = document.getElementById('as_brand')?.value   || '';
-  const srF  = document.getElementById('as_series')?.value  || '';
-  const gpF  = document.getElementById('as_gpu')?.value     || '';
-  const cpF  = document.getElementById('as_cpu')?.value     || '';
+  const dF   = getMultiVal('as_dealer');
+  const sgF  = getMultiVal('as_seg');
+  const brF  = getMultiVal('as_brand');
+  const srF  = getMultiVal('as_series');
+  const gpF  = getMultiVal('as_gpu');
+  const cpF  = getMultiVal('as_cpu');
   const sF   = (document.getElementById('as_search')?.value || '').toLowerCase();
-  const psF  = document.getElementById('as_price')?.value   || '';
-
-  const [psMin, psMax] = parsePriceSeg(psF);
+  const psF  = getMultiVal('as_price');
 
   let data = allToday.filter(p => {
-    if (dF  && p.dealer !== dF) return false;
-    if (sgF && !isBP_or_gaming(p, sgF)) return false;
-    if (brF) { const b=brF.toLowerCase(); if(!p.brand||!p.brand.toLowerCase().includes(b)) return false; }
-    if (srF  && p.segment !== srF) return false;
-    if (gpF) { const g=gpF.toLowerCase(); const gl=p.gpuLabel||p.gpuTag||''; if(!gl.toLowerCase().includes(g)) return false; }
-    if (cpF) { const c=cpF.toLowerCase(); const cd=(p.cpuDetail||p.cpuFamily||''); if(!cd.toLowerCase().includes(c)) return false; }
-    if (psF) {
+    if (dF.length  && !dF.includes(p.dealer)) return false;
+    if (sgF.length && !sgF.some(v=>isBP_or_gaming(p, v))) return false;
+    if (brF.length) { const b=(p.brand||'').toLowerCase(); if(!brF.some(v=>b.includes(v.toLowerCase()))) return false; }
+    if (srF.length  && !srF.includes(p.segment)) return false;
+    if (gpF.length) { const gl=(p.gpuLabel||p.gpuTag||'').toLowerCase(); if(!gl||!gpF.some(v=>gl.includes(v.toLowerCase()))) return false; }
+    if (cpF.length) { const cd=(p.cpuDetail||p.cpuFamily||'').toLowerCase(); if(!cd||!cpF.some(v=>cd.includes(v.toLowerCase()))) return false; }
+    if (psF.length) {
       const price = p.todayPrice||p.kmPrice||0;
-      if (price < psMin) return false;
-      if (psMax > 0 && price >= psMax) return false;
+      const inAnySeg = psF.some(seg => {
+        const [min,max] = parsePriceSeg(seg);
+        return price >= min && (max === 0 || price < max);
+      });
+      if (!inAnySeg) return false;
     }
     if (sF) {
       const hay = [p.model,p.brand,p.cpuFamily,p.cpuDetail,
@@ -2015,25 +2016,46 @@ async function checkLatestRun() {
      d_brand, d_gpu, d_cpu, d_series: all <select> → type-to-search on mobile + desktop  -->
 <script>
 (function () {
+  // All filter dropdowns now support MULTI-SELECT (chips + remove button)
   const SELECTS = {
+    'd_dealer': 'All Dealers',
+    'd_seg':    'All Segments',
     'd_brand':  'All Vendors',
     'd_gpu':    'All VGA',
     'd_cpu':    'All CPU',
     'd_series': 'All Series',
+    'as_dealer':'All Dealers',
+    'as_seg':   'All Segments',
+    'as_price': 'All Prices',
     'as_brand': 'All Vendors',
     'as_gpu':   'All VGA',
     'as_cpu':   'All CPU',
     'as_series':'All Series'
   };
-  const OPTS = { maxOptions: null, allowEmptyOption: true, sortField: { field: '$order' } };
+  const OPTS = {
+    maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
+    maxItems: null, plugins: ['remove_button'],
+    onInitialize: function () { this.removeOption(''); }
+  };
+
+  // Get selected values as an array (works for both multi-TomSelect and plain <select>)
+  window.getMultiVal = function (id) {
+    const el = document.getElementById(id);
+    if (!el) return [];
+    if (el.tomselect) return el.tomselect.getValue().filter(Boolean);
+    return el.value ? [el.value] : [];
+  };
 
   // Sync Tom Select from the underlying <select> (called after rebuildSel mutates children)
   function syncFromSelect(el) {
     const ts = el.tomselect;
     if (!ts) return;
-    const cur = el.value;
+    const cur = ts.getValue(); // array — preserve current multi-selection
     ts.clearOptions();
-    [...el.options].forEach(o => ts.addOption({ value: o.value, text: o.textContent.trim() }));
+    [...el.options].forEach(o => {
+      if (o.value === '') return; // skip the "All X" placeholder option
+      ts.addOption({ value: o.value, text: o.textContent.trim() });
+    });
     ts.refreshOptions(false);
     ts.setValue(cur, true);
   }
@@ -2043,6 +2065,11 @@ async function checkLatestRun() {
     const el = document.getElementById(id);
     if (!el || el.tomselect) return;
     new TomSelect(el, { ...OPTS, placeholder });
+  }
+
+  function attachObserver(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
     let busy = false;
     const obs = new MutationObserver(() => {
       if (busy) return;
@@ -2056,24 +2083,28 @@ async function checkLatestRun() {
     obs.observe(el, { childList: true });
   }
 
-  // Patch resetDropFilters() so Tom Select display also clears
-  function patchReset() {
-    if (window._tsResetPatched || typeof window.resetDropFilters !== 'function') return;
-    const orig = window.resetDropFilters;
-    window.resetDropFilters = function () {
+  // Patch reset functions so Tom Select chips also clear
+  function patchReset(fnName) {
+    const flag = '_tsResetPatched_' + fnName;
+    if (window[flag] || typeof window[fnName] !== 'function') return;
+    const orig = window[fnName];
+    window[fnName] = function () {
       const r = orig.apply(this, arguments);
       Object.keys(SELECTS).forEach(id => {
         const e = document.getElementById(id);
-        if (e && e.tomselect) e.tomselect.setValue('', true);
+        if (e && e.tomselect) e.tomselect.clear(true);
       });
       return r;
     };
-    window._tsResetPatched = true;
+    window[flag] = true;
   }
 
   function boot() {
     Object.entries(SELECTS).forEach(([id, ph]) => makeSearchable(id, ph));
-    patchReset();
+    // Only dynamically-rebuilt selects need the mutation observer
+    ['d_brand','d_gpu','d_cpu','d_series','as_brand','as_gpu','as_cpu','as_series'].forEach(attachObserver);
+    patchReset('resetDropFilters');
+    patchReset('resetAllSkusFilters');
   }
 
   // defer scripts run before DOMContentLoaded → TomSelect is ready by then
