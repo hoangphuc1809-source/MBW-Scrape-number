@@ -595,6 +595,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!s) return;
     s.innerHTML = `<option value="">${lbl}</option>`;
     vals.forEach(v => { const o = document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o); });
+    if (window.tsSync) window.tsSync(id); // push options into Tom Select
   };
   const initALBrand = document.getElementById('al_brand_list');
   if(initALBrand) initALBrand.innerHTML = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort().map(v=>`<option value="${v}">`).join('');
@@ -1650,6 +1651,7 @@ function rebuildDropdowns() {
       sel.appendChild(o);
     });
     if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+    if (window.tsSync) window.tsSync(id); // push options into Tom Select
   };
   // g_vga: Gaming series names (segment field, filtered by gamingGroup)
   rebuildSel('g_vga', [...new Set(allToday.filter(p=>p.gamingGroup==='Gaming'&&p.segment).map(p=>p.segment))].sort(), 'All Series');
@@ -2058,6 +2060,13 @@ async function checkLatestRun() {
     ts.refreshOptions(false);
     ts.setValue(cur, true);
   }
+
+  // Global hook: call directly after any code mutates a <select>'s options.
+  // More reliable than the MutationObserver (which can miss innerHTML writes).
+  window.tsSync = function (id) {
+    const el = document.getElementById(id);
+    if (el && el.tomselect) { try { syncFromSelect(el); } catch (e) {} }
+  };
 
   function makeSearchable(id, placeholder) {
     if (typeof TomSelect === 'undefined') return; // CDN not yet loaded
