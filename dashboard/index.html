@@ -2034,8 +2034,7 @@ async function checkLatestRun() {
   };
   const OPTS = {
     maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
-    maxItems: null, plugins: ['remove_button'],
-    onInitialize: function () { this.removeOption(''); }
+    maxItems: null, plugins: ['remove_button']
   };
 
   // Get selected values as an array (works for both multi-TomSelect and plain <select>)
@@ -2064,6 +2063,9 @@ async function checkLatestRun() {
     if (typeof TomSelect === 'undefined') return; // CDN not yet loaded
     const el = document.getElementById(id);
     if (!el || el.tomselect) return;
+    // Remove the empty "All X" placeholder option BEFORE init so Tom Select
+    // renders the real options on first open (using placeholder prop instead).
+    [...el.options].forEach(o => { if (o.value === '') o.remove(); });
     new TomSelect(el, { ...OPTS, placeholder });
   }
 
