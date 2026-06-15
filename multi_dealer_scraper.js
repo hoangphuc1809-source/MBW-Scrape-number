@@ -21,6 +21,22 @@ const os           = require('os');
 // ── Config ────────────────────────────────────────────────
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const SHEET_NAME   = 'RAW DATA';
+
+// SCRAPE_DEALERS: danh sách dealer chạy trong job này, phân tách bởi dấu phẩy
+// (vd: "MBW,CPS" hoặc "FPT"). Mặc định = cả 3 (chạy full như trước).
+// Dùng khi tách workflow thành nhiều job song song (vd: MBW+CPS trên
+// ubuntu-latest, FPT trên self-hosted) — mỗi job chỉ ghi đè dữ liệu của
+// CHÍNH dealer mình phụ trách trong sheet hôm nay, không đụng tới dữ liệu
+// dealer khác do job song song ghi (tránh race condition khi cả 2 job
+// cùng đọc-sửa-ghi RAW DATA cùng lúc).
+const DEALER_KEY_TO_NAME = { MBW: 'MBW', FPT: 'FPT Retail', CPS: 'CellPhone S' };
+const SCRAPE_DEALERS_RAW = (process.env.SCRAPE_DEALERS || 'MBW,FPT,CPS')
+  .split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+const SCRAPE_DEALERS = new Set(SCRAPE_DEALERS_RAW);
+// Tên dealer (giá trị cột D) tương ứng với các key trong SCRAPE_DEALERS
+const SCRAPE_DEALER_NAMES = new Set(
+  [...SCRAPE_DEALERS].map(k => DEALER_KEY_TO_NAME[k]).filter(Boolean)
+);
 const CREDS_PATH     = path.join(os.tmpdir(), 'scraper_gcp.json');
 // Deadline: dừng fetch specs sau 50 phút kể từ lúc start
 // Đảm bảo còn đủ thời gian ghi sheet trước khi GitHub Actions timeout (6h)
@@ -626,7 +642,15 @@ async function writeToSheet(sheets, allProducts) {
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A2:R`,
     });
-    existingRows = (res.data.values||[]).filter(row => row[0] && row[0] !== dateStr);
+    // Chỉ loại bỏ rows hôm nay thuộc dealer mà JOB NÀY phụ trách.
+    // Rows hôm nay của dealer khác (do job song song ghi) được giữ lại,
+    // tránh race condition khi 2 job cùng đọc-sửa-ghi RAW DATA.
+    existingRows = (res.data.values||[]).filter(row => {
+      if (!row[0]) return false; // bỏ rows trống/lỗi
+      if (row[0] !== dateStr) return true; // ngày khác → giữ
+      const dealer = row[3];
+      return !SCRAPE_DEALER_NAMES.has(dealer); // hôm nay nhưng dealer khác → giữ
+    });
   } catch(e) {
     console.log('⚠ Read existing rows failed:', e.message);
   }
@@ -700,38 +724,50 @@ async function writeToSheet(sheets, allProducts) {
 
   try {
     // ── MBW ── scrape 1 lần từ trang tổng /laptop
-    console.log('\n═══ MBW ═══');
-    const pageMBW = await browser.newPage();
-    await pageMBW.setViewport({ width: 1280, height: 900 });
-    await pageMBW.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-    const mbwProducts = await scrapeMBW(pageMBW);
-    console.log(`    → ${mbwProducts.length} SP tổng MBW`);
-    allProducts.push(...mbwProducts);
-    await pageMBW.close();
+    if (SCRAPE_DEALERS.has('MBW')) {
+      console.log('\n═══ MBW ═══');
+      const pageMBW = await browser.newPage();
+      await pageMBW.setViewport({ width: 1280, height: 900 });
+      await pageMBW.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+      const mbwProducts = await scrapeMBW(pageMBW);
+      console.log(`    → ${mbwProducts.length} SP tổng MBW`);
+      allProducts.push(...mbwProducts);
+      await pageMBW.close();
+    } else {
+      console.log('\n═══ MBW ═══ (skip — không trong SCRAPE_DEALERS)');
+    }
 
     // ── FPT ──
-    console.log('\n═══ FPT Retail ═══');
-    const pageFPT = await browser.newPage();
-    await pageFPT.setViewport({ width: 1280, height: 900 });
-    await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-    for (const brand of BRANDS) {
-      const products = await scrapeFPT(pageFPT, brand, specCache, startTime);
-      allProducts.push(...products);
-      await sleep(800);
+    if (SCRAPE_DEALERS.has('FPT')) {
+      console.log('\n═══ FPT Retail ═══');
+      const pageFPT = await browser.newPage();
+      await pageFPT.setViewport({ width: 1280, height: 900 });
+      await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+      for (const brand of BRANDS) {
+        const products = await scrapeFPT(pageFPT, brand, specCache, startTime);
+        allProducts.push(...products);
+        await sleep(800);
+      }
+      await pageFPT.close();
+    } else {
+      console.log('\n═══ FPT Retail ═══ (skip — không trong SCRAPE_DEALERS)');
     }
-    await pageFPT.close();
 
     // ── CPS ──
-    console.log('\n═══ CellPhone S ═══');
-    const pageCPS = await browser.newPage();
-    await pageCPS.setViewport({ width: 1280, height: 900 });
-    await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-    for (const brand of BRANDS) {
-      const products = await scrapeCPS(pageCPS, brand, specCache, startTime);
-      allProducts.push(...products);
-      await sleep(800);
+    if (SCRAPE_DEALERS.has('CPS')) {
+      console.log('\n═══ CellPhone S ═══');
+      const pageCPS = await browser.newPage();
+      await pageCPS.setViewport({ width: 1280, height: 900 });
+      await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+      for (const brand of BRANDS) {
+        const products = await scrapeCPS(pageCPS, brand, specCache, startTime);
+        allProducts.push(...products);
+        await sleep(800);
+      }
+      await pageCPS.close();
+    } else {
+      console.log('\n═══ CellPhone S ═══ (skip — không trong SCRAPE_DEALERS)');
     }
-    await pageCPS.close();
 
   } finally {
     await browser.close();
