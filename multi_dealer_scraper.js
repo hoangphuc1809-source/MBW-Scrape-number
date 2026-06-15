@@ -240,7 +240,11 @@ async function scrapeMBW(page) {
   }
 
   try {
-    await page.goto(MBW_URL, { waitUntil: 'networkidle2', timeout: 90000 });
+    // Qua proxy: networkidle2 hay bị timeout (1 request nền không bao giờ "idle"
+    // khi đi qua Worker). domcontentloaded + sleep ổn định hơn, giống FPT/CPS.
+    const waitUntil = MBW_PROXY_HOST ? 'domcontentloaded' : 'networkidle2';
+    await page.goto(MBW_URL, { waitUntil, timeout: 90000 });
+    if (MBW_PROXY_HOST) await sleep(3000);
   } catch(e) {
     console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
     return [];
@@ -411,6 +415,22 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   }, brand.name, 'https://fptshop.com.vn');
 
   console.log(`    → ${products.length} SP`);
+  if (products.length === 0) {
+    // Chẩn đoán: trang trả 0 SP có thể do (a) bị chặn/redirect sang trang
+    // block, hoặc (b) selector "div.cardInfo" đã đổi. Log title + URL + đoạn
+    // đầu body để phân biệt 2 trường hợp ở lần chạy sau.
+    const diag = await page.evaluate(() => ({
+      title: document.title,
+      url: location.href,
+      cardInfoCount: document.querySelectorAll('div.cardInfo').length,
+      bodyLen: document.body.innerHTML.length,
+      bodySnippet: (document.body.innerText || '').slice(0, 200).replace(/\s+/g, ' '),
+    })).catch(() => null);
+    if (diag) {
+      console.log(`    🔍 diag: title="${diag.title}" url=${diag.url} cardInfo=${diag.cardInfoCount} bodyLen=${diag.bodyLen}`);
+      console.log(`    🔍 body: ${diag.bodySnippet}`);
+    }
+  }
   await enrichSpecs(products, specCache, fetchSpecsFPT, page, startTime);
   return products;
 }
