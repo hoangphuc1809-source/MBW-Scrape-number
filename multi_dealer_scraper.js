@@ -715,7 +715,7 @@ async function writeToSheet(sheets, allProducts) {
 
   const browser = await puppeteer.launch({
     headless: true,
-    protocolTimeout: 180000,
+    protocolTimeout: 300000, // 300s — ubuntu-latest đôi khi CDP chậm bất thường (đã gặp Network.setCacheDisabled timeout ở 180s)
     args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage',
            '--disable-gpu','--window-size=1280,900'],
   });
@@ -726,13 +726,17 @@ async function writeToSheet(sheets, allProducts) {
     // ── MBW ── scrape 1 lần từ trang tổng /laptop
     if (SCRAPE_DEALERS.has('MBW')) {
       console.log('\n═══ MBW ═══');
-      const pageMBW = await browser.newPage();
-      await pageMBW.setViewport({ width: 1280, height: 900 });
-      await pageMBW.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-      const mbwProducts = await scrapeMBW(pageMBW);
-      console.log(`    → ${mbwProducts.length} SP tổng MBW`);
-      allProducts.push(...mbwProducts);
-      await pageMBW.close();
+      try {
+        const pageMBW = await browser.newPage();
+        await pageMBW.setViewport({ width: 1280, height: 900 });
+        await pageMBW.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+        const mbwProducts = await scrapeMBW(pageMBW);
+        console.log(`    → ${mbwProducts.length} SP tổng MBW`);
+        allProducts.push(...mbwProducts);
+        await pageMBW.close();
+      } catch (e) {
+        console.log(`    💥 MBW lỗi: ${e.message.substring(0,100)}`);
+      }
     } else {
       console.log('\n═══ MBW ═══ (skip — không trong SCRAPE_DEALERS)');
     }
@@ -740,12 +744,23 @@ async function writeToSheet(sheets, allProducts) {
     // ── FPT ──
     if (SCRAPE_DEALERS.has('FPT')) {
       console.log('\n═══ FPT Retail ═══');
-      const pageFPT = await browser.newPage();
+      let pageFPT = await browser.newPage();
       await pageFPT.setViewport({ width: 1280, height: 900 });
       await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
       for (const brand of BRANDS) {
-        const products = await scrapeFPT(pageFPT, brand, specCache, startTime);
-        allProducts.push(...products);
+        try {
+          const products = await scrapeFPT(pageFPT, brand, specCache, startTime);
+          allProducts.push(...products);
+        } catch (e) {
+          // Lỗi Puppeteer/CDP thoáng qua (vd: "Network.setCacheDisabled timed out")
+          // không nên làm crash toàn bộ job — bỏ qua brand này, tạo page mới
+          // (page cũ có thể đã ở trạng thái CDP hỏng) rồi tiếp tục brand sau.
+          console.log(`    💥 ${brand.name} lỗi: ${e.message.substring(0,100)}`);
+          try { await pageFPT.close(); } catch(_) {}
+          pageFPT = await browser.newPage();
+          await pageFPT.setViewport({ width: 1280, height: 900 });
+          await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+        }
         await sleep(800);
       }
       await pageFPT.close();
@@ -756,12 +771,20 @@ async function writeToSheet(sheets, allProducts) {
     // ── CPS ──
     if (SCRAPE_DEALERS.has('CPS')) {
       console.log('\n═══ CellPhone S ═══');
-      const pageCPS = await browser.newPage();
+      let pageCPS = await browser.newPage();
       await pageCPS.setViewport({ width: 1280, height: 900 });
       await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
       for (const brand of BRANDS) {
-        const products = await scrapeCPS(pageCPS, brand, specCache, startTime);
-        allProducts.push(...products);
+        try {
+          const products = await scrapeCPS(pageCPS, brand, specCache, startTime);
+          allProducts.push(...products);
+        } catch (e) {
+          console.log(`    💥 ${brand.name} lỗi: ${e.message.substring(0,100)}`);
+          try { await pageCPS.close(); } catch(_) {}
+          pageCPS = await browser.newPage();
+          await pageCPS.setViewport({ width: 1280, height: 900 });
+          await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+        }
         await sleep(800);
       }
       await pageCPS.close();
