@@ -33,18 +33,18 @@ const FPT_MAPPING_VERSION = 2; // v2.9: fix GPU dual card + RAM/Storage/Screen f
 // FPT và CPS: vẫn scrape per-brand như cũ
 //
 // Cả 3 dealer đều có thể bị chặn/challenge IP của GitHub-hosted runners:
-//  - MBW (thegioididong.com): ERR_CONNECTION_RESET
-//  - FPT (fptshop.com.vn): Cloudflare "Just a moment..." bot-challenge
+//  - MBW (thegioididong.com): ERR_CONNECTION_RESET → fix bằng Cloudflare Worker proxy
+//  - FPT (fptshop.com.vn): Cloudflare "Just a moment..." bot-challenge — Worker
+//    proxy KHÔNG bypass được (Cloudflare Worker → origin cũng do Cloudflare bảo vệ
+//    bị chặn ở edge-to-edge level) → vẫn gọi trực tiếp, có thể trả 0 SP trên CI.
+//  - CPS (cellphones.com.vn): không bị chặn → gọi trực tiếp.
 // PROXY_HOST (vd: "https://mbw-proxy.<account>.workers.dev") là 1 Cloudflare
 // Worker reverse-proxy đa-target — forward request tới đúng site qua đường dẫn
-// /__proxy/<mbw|fpt|cps>/<path> bằng IP Cloudflare edge, cho phép chạy trên
-// ubuntu-latest mà không cần self-hosted runner.
-// Nếu không set PROXY_HOST, scraper gọi trực tiếp các site (cần self-hosted).
+// /__proxy/<mbw|fpt|cps>/<path> bằng IP Cloudflare edge.
+// Nếu không set PROXY_HOST, MBW gọi trực tiếp thegioididong.com (cần self-hosted).
 const PROXY_HOST = (process.env.MBW_PROXY_HOST || '').replace(/\/$/, '');
 
 const MBW_REAL_HOST = 'www.thegioididong.com';
-const FPT_REAL_HOST = 'fptshop.com.vn';
-const CPS_REAL_HOST = 'cellphones.com.vn';
 
 const MBW_BASE = PROXY_HOST ? `${PROXY_HOST}/__proxy/mbw` : `https://${MBW_REAL_HOST}`;
 
@@ -53,8 +53,12 @@ const MBW_URL = `${MBW_BASE}/laptop`;
 // Helper: gắn request interception lên 1 page để rewrite mọi request tới
 // `realHost` sang `proxyBase + /__proxy/<key>` + path gốc — cho phép các AJAX
 // call tuyệt đối (load-more, API nội bộ...) cũng đi qua proxy.
+// Idempotent: nếu page đã enable interception rồi thì bỏ qua, tránh add 2
+// listener cùng gọi req.continue() trên 1 request → "Request is already handled!"
 function enableProxyInterception(page, realHost, proxyKey) {
   if (!PROXY_HOST) return Promise.resolve();
+  if (page.__proxyInterceptionEnabled) return Promise.resolve();
+  page.__proxyInterceptionEnabled = true;
   const proxyPrefix = `${PROXY_HOST}/__proxy/${proxyKey}`;
   return page.setRequestInterception(true).then(() => {
     page.on('request', (req) => {
@@ -69,23 +73,6 @@ function enableProxyInterception(page, realHost, proxyKey) {
       req.continue();
     });
   });
-}
-
-// Chuyển 1 URL thật (thegioididong.com/fptshop.com.vn/cellphones.com.vn)
-// sang URL đi qua proxy (nếu PROXY_HOST được set), giữ nguyên path+query.
-function toProxied(realUrl) {
-  if (!PROXY_HOST) return realUrl;
-  try {
-    const u = new URL(realUrl);
-    let key = null;
-    if (u.hostname === MBW_REAL_HOST) key = 'mbw';
-    else if (u.hostname === FPT_REAL_HOST) key = 'fpt';
-    else if (u.hostname === CPS_REAL_HOST) key = 'cps';
-    if (!key) return realUrl;
-    return `${PROXY_HOST}/__proxy/${key}${u.pathname}${u.search}`;
-  } catch (_) {
-    return realUrl;
-  }
 }
 
 const BRANDS = [
@@ -131,10 +118,9 @@ async function scrollToBottom(page) {
 }
 
 async function safeGoto(page, url) {
-  const target = toProxied(url);
   for (let i = 0; i <= 2; i++) {
     try {
-      await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 25000 });
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
       return true;
     } catch (e) {
       if (i === 2) { console.log(`    ⚠ goto failed: ${e.message.substring(0,60)}`); return false; }
@@ -349,6 +335,19 @@ async function scrapeMBW(page) {
   );
   console.log(`    → Tổng items trên trang: ${totalItems}`);
 
+  if (totalItems === 0) {
+    const diag = await page.evaluate(() => ({
+      title: document.title,
+      url: location.href,
+      bodyLen: document.body.innerHTML.length,
+      bodySnippet: (document.body.innerText || '').slice(0, 200).replace(/\s+/g, ' '),
+    })).catch(() => null);
+    if (diag) {
+      console.log(`    🔍 diag: title="${diag.title}" url=${diag.url} bodyLen=${diag.bodyLen}`);
+      console.log(`    🔍 body: ${diag.bodySnippet}`);
+    }
+  }
+
   return page.evaluate((BASE) => {
     const out  = [];
     const seen = new Set();
@@ -407,9 +406,10 @@ async function scrapeMBW(page) {
 // ── SCRAPER 2 — FPT Retail ────────────────────────────────
 async function scrapeFPT(page, brand, specCache, startTime) {
   console.log(`  [FPT] ${brand.name}`);
-  await enableProxyInterception(page, FPT_REAL_HOST, 'fpt');
+  // FPT bị Cloudflare bot-challenge ngay cả qua Worker proxy (Cloudflare Worker
+  // → Cloudflare-protected origin bị chặn ở edge-to-edge level) → gọi trực tiếp.
   try {
-    await page.goto(toProxied(brand.fptUrl), { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(brand.fptUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
   } catch(e) {
     console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
     return [];
@@ -507,9 +507,9 @@ async function scrapeFPT(page, brand, specCache, startTime) {
 // ── SCRAPER 3 — CellPhone S ───────────────────────────────
 async function scrapeCPS(page, brand, specCache, startTime) {
   console.log(`  [CPS] ${brand.name}`);
-  await enableProxyInterception(page, CPS_REAL_HOST, 'cps');
+  // CPS không bị chặn IP datacenter → gọi trực tiếp, không cần proxy.
   try {
-    await page.goto(toProxied(brand.cpsUrl), { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(brand.cpsUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
   } catch(e) {
     console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
     return [];
