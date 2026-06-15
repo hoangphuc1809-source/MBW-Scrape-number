@@ -31,7 +31,16 @@ const FPT_MAPPING_VERSION = 2; // v2.9: fix GPU dual card + RAM/Storage/Screen f
 
 // MBW: scrape trang tổng /laptop để lấy đủ ~464 SP (thay vì per-brand chỉ ~150)
 // FPT và CPS: vẫn scrape per-brand như cũ
-const MBW_URL = 'https://www.thegioididong.com/laptop';
+//
+// thegioididong.com chặn IP của GitHub-hosted runners (ERR_CONNECTION_RESET).
+// MBW_PROXY_HOST (vd: "https://mbw-proxy.<account>.workers.dev") là 1 Cloudflare
+// Worker reverse-proxy forward request tới thegioididong.com bằng IP Cloudflare
+// edge — cho phép chạy trên ubuntu-latest mà không cần self-hosted runner.
+// Nếu không set MBW_PROXY_HOST, scraper gọi trực tiếp thegioididong.com (cần self-hosted).
+const MBW_PROXY_HOST = (process.env.MBW_PROXY_HOST || '').replace(/\/$/, '');
+const MBW_REAL_HOST  = 'www.thegioididong.com';
+const MBW_BASE       = MBW_PROXY_HOST || `https://${MBW_REAL_HOST}`;
+const MBW_URL        = `${MBW_BASE}/laptop`;
 
 const BRANDS = [
   { name: 'Asus',     fptUrl: 'https://fptshop.com.vn/may-tinh-xach-tay/asus',     cpsUrl: 'https://cellphones.com.vn/laptop/asus.html'     },
@@ -210,6 +219,26 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime) {
 // ── SCRAPER 1 — MBW ──────────────────────────────────────
 async function scrapeMBW(page) {
   console.log('  [MBW] Trang tổng /laptop');
+
+  // Khi dùng proxy: trang chính được load từ MBW_PROXY_HOST, nhưng các AJAX call
+  // ("Xem thêm" load more) mà page tự phát ra vẫn có thể trỏ thẳng tới
+  // thegioididong.com (URL tuyệt đối trong JS bundle) → bị chặn.
+  // setRequestInterception rewrite mọi request tới MBW_REAL_HOST sang proxy.
+  if (MBW_PROXY_HOST) {
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      try {
+        const reqUrl = new URL(req.url());
+        if (reqUrl.hostname === MBW_REAL_HOST) {
+          const proxied = MBW_PROXY_HOST + reqUrl.pathname + reqUrl.search;
+          req.continue({ url: proxied });
+          return;
+        }
+      } catch (_) { /* fall through */ }
+      req.continue();
+    });
+  }
+
   try {
     await page.goto(MBW_URL, { waitUntil: 'networkidle2', timeout: 90000 });
   } catch(e) {
