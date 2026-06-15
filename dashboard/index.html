@@ -71,7 +71,7 @@ html, body { height:100%; }
 .kpi-sub{font-size:11px;color:var(--text2);margin-top:2px}
 
 /* FILTER BAR */
-.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow)}
+.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
 .filter-bar select,.filter-bar input{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text);background:#fff;outline:none;transition:border .15s}
 .filter-bar select:focus,.filter-bar input:focus{border-color:var(--accent)}
 .filter-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
@@ -700,7 +700,14 @@ function renderDrops(){
                    c.screen, c.segment, c.dealer, c.disc||'',
                    String(c.origPrice||''), String(c.kmPrice||''), String(c.todayPrice||'')]
         .filter(Boolean).map(v=>v.toString().toLowerCase()).join(' ');
-      if (!hay.includes(sF)) return false;
+      const matchesPlain = hay.includes(sF);
+      // Part-number match: normalize both query and (model + partNum) by
+      // stripping spaces/hyphens/underscores, so "ANV15-52-72BM" (FPT/CPS)
+      // matches "ANV15 52 72BM" (MBW) and vice-versa.
+      const sFNorm = normPN(sF);
+      const matchesPN = sFNorm.length >= 4 &&
+        (normPN(c.model).includes(sFNorm) || normPN(c.partNum).includes(sFNorm));
+      if (!matchesPlain && !matchesPN) return false;
     }
     return true;
   };
@@ -932,7 +939,11 @@ function renderAllSkus() {
                    p.segment,p.dealer,p.disc||'',
                    String(p.kmPrice||p.todayPrice||'')]
         .filter(Boolean).map(v=>v.toLowerCase()).join(' ');
-      if (!hay.includes(sF)) return false;
+      const matchesPlain = hay.includes(sF);
+      const sFNorm = normPN(sF);
+      const matchesPN = sFNorm.length >= 4 &&
+        (normPN(p.model).includes(sFNorm) || normPN(p.partNum).includes(sFNorm));
+      if (!matchesPlain && !matchesPN) return false;
     }
     return true;
   });
@@ -1535,6 +1546,12 @@ function parsePrice(s) {
   return isNaN(n) ? 0 : n;
 }
 
+// Normalize text for part-number search: lowercase + strip spaces/hyphens/underscores
+// so "ANV15-52-72BM" (FPT/CPS) matches "ANV15 52 72BM" (MBW) and vice-versa.
+function normPN(s) {
+  return (s || '').toString().toLowerCase().replace(/[\s\-_]+/g, '');
+}
+
 function buildDerivedData(rows) {
   // rows[0] = header, rows[1..] = data
   // Find the 2 most recent unique dates
@@ -1618,6 +1635,7 @@ function buildDerivedData(rows) {
       kmPrice:     promo,
       disc:        r[6]?.trim()  || '',   // col G: Change
       link:        r[20]?.trim() || '',   // col U: Products link
+      partNum:     r[21]?.trim() || '',   // col V: Part #
       sold:        cleanSold(r[7]),       // col H: Sold
       prevSold:    prevRow ? cleanSold(prevRow[7]) : '',
       focusModel:  (r[22]?.trim() === 'Yes'), // col W: Focus Model
