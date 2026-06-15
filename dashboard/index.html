@@ -93,6 +93,7 @@ html, body { height:100%; }
 .dlr-mbw{background:#fef08a;color:#854d0e}
 .dlr-fpt{background:#1e40af;color:#fff}
 .dlr-cps{background:#991b1b;color:#fff}
+.dlr-key{background:#7c3aed;color:#fff}
 .prices{display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap}
 .p-old{color:var(--text2);text-decoration:line-through;font-size:12px}
 .p-arrow{font-size:15px;opacity:.7}
@@ -513,6 +514,10 @@ tbody tr:hover{background:#fafafa}
     <select id="as_series" multiple onchange="renderAllSkus()"><option value="">All Series</option></select>
     <select id="as_gpu" multiple onchange="renderAllSkus()"><option value="">All VGA</option></select>
     <select id="as_cpu" multiple onchange="renderAllSkus()"><option value="">All CPU</option></select>
+    <select id="as_focus" multiple onchange="renderAllSkus()">
+      <option value="">All Models</option>
+      <option value="yes">⭐ Key Focus Model</option>
+    </select>
     <input id="as_search" type="text" placeholder="🔍 Search anything…" oninput="renderAllSkus()" style="min-width:180px"/>
     <div class="filter-sep"></div>
     <span id="as_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
@@ -901,6 +906,7 @@ function renderAllSkus() {
   const srF  = getMultiVal('as_series');
   const gpF  = getMultiVal('as_gpu');
   const cpF  = getMultiVal('as_cpu');
+  const fcF  = getMultiVal('as_focus');
   const sF   = (document.getElementById('as_search')?.value || '').toLowerCase();
   const psF  = getMultiVal('as_price');
 
@@ -911,6 +917,7 @@ function renderAllSkus() {
     if (srF.length  && !srF.includes(p.segment)) return false;
     if (gpF.length) { if(!gpF.includes(p.gpuTag)) return false; }            // col R: GPU
     if (cpF.length) { if(!cpF.includes(p.cpuFamily)) return false; }          // col M: CPU Segment
+    if (fcF.length && fcF.includes('yes') && !p.focusModel) return false;     // col W: Focus Model
     if (psF.length) {
       const price = p.todayPrice||p.kmPrice||0;
       const inAnySeg = psF.some(seg => {
@@ -1043,7 +1050,7 @@ function renderAllSkus() {
         return `<tr style="${rowHighlight}">
           <td style="${C};padding:5px 4px;color:var(--text2);font-size:11px">${i+1}</td>
           <td style="${L};padding:5px 6px">
-            <div class="mname" style="font-size:12px;line-height:1.35">${p.model}</div>
+            <div class="mname" style="font-size:12px;line-height:1.35">${p.model}${p.focusModel ? ' <span class="dlr dlr-key" style="font-size:9px;padding:1px 4px">⭐ Key Model</span>' : ''}</div>
             <span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span>
             ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">${discPct}% off SRP</span>` : ''}
           </td>
@@ -1086,7 +1093,7 @@ function asSortBy(col) {
 }
 
 function resetAllSkusFilters() {
-  ['as_dealer','as_seg','as_brand','as_series','as_gpu','as_cpu','as_price'].forEach(id => {
+  ['as_dealer','as_seg','as_brand','as_series','as_gpu','as_cpu','as_price','as_focus'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.value = ''; if (el.tomselect) el.tomselect.setValue('', true); }
   });
@@ -1492,6 +1499,7 @@ const SHEET_GID = '221053035'; // Dailly SRP Tracking
 // Date(0) Hour(1) Dealers(2) SKU(3) SRP(4) Promotion Price(5) Change(6)
 // Sold(7) Rate(8) Vendor(9) Series Group(10) Segment(11) CPU Segment(12)
 // CPU(13) RAM(14) SSD(15) Screen(16) GPU(17) V-RAM(18) Weight(19) Products link(20)
+// Part #(21) Focus Model(22)
 
 function parseCSV(text) {
   const rows = [];
@@ -1612,6 +1620,7 @@ function buildDerivedData(rows) {
       link:        r[20]?.trim() || '',   // col U: Products link
       sold:        cleanSold(r[7]),       // col H: Sold
       prevSold:    prevRow ? cleanSold(prevRow[7]) : '',
+      focusModel:  (r[22]?.trim() === 'Yes'), // col W: Focus Model
       // legacy aliases for other tabs that use gamingGroup
       gamingGroup: seriesGroup,
     };
@@ -2068,7 +2077,8 @@ async function checkLatestRun() {
     'as_brand': 'All Vendors',
     'as_gpu':   'All VGA',
     'as_cpu':   'All CPU',
-    'as_series':'All Series'
+    'as_series':'All Series',
+    'as_focus': 'All Models'
   };
   const OPTS = {
     maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
