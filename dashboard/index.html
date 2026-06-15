@@ -2114,22 +2114,6 @@ async function checkLatestRun() {
     new TomSelect(el, { ...OPTS, placeholder });
   }
 
-  function attachObserver(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    let busy = false;
-    const obs = new MutationObserver(() => {
-      if (busy) return;
-      clearTimeout(el._tsTimer);
-      el._tsTimer = setTimeout(() => {
-        busy = true; obs.disconnect();
-        try { syncFromSelect(el); } catch(e) {}
-        obs.observe(el, { childList: true }); busy = false;
-      }, 80);
-    });
-    obs.observe(el, { childList: true });
-  }
-
   // Patch reset functions so Tom Select chips also clear
   function patchReset(fnName) {
     const flag = '_tsResetPatched_' + fnName;
@@ -2148,8 +2132,6 @@ async function checkLatestRun() {
 
   function boot() {
     Object.entries(SELECTS).forEach(([id, ph]) => makeSearchable(id, ph));
-    // Only dynamically-rebuilt selects need the mutation observer
-    ['d_brand','d_gpu','d_cpu','d_series','as_brand','as_gpu','as_cpu','as_series'].forEach(attachObserver);
     patchReset('resetDropFilters');
     patchReset('resetAllSkusFilters');
   }
