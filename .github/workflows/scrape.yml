@@ -6,7 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  scrape:
+  # MBW (qua Cloudflare Worker proxy) + CellPhone S — chạy 100% tự động
+  # trên GitHub-hosted runner, không cần máy local.
+  scrape-cloud:
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -25,9 +27,39 @@ jobs:
       - name: Install Chrome for Puppeteer
         run: npx puppeteer browsers install chrome
 
-      - name: Run scraper
+      - name: Run scraper (MBW + CPS)
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           MBW_PROXY_HOST: ${{ secrets.MBW_PROXY_HOST }}
+          SCRAPE_DEALERS: MBW,CPS
+        run: npm start
+
+  # FPT Retail — fptshop.com.vn chặn IP datacenter bằng Cloudflare bot-challenge
+  # (cả khi đi qua Worker proxy), nên vẫn cần self-hosted runner (máy local).
+  # Job này tự động được GitHub Actions queue và chạy ngay khi 1 trong 2 máy
+  # (BARACK hoặc MSI) online — không cần chạy thủ công.
+  # needs: scrape-cloud để tránh 2 job cùng đọc-sửa-ghi sheet RAW DATA đồng thời.
+  scrape-fpt:
+    needs: scrape-cloud
+    runs-on: self-hosted
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run scraper (FPT)
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SCRAPE_DEALERS: FPT
         run: npm start
