@@ -336,6 +336,76 @@ tbody tr:hover{background:#fafafa}
 #allPriceTable col.c-vga    { width:68px  }
 #allPriceTable col.c-pprev  { width:95px  }
 #allPriceTable col.c-ptoday { width:95px  }
+
+/* ═══════ PRICE POSITIONING TAB ═══════ */
+#posSearchBar {
+  position: sticky; top: 0; z-index: 50;
+  background: #fff; padding: 10px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+#posSearchBar label { font-weight: 600; color: #374151; font-size: 12px; white-space: nowrap; }
+#posSKUSel {
+  flex: 1; min-width: 260px; max-width: 460px;
+  padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px;
+  font-size: 12px; background: #f9fafb;
+}
+#posSKUSearch {
+  width: 200px; padding: 7px 10px; border: 1px solid #d1d5db;
+  border-radius: 8px; font-size: 12px; background: #f9fafb;
+}
+#posResult { padding: 14px; }
+
+/* SKU card */
+.pp-sku-card {
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 12px; padding: 18px; margin-bottom: 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.pp-sku-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.pp-sku-name { font-size: 16px; font-weight: 700; color: #111827; }
+.pp-tag { background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.pp-tag-gpu { background: #fdf4ff; color: #7e22ce; }
+.pp-sku-specs { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; font-size: 12px; color: #6b7280; }
+
+/* 3-column dealer grid */
+.pp-price-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+.pp-dealer-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; text-align: center; }
+.pp-dealer-name { font-size: 12px; font-weight: 700; margin-bottom: 5px; }
+.pp-dealer-price { font-size: 17px; font-weight: 800; color: #111827; margin-bottom: 3px; }
+.pp-dealer-count { font-size: 11px; color: #9ca3af; margin-bottom: 6px; }
+.pp-base-label { color: #6b7280; font-style: italic; font-size: 11px; }
+
+/* badges */
+.pp-cheaper { background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 12px; font-weight: 600; font-size: 11px; }
+.pp-pricier  { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 12px; font-weight: 600; font-size: 11px; }
+.pp-same     { background: #f3f4f6; color: #6b7280;  padding: 2px 8px; border-radius: 12px; font-weight: 600; font-size: 11px; }
+.pp-na       { color: #9ca3af; font-size: 11px; }
+
+/* price bar */
+.pp-price-bar { padding: 8px 0; border-top: 1px solid #f3f4f6; margin-top: 8px; }
+.pp-bar-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.pp-bar-label { width: 34px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.pp-bar-track { flex: 1; height: 9px; background: #f3f4f6; border-radius: 5px; overflow: hidden; }
+.pp-bar-fill  { height: 100%; border-radius: 5px; }
+.pp-bar-val   { font-size: 11px; color: #374151; white-space: nowrap; min-width: 130px; }
+
+/* section title */
+.pp-section-title { font-size: 13px; font-weight: 700; color: #374151; margin: 18px 0 8px; border-left: 3px solid #2563eb; padding-left: 9px; }
+
+/* tables */
+.pp-equiv-wrapper, .pp-seg-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
+.pp-equiv-table, .pp-seg-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.pp-equiv-table th, .pp-seg-table th { background: #f8fafc; padding: 8px 11px; text-align: left; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+.pp-equiv-table td, .pp-seg-table td { padding: 7px 11px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.pp-equiv-table tr:last-child td, .pp-seg-table tr:last-child td { border-bottom: none; }
+.pp-equiv-table tr:hover td { background: #f8fafc; }
+.pp-row-sel td { background: #eff6ff !important; }
+.pp-price { font-weight: 700; color: #111827; white-space: nowrap; }
+.pp-sku-cell { max-width: 200px; word-break: break-word; }
+.pp-empty { color: #9ca3af; font-size: 13px; padding: 24px; text-align: center; }
+.pp-no-sel { text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 20px; }
+
 </style>
   <!-- Tom Select: searchable dropdowns -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
@@ -428,6 +498,7 @@ tbody tr:hover{background:#fafafa}
   <div class="tab" onclick="sw('alert')">🚨 Price Alert</div>
   <div class="tab active" onclick="sw('drops')">📉 Top Price Changes</div>
   <div class="tab" onclick="sw('allskus')">📋 All SKUs</div>
+  <div class="tab" onclick="sw('positioning')">💰 Price Positioning</div>
 </div>
 
 <div class="main" id="mainWrapper">
@@ -540,6 +611,22 @@ tbody tr:hover{background:#fafafa}
 
 
 
+</div>
+
+
+
+<!-- ── TAB: PRICE POSITIONING ── -->
+<div class="section" id="sec-positioning">
+  <div id="posSearchBar" class="filter-bar">
+    <label>🔍 SKU / Model:</label>
+    <select id="posSKUSel" onchange="renderPositioning()">
+      <option value="">-- Chọn SKU / Model --</option>
+    </select>
+    <input id="posSKUSearch" type="text" placeholder="Gõ để lọc..."
+      oninput="filterPosSKU(this.value)" style="width:180px" />
+    <span id="posCount" style="font-size:11px;color:#9ca3af"></span>
+  </div>
+  <div id="posResult"></div>
 </div>
 
 <script>
@@ -1300,6 +1387,7 @@ function sw(name){
   });
   // trigger render for All SKUs on first switch
   if(name==='allskus') renderAllSkus();
+  if(name==='positioning') renderPositioning();
   if(name==='alert') renderAlert();
 }
 
@@ -2167,4 +2255,326 @@ async function checkLatestRun() {
   // defer scripts run before DOMContentLoaded → TomSelect is ready by then
   document.addEventListener('DOMContentLoaded', boot);
 })();
+
+
+
+// ═══════════════════════════════════════════════════
+// PRICE POSITIONING TAB
+// ═══════════════════════════════════════════════════
+
+function ppNorm(s){ return (s||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+function ppFmt(n){ return n ? Math.round(n).toLocaleString('vi-VN')+'đ' : '—'; }
+function ppPct(base, cmp){
+  if(!base||!cmp) return null;
+  return (cmp - base) / base * 100;
+}
+function ppBadge(pct){
+  if(pct === null) return '<span class="pp-na">—</span>';
+  if(Math.abs(pct) < 0.5) return '<span class="pp-same">≈ ngang</span>';
+  const abs = Math.abs(pct).toFixed(1);
+  return pct > 0
+    ? `<span class="pp-cheaper">MBW rẻ hơn ${abs}%</span>`
+    : `<span class="pp-pricier">MBW đắt hơn ${abs}%</span>`;
+}
+
+// Matching key: Segment + cpuFamily + cpuDetail + RAM + SSD [+ GPU if gaming]
+function ppKey(p){
+  const isGaming = (p.seriesGroup||'').toLowerCase().includes('gaming') ||
+    (['','—','-'].indexOf((p.gpuTag||'').toLowerCase()) === -1 &&
+     !/onboard|integrated|tích hợp/i.test(p.gpuTag||''));
+  const base = [
+    ppNorm(p.segment),
+    ppNorm(p.cpuFamily),
+    ppNorm(p.cpuDetail),
+    ppNorm(p.ram),
+    ppNorm(p.ssd)
+  ].join('|');
+  return isGaming ? base + '|gpu:' + ppNorm(p.gpuTag) : base;
+}
+
+function ppMinPrice(arr){
+  const v = arr.filter(p=>p.todayPrice>0).map(p=>p.todayPrice);
+  return v.length ? Math.min(...v) : null;
+}
+function ppAvgMinPrice(priceList){
+  return priceList.length ? Math.round(priceList.reduce((a,b)=>a+b,0)/priceList.length) : null;
+}
+
+// Build groups from allToday
+function ppBuildGroups(){
+  if(!allToday||!allToday.length) return {};
+  const groups = {};
+  for(const p of allToday){
+    const k = ppKey(p);
+    if(!groups[k]){
+      groups[k] = {
+        key: k,
+        segment:     p.segment     || '—',
+        seriesGroup: p.seriesGroup || '—',
+        cpuFamily:   p.cpuFamily   || '—',
+        cpuDetail:   p.cpuDetail   || '—',
+        ram:         p.ram         || '—',
+        ssd:         p.ssd         || '—',
+        gpuTag:      p.gpuTag      || '',
+        byDealer: { MBW:[], 'FPT Retail':[], 'CellPhone S':[] },
+        allProducts: []
+      };
+    }
+    const d = p.dealer;
+    if(groups[k].byDealer[d]) groups[k].byDealer[d].push(p);
+    else groups[k].byDealer[d] = [p];
+    groups[k].allProducts.push(p);
+  }
+  return groups;
+}
+
+// SKU → group key map
+function ppSKUMap(groups){
+  const m = new Map();
+  for(const [k,g] of Object.entries(groups)){
+    for(const p of g.allProducts){
+      if(!m.has(p.model)) m.set(p.model, k);
+    }
+  }
+  return m;
+}
+
+// Dealer display names
+const PP_DEALER_KEYS = ['MBW','FPT Retail','CellPhone S'];
+const PP_DEALER_COLORS = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'};
+const PP_DEALER_SHORT = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'};
+
+// ── Main render ──────────────────────────────────────────────────
+let _ppGroups = null;
+let _ppSKUMap = null;
+
+function renderPositioning(){
+  const container = document.getElementById('posResult');
+  if(!container) return;
+
+  if(!allToday||!allToday.length){
+    container.innerHTML = '<div class="pp-empty">Không có dữ liệu hôm nay.</div>';
+    return;
+  }
+
+  // Rebuild groups (lazy cache cleared on data refresh)
+  _ppGroups = ppBuildGroups();
+  _ppSKUMap  = ppSKUMap(_ppGroups);
+
+  // Populate dropdown
+  const sel = document.getElementById('posSKUSel');
+  if(sel){
+    const curVal = sel.value;
+    const sortedSKUs = [..._ppSKUMap.keys()].sort((a,b)=>a.localeCompare(b,'vi'));
+    sel.innerHTML = '<option value="">-- Chọn SKU / Model --</option>';
+    for(const sku of sortedSKUs){
+      const opt = document.createElement('option');
+      opt.value = sku; opt.textContent = sku;
+      sel.appendChild(opt);
+    }
+    if(curVal && _ppSKUMap.has(curVal)) sel.value = curVal;
+  }
+
+  const selectedSKU = sel ? sel.value : '';
+
+  if(!selectedSKU){
+    container.innerHTML = ppRenderSegSummary(_ppGroups) ;
+    return;
+  }
+
+  const gKey = _ppSKUMap.get(selectedSKU);
+  const g    = _ppGroups[gKey];
+  if(!g){ container.innerHTML = '<div class="pp-empty">Không tìm thấy nhóm sản phẩm.</div>'; return; }
+
+  const mbwMin = ppMinPrice(g.byDealer['MBW']);
+  const fptMin = ppMinPrice(g.byDealer['FPT Retail']);
+  const cpsMin = ppMinPrice(g.byDealer['CellPhone S']);
+  const fptPct = ppPct(mbwMin, fptMin);
+  const cpsPct = ppPct(mbwMin, cpsMin);
+
+  let html = `
+  <!-- ── Selected SKU card ── -->
+  <div class="pp-sku-card">
+    <div class="pp-sku-title">
+      <span class="pp-sku-name">${selectedSKU}</span>
+      ${g.seriesGroup && g.seriesGroup!=='—' ? `<span class="pp-tag">${g.seriesGroup}</span>` : ''}
+      ${g.gpuTag ? `<span class="pp-tag pp-tag-gpu">${g.gpuTag}</span>` : ''}
+    </div>
+    <div class="pp-sku-specs">
+      <span>🧠 ${g.cpuDetail||g.cpuFamily||'—'}</span>
+      <span>💾 ${g.ram||'—'}</span>
+      <span>💿 ${g.ssd||'—'}</span>
+      <span>📂 ${g.segment||'—'}</span>
+    </div>
+
+    <div class="pp-price-grid">
+      ${ppDealerCard('MBW', g.byDealer['MBW'], null)}
+      ${ppDealerCard('FPT Retail', g.byDealer['FPT Retail'], fptPct)}
+      ${ppDealerCard('CellPhone S', g.byDealer['CellPhone S'], cpsPct)}
+    </div>
+    ${ppPriceBar(mbwMin, fptMin, cpsMin)}
+  </div>
+
+  <div class="pp-section-title">📦 Sản phẩm tương đương cùng nhóm spec</div>
+  ${ppEquivTable(g, selectedSKU, mbwMin)}
+
+  <div class="pp-section-title">📊 Price Index toàn thị trường theo Segment</div>
+  ${ppRenderSegSummary(_ppGroups)}
+  `;
+
+  container.innerHTML = html;
+}
+
+function ppDealerCard(dealer, products, diffPct){
+  const minP = ppMinPrice(products);
+  const cnt  = products.length;
+  const color = PP_DEALER_COLORS[dealer]||'#666';
+  const short = PP_DEALER_SHORT[dealer]||dealer;
+  let diffHtml;
+  if(dealer === 'MBW'){
+    diffHtml = minP ? '<span class="pp-base-label">Baseline</span>' : '<span class="pp-na">Không có hàng</span>';
+  } else {
+    diffHtml = minP ? ppBadge(diffPct) : '<span class="pp-na">Không có hàng</span>';
+  }
+  return `<div class="pp-dealer-card">
+    <div class="pp-dealer-name" style="color:${color}">${short}</div>
+    <div class="pp-dealer-price">${ppFmt(minP)}</div>
+    <div class="pp-dealer-count">${cnt} SKU</div>
+    <div>${diffHtml}</div>
+  </div>`;
+}
+
+function ppPriceBar(mbw, fpt, cps){
+  const prices = [
+    {d:'MBW', v:mbw, c:'#2563eb'},
+    {d:'FPT', v:fpt, c:'#f97316'},
+    {d:'CPS', v:cps, c:'#16a34a'}
+  ].filter(x=>x.v);
+  if(prices.length < 2) return '';
+  const minV = Math.min(...prices.map(x=>x.v));
+  const maxV = Math.max(...prices.map(x=>x.v));
+  const range = maxV - minV || 1;
+  const rows = prices.map(x => {
+    const fillPct = ((x.v - minV) / range * 70 + 10).toFixed(1);
+    const pct = x.d!=='MBW' ? ppPct(mbw, x.v) : null;
+    const pctStr = pct!==null ? ` (${pct>0?'+':''}${pct.toFixed(1)}%)` : '';
+    return `<div class="pp-bar-row">
+      <span class="pp-bar-label" style="color:${x.c}">${x.d}</span>
+      <div class="pp-bar-track"><div class="pp-bar-fill" style="width:${fillPct}%;background:${x.c}"></div></div>
+      <span class="pp-bar-val">${ppFmt(x.v)}${pctStr}</span>
+    </div>`;
+  });
+  return `<div class="pp-price-bar">${rows.join('')}</div>`;
+}
+
+function ppEquivTable(g, selectedSKU, mbwRef){
+  const rows = g.allProducts.slice();
+  const order = {'MBW':0,'FPT Retail':1,'CellPhone S':2};
+  rows.sort((a,b) => (order[a.dealer]||9)-(order[b.dealer]||9) || a.todayPrice-b.todayPrice);
+
+  if(!rows.length) return '<div class="pp-empty">Không có sản phẩm tương đương.</div>';
+
+  let t = `<div class="pp-equiv-wrapper"><table class="pp-equiv-table">
+    <thead><tr>
+      <th>Dealer</th><th>Model</th><th>CPU</th><th>RAM</th><th>SSD</th><th>GPU</th>
+      <th>Giá KM</th><th>So MBW</th><th>Đã bán</th>
+    </tr></thead><tbody>`;
+
+  for(const p of rows){
+    const isSel = p.model === selectedSKU;
+    const c = PP_DEALER_COLORS[p.dealer]||'#666';
+    const sh = PP_DEALER_SHORT[p.dealer]||p.dealer;
+    const diff = (mbwRef && p.dealer!=='MBW') ? ppPct(mbwRef, p.todayPrice) : null;
+    t += `<tr${isSel?' class="pp-row-sel"':''}>
+      <td><span style="color:${c};font-weight:700">${sh}</span></td>
+      <td class="pp-sku-cell">${p.model}${p.focusModel?'&nbsp;<span class="dlr-key">⭐</span>':''}</td>
+      <td>${p.cpuDetail||p.cpuFamily||'—'}</td>
+      <td>${p.ram||'—'}</td>
+      <td>${p.ssd||'—'}</td>
+      <td>${p.gpuTag||'—'}</td>
+      <td class="pp-price">${ppFmt(p.todayPrice)}</td>
+      <td>${diff!==null ? ppBadge(diff) : '<span class="pp-na">baseline</span>'}</td>
+      <td>${p.sold||'—'}</td>
+    </tr>`;
+  }
+  t += '</tbody></table></div>';
+  return t;
+}
+
+function ppRenderSegSummary(groups){
+  // Aggregate per segment → avgMinPrice per dealer
+  const segs = {};
+  for(const g of Object.values(groups)){
+    const seg = g.segment || '(Khác)';
+    if(!segs[seg]) segs[seg] = {MBW:[],FPT:[],CPS:[], series: g.seriesGroup};
+    const mbwP = ppMinPrice(g.byDealer['MBW']);
+    const fptP = ppMinPrice(g.byDealer['FPT Retail']);
+    const cpsP = ppMinPrice(g.byDealer['CellPhone S']);
+    if(mbwP) segs[seg].MBW.push(mbwP);
+    if(fptP) segs[seg].FPT.push(fptP);
+    if(cpsP) segs[seg].CPS.push(cpsP);
+  }
+
+  const segKeys = Object.keys(segs).sort();
+  if(!segKeys.length) return '<div class="pp-empty">Không đủ dữ liệu segment.</div>';
+
+  let t = `<div class="pp-seg-wrapper"><table class="pp-seg-table">
+    <thead><tr>
+      <th>Segment / Series</th>
+      <th style="color:#2563eb">MBW avg</th>
+      <th style="color:#f97316">FPT avg</th>
+      <th style="color:#16a34a">CPS avg</th>
+      <th>MBW vs FPT</th>
+      <th>MBW vs CPS</th>
+      <th>Rẻ nhất</th>
+      <th># nhóm spec</th>
+    </tr></thead><tbody>`;
+
+  for(const seg of segKeys){
+    const s = segs[seg];
+    const mbwA = ppAvgMinPrice(s.MBW);
+    const fptA = ppAvgMinPrice(s.FPT);
+    const cpsA = ppAvgMinPrice(s.CPS);
+    const fptIdx = ppPct(mbwA, fptA);
+    const cpsIdx = ppPct(mbwA, cpsA);
+    const priceList = [{d:'MBW',v:mbwA,c:'#2563eb'},{d:'FPT',v:fptA,c:'#f97316'},{d:'CPS',v:cpsA,c:'#16a34a'}].filter(x=>x.v);
+    const cheapest = priceList.length ? priceList.reduce((a,b)=>a.v<b.v?a:b) : null;
+    // Count unique spec groups for this segment
+    const groupCount = Object.values(groups).filter(g=>(g.segment||'(Khác)')===seg).length;
+
+    t += `<tr>
+      <td><strong>${seg}</strong></td>
+      <td class="pp-price">${ppFmt(mbwA)}</td>
+      <td class="pp-price">${ppFmt(fptA)}</td>
+      <td class="pp-price">${ppFmt(cpsA)}</td>
+      <td>${fptIdx!==null?ppBadge(fptIdx):'<span class="pp-na">—</span>'}</td>
+      <td>${cpsIdx!==null?ppBadge(cpsIdx):'<span class="pp-na">—</span>'}</td>
+      <td>${cheapest?`<span style="color:${cheapest.c};font-weight:700">${PP_DEALER_SHORT[cheapest.d]||cheapest.d}</span>`:'—'}</td>
+      <td style="text-align:center;color:#6b7280">${groupCount}</td>
+    </tr>`;
+  }
+  t += '</tbody></table></div>';
+  return t;
+}
+
+function filterPosSKU(q){
+  const sel = document.getElementById('posSKUSel');
+  if(!sel) return;
+  const norm = (q||'').toLowerCase().trim();
+  let count = 0;
+  for(const opt of sel.options){
+    if(!opt.value){ opt.style.display=''; continue; }
+    const show = !norm || opt.text.toLowerCase().includes(norm);
+    opt.style.display = show ? '' : 'none';
+    if(show) count++;
+  }
+  const cntEl = document.getElementById('posCount');
+  if(cntEl) cntEl.textContent = norm ? `${count} kết quả` : '';
+  if(count === 1){
+    const vis = [...sel.options].find(o=>o.value&&o.style.display!=='none');
+    if(vis){ sel.value = vis.value; renderPositioning(); }
+  }
+}
+
+
 </script>
