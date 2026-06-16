@@ -345,15 +345,33 @@ tbody tr:hover{background:#fafafa}
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
 #posSearchBar label { font-weight: 600; color: #374151; font-size: 12px; white-space: nowrap; }
-#posSKUSel {
-  flex: 1; min-width: 260px; max-width: 460px;
-  padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px;
-  font-size: 12px; background: #f9fafb;
-}
-#posSKUSearch {
-  width: 200px; padding: 7px 10px; border: 1px solid #d1d5db;
+/* combobox */
+.pp-combo { position: relative; flex: 1; min-width: 260px; max-width: 500px; }
+#posSKUInput {
+  width: 100%; padding: 7px 32px 7px 10px; border: 1px solid #d1d5db;
   border-radius: 8px; font-size: 12px; background: #f9fafb;
+  box-sizing: border-box; outline: none;
 }
+#posSKUInput:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.pp-combo::after {
+  content: '▾'; position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none;
+}
+.pp-combo-dropdown {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: #fff; border: 1px solid #d1d5db; border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); z-index: 200;
+  max-height: 280px; overflow-y: auto;
+}
+.pp-combo-dropdown.open { display: block; }
+.pp-combo-opt {
+  padding: 8px 12px; font-size: 12px; cursor: pointer; color: #374151;
+  border-bottom: 1px solid #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pp-combo-opt:last-child { border-bottom: none; }
+.pp-combo-opt:hover, .pp-combo-opt.pp-combo-active { background: #eff6ff; color: #1d4ed8; }
+.pp-combo-opt.pp-combo-selected { font-weight: 600; color: #1d4ed8; }
+.pp-combo-empty { padding: 10px 12px; font-size: 12px; color: #9ca3af; font-style: italic; }
 #posResult { padding: 14px; }
 
 /* SKU card */
@@ -619,12 +637,16 @@ tbody tr:hover{background:#fafafa}
 <div class="section" id="sec-positioning">
   <div id="posSearchBar" class="filter-bar">
     <label>🔍 SKU / Model:</label>
-    <select id="posSKUSel" onchange="renderPositioning()">
-      <option value="">-- Chọn SKU / Model --</option>
-    </select>
-    <input id="posSKUSearch" type="text" placeholder="Gõ để lọc..."
-      oninput="filterPosSKU(this.value)" style="width:180px" />
-    <span id="posCount" style="font-size:11px;color:#9ca3af"></span>
+    <div class="pp-combo" id="posCombo">
+      <input id="posSKUInput" type="text" autocomplete="off"
+        placeholder="Gõ để tìm hoặc chọn model..."
+        oninput="ppComboFilter(this.value)"
+        onfocus="ppComboOpen()"
+        onblur="setTimeout(ppComboClose, 150)"
+        onkeydown="ppComboKey(event)" />
+      <div class="pp-combo-dropdown" id="posDropdown"></div>
+    </div>
+    <span id="posCount" style="font-size:11px;color:#9ca3af;flex-shrink:0"></span>
   </div>
   <div id="posResult"></div>
 </div>
@@ -2361,21 +2383,11 @@ function renderPositioning(){
   _ppGroups = ppBuildGroups();
   _ppSKUMap  = ppSKUMap(_ppGroups);
 
-  // Populate dropdown
-  const sel = document.getElementById('posSKUSel');
-  if(sel){
-    const curVal = sel.value;
-    const sortedSKUs = [..._ppSKUMap.keys()].sort((a,b)=>a.localeCompare(b,'vi'));
-    sel.innerHTML = '<option value="">-- Chọn SKU / Model --</option>';
-    for(const sku of sortedSKUs){
-      const opt = document.createElement('option');
-      opt.value = sku; opt.textContent = sku;
-      sel.appendChild(opt);
-    }
-    if(curVal && _ppSKUMap.has(curVal)) sel.value = curVal;
-  }
+  // Populate combobox options
+  const sortedSKUs = [..._ppSKUMap.keys()].sort((a,b)=>a.localeCompare(b,'vi'));
+  ppComboSetList(sortedSKUs);
 
-  const selectedSKU = sel ? sel.value : '';
+  const selectedSKU = ppComboGetValue();
 
   if(!selectedSKU){
     container.innerHTML = ppRenderSegSummary(_ppGroups) ;
@@ -2557,23 +2569,122 @@ function ppRenderSegSummary(groups){
   return t;
 }
 
-function filterPosSKU(q){
-  const sel = document.getElementById('posSKUSel');
-  if(!sel) return;
+function filterPosSKU(q){} // legacy stub — replaced by ppCombo*
+
+// ── Combobox logic ──────────────────────────────────────────────
+let _ppAllSKUs  = [];   // full sorted list
+let _ppSelValue = '';   // currently selected value
+let _ppActiveIdx = -1;  // keyboard cursor
+
+function ppComboSetList(skus){
+  _ppAllSKUs = skus;
+  // keep selection if still valid
+  if(_ppSelValue && !skus.includes(_ppSelValue)) _ppSelValue = '';
+}
+
+function ppComboGetValue(){ return _ppSelValue; }
+
+function ppComboFilter(q){
   const norm = (q||'').toLowerCase().trim();
-  let count = 0;
-  for(const opt of sel.options){
-    if(!opt.value){ opt.style.display=''; continue; }
-    const show = !norm || opt.text.toLowerCase().includes(norm);
-    opt.style.display = show ? '' : 'none';
-    if(show) count++;
-  }
+  // If user clears input, clear selection
+  if(!norm){ _ppSelValue = ''; renderPositioning(); return; }
+  // If query exactly matches a known SKU, select it
+  if(_ppAllSKUs.includes(q.trim())){ ppComboSelect(q.trim()); return; }
+  // Otherwise just update the dropdown list
+  ppComboRenderDropdown(norm);
+  ppComboOpen();
+}
+
+function ppComboRenderDropdown(norm){
+  const dd = document.getElementById('posDropdown');
+  if(!dd) return;
+  const filtered = norm
+    ? _ppAllSKUs.filter(s => s.toLowerCase().includes(norm))
+    : _ppAllSKUs;
+  
   const cntEl = document.getElementById('posCount');
-  if(cntEl) cntEl.textContent = norm ? `${count} kết quả` : '';
-  if(count === 1){
-    const vis = [...sel.options].find(o=>o.value&&o.style.display!=='none');
-    if(vis){ sel.value = vis.value; renderPositioning(); }
+  if(cntEl) cntEl.textContent = norm ? `${filtered.length} kết quả` : '';
+
+  if(!filtered.length){
+    dd.innerHTML = '<div class="pp-combo-empty">Không tìm thấy model</div>';
+    _ppActiveIdx = -1;
+    return;
   }
+  dd.innerHTML = filtered.map((s,i) => {
+    const isSel = s === _ppSelValue;
+    // Highlight matching part
+    let label = s;
+    if(norm){
+      const lo = s.toLowerCase(), start = lo.indexOf(norm);
+      if(start >= 0)
+        label = s.slice(0,start) + '<mark style="background:#fef08a;border-radius:2px">'
+               + s.slice(start, start+norm.length) + '</mark>' + s.slice(start+norm.length);
+    }
+    return `<div class="pp-combo-opt${isSel?' pp-combo-selected':''}" 
+      data-val="${s}" data-idx="${i}"
+      onmousedown="ppComboSelect('${s.replace(/'/g,"\\'")}')">${label}</div>`;
+  }).join('');
+  _ppActiveIdx = filtered.findIndex(s=>s===_ppSelValue);
+}
+
+function ppComboOpen(){
+  const dd = document.getElementById('posDropdown');
+  const inp = document.getElementById('posSKUInput');
+  if(!dd || !inp) return;
+  const q = inp.value.toLowerCase().trim();
+  ppComboRenderDropdown(q);
+  dd.classList.add('open');
+}
+
+function ppComboClose(){
+  const dd = document.getElementById('posDropdown');
+  if(dd) dd.classList.remove('open');
+  // If input doesn't match selected, restore selected label
+  const inp = document.getElementById('posSKUInput');
+  if(inp && _ppSelValue) inp.value = _ppSelValue;
+  else if(inp && !_ppSelValue) inp.value = '';
+}
+
+function ppComboSelect(val){
+  _ppSelValue = val;
+  _ppActiveIdx = -1;
+  const inp = document.getElementById('posSKUInput');
+  if(inp) inp.value = val;
+  const dd = document.getElementById('posDropdown');
+  if(dd) dd.classList.remove('open');
+  const cntEl = document.getElementById('posCount');
+  if(cntEl) cntEl.textContent = '';
+  renderPositioning();
+}
+
+function ppComboKey(e){
+  const dd = document.getElementById('posDropdown');
+  const opts = dd ? [...dd.querySelectorAll('.pp-combo-opt')] : [];
+  if(!opts.length && e.key !== 'Escape') return;
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    ppComboOpen();
+    _ppActiveIdx = Math.min(_ppActiveIdx+1, opts.length-1);
+    ppComboHighlight(opts);
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    _ppActiveIdx = Math.max(_ppActiveIdx-1, 0);
+    ppComboHighlight(opts);
+  } else if(e.key === 'Enter'){
+    e.preventDefault();
+    if(_ppActiveIdx >= 0 && opts[_ppActiveIdx]){
+      ppComboSelect(opts[_ppActiveIdx].dataset.val);
+    }
+  } else if(e.key === 'Escape'){
+    ppComboClose();
+  }
+}
+
+function ppComboHighlight(opts){
+  opts.forEach((o,i) => {
+    o.classList.toggle('pp-combo-active', i===_ppActiveIdx);
+    if(i===_ppActiveIdx) o.scrollIntoView({block:'nearest'});
+  });
 }
 
 
