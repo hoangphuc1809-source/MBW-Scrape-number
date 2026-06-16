@@ -663,6 +663,13 @@ async function writeToSheet(sheets, allProducts) {
     p.sold, p.rating, p.link,
   ]);
 
+  // Safety guard: nếu scrape được 0 SP thì KHÔNG clear sheet
+  // (tránh xóa mất data cũ khi proxy lỗi / site thay đổi selector)
+  if (newRows.length === 0) {
+    console.log(`⚠ SKIP ghi sheet: 0 SP scrape được (dealer: ${[...SCRAPE_DEALER_NAMES].join(',')}). Giữ nguyên data cũ.`);
+    return;
+  }
+
   await sheets.spreadsheets.values.clear({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A2:R`,
