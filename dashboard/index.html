@@ -383,7 +383,9 @@ tbody tr:hover{background:#fafafa}
 .pp-sku-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
 .pp-sku-name { font-size: 16px; font-weight: 700; color: #111827; }
 .pp-tag { background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
-.pp-tag-gpu { background: #fdf4ff; color: #7e22ce; }
+.pp-tag-gpu  { background: #fdf4ff; color: #7e22ce; }
+.pp-tag-pn   { background: #f0fdf4; color: #15803d; }
+.pp-tag-spec { background: #fafafa; color: #9ca3af; border: 1px dashed #d1d5db; }
 .pp-sku-specs { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; font-size: 12px; color: #6b7280; }
 
 /* 3-column dealer grid */
@@ -2299,9 +2301,23 @@ function ppBadge(pct){
     : `<span class="pp-pricier">MBW đắt hơn ${abs}%</span>`;
 }
 
-// Matching key: Segment + cpuFamily + cpuDetail + RAM + SSD [+ GPU if gaming]
+// Extract Part# from model name: e.g. "Laptop Asus ... - BQ3394W (i3 ...)" → "bq3394w"
+function ppExtractPN(model){
+  // Match uppercase alphanumeric after " - " or hyphen before "("
+  const m = (model||'').match(/[-\s]([A-Z0-9]{4,12})\s*[\s(]/);
+  return m ? m[1].toLowerCase() : '';
+}
+
+// Matching key: prefer Part# extracted from model name (cross-dealer exact match)
+// Fallback: Segment + cpuFamily + cpuDetail + RAM + SSD [+ GPU if gaming]
 function ppKey(p){
-  const isGaming = (p.seriesGroup||'').toLowerCase().includes('gaming') ||
+  const pn = p.partNum
+    ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'')
+    : ppExtractPN(p.model);
+  if(pn && pn.length >= 4) return 'pn:' + pn;
+
+  // Fallback spec-based key
+  const isGaming = (p.seriesGroup||p.gamingGroup||'').toLowerCase().includes('gaming') ||
     (['','—','-'].indexOf((p.gpuTag||'').toLowerCase()) === -1 &&
      !/onboard|integrated|tích hợp/i.test(p.gpuTag||''));
   const base = [
@@ -2329,10 +2345,15 @@ function ppBuildGroups(){
   for(const p of allToday){
     const k = ppKey(p);
     if(!groups[k]){
+      const pn = p.partNum
+        ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'')
+        : ppExtractPN(p.model);
       groups[k] = {
         key: k,
+        partNum:     pn,
+        isPartNumKey: k.startsWith('pn:'),
         segment:     p.segment     || '—',
-        seriesGroup: p.seriesGroup || '—',
+        seriesGroup: p.seriesGroup || p.gamingGroup || '—',
         cpuFamily:   p.cpuFamily   || '—',
         cpuDetail:   p.cpuDetail   || '—',
         ram:         p.ram         || '—',
@@ -2411,6 +2432,7 @@ function renderPositioning(){
       <span class="pp-sku-name">${selectedSKU}</span>
       ${g.seriesGroup && g.seriesGroup!=='—' ? `<span class="pp-tag">${g.seriesGroup}</span>` : ''}
       ${g.gpuTag ? `<span class="pp-tag pp-tag-gpu">${g.gpuTag}</span>` : ''}
+      ${g.isPartNumKey ? `<span class="pp-tag pp-tag-pn" title="Matched by Part Number">🔑 Part# ${g.partNum.toUpperCase()}</span>` : '<span class="pp-tag pp-tag-spec" title="Matched by specs (no Part# found)">📐 Spec match</span>'}
     </div>
     <div class="pp-sku-specs">
       <span>🧠 ${g.cpuDetail||g.cpuFamily||'—'}</span>
@@ -2486,9 +2508,11 @@ function ppEquivTable(g, selectedSKU, mbwRef){
 
   if(!rows.length) return '<div class="pp-empty">Không có sản phẩm tương đương.</div>';
 
+  const showPN = g.isPartNumKey;
   let t = `<div class="pp-equiv-wrapper"><table class="pp-equiv-table">
     <thead><tr>
-      <th>Dealer</th><th>Model</th><th>CPU</th><th>RAM</th><th>SSD</th><th>GPU</th>
+      <th>Dealer</th><th>Model</th>${showPN?'<th>Part#</th>':''}
+      <th>CPU</th><th>RAM</th><th>SSD</th><th>GPU</th>
       <th>Giá KM</th><th>So MBW</th><th>Đã bán</th>
     </tr></thead><tbody>`;
 
@@ -2497,9 +2521,11 @@ function ppEquivTable(g, selectedSKU, mbwRef){
     const c = PP_DEALER_COLORS[p.dealer]||'#666';
     const sh = PP_DEALER_SHORT[p.dealer]||p.dealer;
     const diff = (mbwRef && p.dealer!=='MBW') ? ppPct(mbwRef, p.todayPrice) : null;
+    const rowPN = p.partNum || ppExtractPN(p.model);
     t += `<tr${isSel?' class="pp-row-sel"':''}>
       <td><span style="color:${c};font-weight:700">${sh}</span></td>
       <td class="pp-sku-cell">${p.model}${p.focusModel?'&nbsp;<span class="dlr-key">⭐</span>':''}</td>
+      ${showPN?`<td style="font-family:monospace;font-size:11px;color:#6b7280">${rowPN.toUpperCase()||'—'}</td>`:''}
       <td>${p.cpuDetail||p.cpuFamily||'—'}</td>
       <td>${p.ram||'—'}</td>
       <td>${p.ssd||'—'}</td>
