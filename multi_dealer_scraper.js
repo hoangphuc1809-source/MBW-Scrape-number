@@ -20,7 +20,7 @@ const os           = require('os');
 
 // ── Config ────────────────────────────────────────────────
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
-const SHEET_NAME   = 'Dailly SRP Tracking';
+const SHEET_NAME   = 'RAW DATA';
 
 // SCRAPE_DEALERS: danh sách dealer chạy trong job này, phân tách bởi dấu phẩy
 // (vd: "MBW,CPS" hoặc "FPT"). Mặc định = cả 3 (chạy full như trước).
