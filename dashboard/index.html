@@ -2333,7 +2333,11 @@ function ppKey(p){
   const pn = p.partNum
     ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'')
     : ppExtractPN(p.model);
-  if(pn && pn.length >= 4) return 'pn:' + pn;
+  if(pn && pn.length >= 4) {
+    // Segment (Katana/Cyborg/Vector...) làm prefix để tránh MSI Part# trùng cross-series
+    const seg = ppNorm(p.segment || '');
+    return seg ? 'pn:' + seg + '_' + pn : 'pn:' + pn;
+  }
 
   // Fallback spec-based key
   const isGaming = (p.seriesGroup||p.gamingGroup||'').toLowerCase().includes('gaming') ||
