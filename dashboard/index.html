@@ -2077,6 +2077,23 @@ async async function sha256(str) {
 // ── LOGIN ──────────────────────────────
 
 
+
+async function doLogin() {
+  const user  = document.getElementById('loginUser').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  if (!user || !pass) { errEl.textContent = 'Please enter username and password.'; return; }
+  const hash = await sha256(pass);
+  if (user !== AUTH_USER || hash !== getAuthHash()) {
+    errEl.textContent = 'Incorrect username or password.';
+    document.getElementById('loginPass').value = '';
+    return;
+  }
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ user, ts: Date.now() }));
+  document.getElementById('loginOverlay').classList.add('hidden');
+}
+
 function doLogout() {
   sessionStorage.removeItem(SESSION_KEY);
   location.reload();
