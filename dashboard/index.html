@@ -2545,7 +2545,7 @@ function ppPriceHistory(group) {
       const rowsHere = ddMap[key + '|||' + date] || [];
       let minP = 0;
       for (const row of rowsHere) {
-        const price = (parseFloat(row[5])||0) || (parseFloat(row[4])||0);
+        const price = parsePrice(row[5]) || parsePrice(row[4]);
         if (price > 0 && (minP === 0 || price < minP)) minP = price;
       }
       matrix[key][date] = minP;
