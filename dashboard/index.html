@@ -1960,7 +1960,7 @@ function applyNewData(derived, csv) {
   if (todayColIdx>=0) AL_COLS[todayColIdx][1] = `Price ${todayDate}`;
 }
 
-async async function fetchSheetData(manual=false) {
+async function fetchSheetData(manual=false) {
   const icon   = document.getElementById('sheetRefreshIcon');
   const status = document.getElementById('sheetRefreshStatus');
   const btn    = document.getElementById('btnSheetRefresh');
@@ -2069,7 +2069,7 @@ function getAuthHash() {
 }
 
 // Simple SHA-256 using SubtleCrypto
-async async function sha256(str) {
+async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
