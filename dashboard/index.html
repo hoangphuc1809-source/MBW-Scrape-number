@@ -2481,9 +2481,8 @@ function renderPositioning(){
 
 // ── 7-day price history table ──────────────────────────────────────────────
 function ppPriceHistory(group) {
-  // Lấy tối đa 7 ngày gần nhất từ csvDates (sorted desc)
   const days = csvDates.slice(0, 7);
-  if (!days.length) return ''; // chưa load live CSV
+  if (!days.length) return '';
 
   const DEALERS = [
     { key: 'MBW',          color: '#2563eb', short: 'MBW' },
@@ -2491,22 +2490,51 @@ function ppPriceHistory(group) {
     { key: 'CellPhone S',  color: '#16a34a', short: 'CPS' },
   ];
 
-  // Build price matrix: dealer → { date → minPrice }
-  // group.byDealer[dealer] = [product list] — dùng model name để lookup trong csvLookup
+  // Build price matrix bằng cách scan csvLookup trực tiếp.
+  // Không dùng group.byDealer (chỉ có allToday — thiếu ngày không scrape được).
+  // Thay vào đó: với mỗi date+dealer, tìm tất cả rows trong csvLookup có
+  // cùng groupKey (ppKey) → lấy giá thấp nhất.
+  //
+  // csvLookup key = "date|dealer|model_lower"
+  // → cần build reverse index: date+dealer → [rows] để tránh O(n) scan toàn bộ
+  // Vì csvLookup đã có sẵn, ta dùng Object.entries một lần ngoài loop.
+
+  // Build: dealerDateKey → [row] map  (chỉ build 1 lần per render)
+  const ddMap = {};  // "dealer|||date" → [rows matching group]
+  for (const [k, row] of Object.entries(csvLookup)) {
+    const parts  = k.split('|');
+    // key format: "dd/mm/yyyy|dealer|model_lower"  (2 pipes, but model can have |)
+    const date   = parts[0];
+    const dealer = parts[1];
+    if (!date || !dealer) continue;
+    // Check if this row belongs to the same group via ppKey
+    const fakeProd = {
+      partNum:     row[21]?.trim() || '',
+      model:       row[3]?.trim()  || '',
+      seriesGroup: row[10]?.trim() || '',
+      gamingGroup: row[10]?.trim() || '',
+      segment:     row[11]?.trim() || '',
+      cpuFamily:   row[12]?.trim() || '',
+      cpuDetail:   row[13]?.trim() || '',
+      ram:         row[14]?.trim() || '',
+      ssd:         row[15]?.trim() || '',
+      gpuTag:      row[17]?.trim() || '',
+    };
+    if (ppKey(fakeProd) !== group.key) continue;
+    const ddKey = dealer + '|||' + date;
+    if (!ddMap[ddKey]) ddMap[ddKey] = [];
+    ddMap[ddKey].push(row);
+  }
+
   const matrix = {};
   for (const { key } of DEALERS) {
     matrix[key] = {};
-    const products = group.byDealer[key] || [];
     for (const date of days) {
-      // Lấy giá thấp nhất của tất cả model trong group cho dealer+date này
+      const rowsHere = ddMap[key + '|||' + date] || [];
       let minP = 0;
-      for (const p of products) {
-        const lkKey = date + '|' + key + '|' + p.model.toLowerCase();
-        const row   = csvLookup[lkKey];
-        if (row) {
-          const price = (parseFloat(row[5])||0) || (parseFloat(row[4])||0);
-          if (price > 0 && (minP === 0 || price < minP)) minP = price;
-        }
+      for (const row of rowsHere) {
+        const price = (parseFloat(row[5])||0) || (parseFloat(row[4])||0);
+        if (price > 0 && (minP === 0 || price < minP)) minP = price;
       }
       matrix[key][date] = minP;
     }
