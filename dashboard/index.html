@@ -2065,7 +2065,9 @@ const REPO = 'hoangphuc1809-source/MBW-Scrape-number';
 
 // Get active password hash (custom overrides default)
 function getAuthHash() {
-  return localStorage.getItem(PWD_KEY) || AUTH_HASH_DEFAULT;
+  // Always use hardcoded hash — clear any stale localStorage entry
+  localStorage.removeItem(PWD_KEY);
+  return AUTH_HASH_DEFAULT;
 }
 
 // Simple SHA-256 using SubtleCrypto
