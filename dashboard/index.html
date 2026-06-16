@@ -2490,37 +2490,49 @@ function ppPriceHistory(group) {
     { key: 'CellPhone S',  color: '#16a34a', short: 'CPS' },
   ];
 
-  // Build price matrix bằng cách scan csvLookup trực tiếp.
-  // Không dùng group.byDealer (chỉ có allToday — thiếu ngày không scrape được).
-  // Thay vào đó: với mỗi date+dealer, tìm tất cả rows trong csvLookup có
-  // cùng groupKey (ppKey) → lấy giá thấp nhất.
-  //
-  // csvLookup key = "date|dealer|model_lower"
-  // → cần build reverse index: date+dealer → [rows] để tránh O(n) scan toàn bộ
-  // Vì csvLookup đã có sẵn, ta dùng Object.entries một lần ngoài loop.
+  // Match rows theo Part# (col V = row[21]) — cách chính xác nhất vì
+  // cùng 1 model có tên khác nhau giữa 3 dealer nhưng Part# giống nhau.
+  // Nếu group.isPartNumKey → match normPN(row[21]).
+  // Fallback (group key là spec-based) → dùng ppKey như cũ.
+  const normPN = (s) => (s||'').toLowerCase().replace(/[\s\-_]/g,'');
+  const groupPN = group.isPartNumKey ? group.partNum : '';   // e.g. "432vn"
 
-  // Build: dealerDateKey → [row] map  (chỉ build 1 lần per render)
-  const ddMap = {};  // "dealer|||date" → [rows matching group]
+  // Scan csvLookup 1 lần, build ddMap: "dealer|||date" → [rows matching group]
+  const ddMap = {};
   for (const [k, row] of Object.entries(csvLookup)) {
-    const parts  = k.split('|');
-    // key format: "dd/mm/yyyy|dealer|model_lower"  (2 pipes, but model can have |)
-    const date   = parts[0];
-    const dealer = parts[1];
+    // csvLookup key = "dd/mm/yyyy|dealer|model_lower"
+    const pipe1  = k.indexOf('|');
+    const pipe2  = k.indexOf('|', pipe1 + 1);
+    if (pipe1 < 0 || pipe2 < 0) continue;
+    const date   = k.slice(0, pipe1);
+    const dealer = k.slice(pipe1 + 1, pipe2);
     if (!date || !dealer) continue;
-    // Check if this row belongs to the same group via ppKey
-    const fakeProd = {
-      partNum:     row[21]?.trim() || '',
-      model:       row[3]?.trim()  || '',
-      seriesGroup: row[10]?.trim() || '',
-      gamingGroup: row[10]?.trim() || '',
-      segment:     row[11]?.trim() || '',
-      cpuFamily:   row[12]?.trim() || '',
-      cpuDetail:   row[13]?.trim() || '',
-      ram:         row[14]?.trim() || '',
-      ssd:         row[15]?.trim() || '',
-      gpuTag:      row[17]?.trim() || '',
-    };
-    if (ppKey(fakeProd) !== group.key) continue;
+
+    let matched = false;
+    if (groupPN) {
+      // Primary: match by Part# (col V) hoặc extract từ model name
+      const rowPN = normPN(row[21]?.trim() || '');
+      const modelPN = rowPN || normPN(ppExtractPN(row[3]?.trim() || ''));
+      matched = modelPN === groupPN;
+    }
+    if (!matched && !groupPN) {
+      // Fallback: spec-based match via ppKey
+      const fakeProd = {
+        partNum:     row[21]?.trim() || '',
+        model:       row[3]?.trim()  || '',
+        seriesGroup: row[10]?.trim() || '',
+        gamingGroup: row[10]?.trim() || '',
+        segment:     row[11]?.trim() || '',
+        cpuFamily:   row[12]?.trim() || '',
+        cpuDetail:   row[13]?.trim() || '',
+        ram:         row[14]?.trim() || '',
+        ssd:         row[15]?.trim() || '',
+        gpuTag:      row[17]?.trim() || '',
+      };
+      matched = ppKey(fakeProd) === group.key;
+    }
+    if (!matched) continue;
+
     const ddKey = dealer + '|||' + date;
     if (!ddMap[ddKey]) ddMap[ddKey] = [];
     ddMap[ddKey].push(row);
