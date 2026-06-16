@@ -1117,7 +1117,6 @@ function renderAllSkus() {
     ${has3 ? '<col style="width:110px">' : ''}<!-- D-2 -->
     <col style="width:110px"><!-- D-1 -->
     <col style="width:110px"><!-- Today -->
-    <col style="width:70px"><!-- Date -->
     <col style="width:60px"><!-- Link -->
   </colgroup>
   <thead><tr>
@@ -1130,7 +1129,6 @@ function renderAllSkus() {
     ${has3 ? `<th style="${C};${thStyle}" onclick="asSortBy('prev2')">Price (${prev2Date})${si('prev2')}</th>` : ''}
     <th style="${C};${thStyle}" onclick="asSortBy('prev')">Price (${prevDate})${si('prev')}</th>
     <th style="${C};${thStyle};color:var(--accent)" onclick="asSortBy('price')">Price (${todayDate})${si('price')}</th>
-    <th style="${C};${thStyle}" onclick="asSortBy('date')">Ngày${si('date')}</th>
     <th style="${L};${thStyle}">Link</th>
   </tr></thead>`;
 
@@ -1151,7 +1149,7 @@ function renderAllSkus() {
 
   // ── Row builder ─────────────────────────────────────────────────
   const rows = data.length === 0
-    ? `<tr><td colspan="${9 + (has3?1:0)}" class="empty">No matching data.</td></tr>`
+    ? `<tr><td colspan="${8 + (has3?1:0)}" class="empty">No matching data.</td></tr>`
     : data.map((p, i) => {
         const cpuLabel = p.cpuDetail || p.cpuFamily || '–';
         const gpuRaw   = p.gpuLabel || p.gpuTag || '';
@@ -1160,16 +1158,21 @@ function renderAllSkus() {
           : (gpuRaw==='UMA' ? 'Integrated' : '–');
         const ramTxt = normRAM(p.ram);
         const ssdTxt = normSSD(p.ssd);
-        const today  = p.todayPrice || p.kmPrice || 0;
-        const prev   = p.prevPrice  || 0;
-        const prev2  = p.prev2Price || 0;
-        const prev3  = p.prev3Price || 0;
+
+        // Lấy giá theo đúng ngày của cột — nếu model không có data ngày đó → "–"
+        // Fallback: allToday products (DATA cache) không có priceOnDate → dùng todayPrice/prevPrice
+        const pod    = p.priceOnDate || { [todayDate]: p.todayPrice||p.kmPrice||0, [prevDate]: p.prevPrice||0 };
+        const today  = pod[todayDate] || 0;
+        const prev   = pod[prevDate]  || 0;
+        const prev2  = pod[prev2Date] || 0;
+        const prev3  = 0; // không cần prev3 cho display
+
         const origP  = p.origPrice || 0;
-        const discPct = (origP > 0 && today < origP) ? Math.round((origP - today) / origP * 100) : 0;
+        const discPct = (origP > 0 && today < origP && today > 0) ? Math.round((origP - today) / origP * 100) : 0;
         const rowBg  = i%2===0 ? '' : 'background:rgba(0,0,0,0.018)';
 
-        // today's vs yesterday's overall color for row highlight
-        const todayDelta = prev ? today - prev : 0;
+        // Row highlight: so sánh today vs prev (chỉ khi cả 2 có data)
+        const todayDelta = (today && prev) ? today - prev : 0;
         const rowHighlight = todayDelta < 0
           ? 'background:rgba(239,68,68,0.04)'
           : todayDelta > 0
@@ -1196,7 +1199,6 @@ function renderAllSkus() {
           ${p2Cell}
           ${priceCell(prev,  prev2)}
           ${priceCell(today, prev)}
-          <td style="${C};padding:5px 4px;font-size:10px;white-space:nowrap;color:${p.isStale?'#f97316':'#9ca3af'}">${p.isStale?'⚠ ':''}${(p.dataDate||todayDate).slice(0,5)}</td>
           <td style="${L};padding:5px 4px">${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
         </tr>`;
       }).join('');
@@ -1801,66 +1803,75 @@ function buildDerivedData(rows) {
   };
 
   // ── allUnique: unique dealer+model từ toàn bộ lịch sử ──────
-  // Lấy row mới nhất của mỗi cặp (dealer, model), không phụ thuộc vào ngày hôm nay.
-  // Dùng cho All SKUs + Price Positioning: model không có data hôm nay vẫn hiển thị,
-  // giá để trống / lấy từ ngày gần nhất có data.
+  // Mỗi sản phẩm mang giá theo từng ngày (priceOnDate[date]).
+  // renderAllSkus dùng globalDates (top 3 ngày mới nhất) làm header cột.
+  // Nếu ngày đó không có data → hiển thị "–" thay vì dùng giá ngày khác.
+  const parseD = (s) => { const p=(s||'').split('/'); return new Date(+p[2],+p[1]-1,+p[0]); };
   const uniqueKey = (r) => (r[2]?.trim()||'') + '|||' + (r[3]?.trim()||'');
-  const latestByKey = new Map(); // key → row (row mới nhất = dateStr lớn nhất)
+  
+  // Step A: group all rows by dealer+model, collect per-date prices
+  const modelHistory = new Map(); // uniqueKey → { latestRow, priceOnDate: {date: price}, latestDate }
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     if (!r[0] || !r[3]) continue;
-    const k = uniqueKey(r);
-    const existing = latestByKey.get(k);
-    if (!existing) { latestByKey.set(k, r); continue; }
-    // So sánh ngày dd/mm/yyyy
-    const parseD = (s) => { const p=s.split('/'); return new Date(+p[2],+p[1]-1,+p[0]); };
-    if (parseD(r[0].trim()) > parseD(existing[0].trim())) latestByKey.set(k, r);
+    const k   = uniqueKey(r);
+    const dt  = r[0].trim();
+    const p   = parsePrice(r[5]) || parsePrice(r[4]);
+    if (!p) continue;
+    if (!modelHistory.has(k)) {
+      modelHistory.set(k, { latestRow: r, latestDate: dt, priceOnDate: {} });
+    }
+    const entry = modelHistory.get(k);
+    // Keep latest price per date (last row wins if duplicate)
+    entry.priceOnDate[dt] = p;
+    // Track latest row (for metadata: cpu, ram, etc.)
+    if (parseD(dt) > parseD(entry.latestDate)) {
+      entry.latestDate = dt;
+      entry.latestRow  = r;
+    }
   }
 
-  const newAllUnique = [...latestByKey.values()].map(r => {
-    const model   = r[3]?.trim() || '';
-    const rowDate = r[0]?.trim() || '';
-    const srp     = parsePrice(r[4]);
-    const promo   = parsePrice(r[5]);
-    const todayP  = promo || srp;
-    // prev price: lookup from prevDate rows
-    const prevKey  = newPrev + '|' + r[2]?.trim() + '|' + model.toLowerCase();
-    const prevRow  = lookup[prevKey];
-    const prevPromo = prevRow ? parsePrice(prevRow[5]) || parsePrice(prevRow[4]) : 0;
+  const newAllUnique = [...modelHistory.values()].map(({ latestRow: r, latestDate, priceOnDate }) => {
+    const model = r[3]?.trim() || '';
     let seriesGroup = r[10]?.trim() || '';
     if (!seriesGroup) {
       const gpu = (r[17]||'').toUpperCase();
       seriesGroup = (gpu.includes('RTX')||gpu.includes('GTX')) ? 'Gaming' : 'Business& Productivity';
     }
-    const isStale = rowDate !== newToday; // data không phải hôm nay
+    // todayPrice = price on most recent global date (newToday), 0 if not available
+    const todayP = priceOnDate[newToday] || 0;
+    const prevP  = priceOnDate[newPrev]  || 0;
+    const prev2P = priceOnDate[newPrev2] || 0;
     return {
-      todayPrice:  todayP,
-      prevPrice:   prevPromo,
-      dealer:      r[2]?.trim()  || '',
-      model:       model,
-      brand:       r[9]?.trim()  || '',
-      seriesGroup: seriesGroup,
-      segment:     r[11]?.trim() || '',
-      cpuFamily:   r[12]?.trim() || '',
-      cpuDetail:   r[13]?.trim() || '',
-      ram:         r[14]?.trim() || '',
-      ssd:         r[15]?.trim() || '',
-      screen:      r[16]?.trim() || '',
-      gpuTag:      r[17]?.trim() || '',
-      vram:        r[18]?.trim() || '',
-      gpuLabel:    (() => { const _g=r[17]?.trim()||'',_v=r[18]?.trim()||''; return _g?(_v?_g+' '+_v:_g):''; })(),
-      origPrice:   srp,
-      kmPrice:     promo,
-      disc:        r[6]?.trim()  || '',
-      link:        r[20]?.trim() || '',
-      partNum:     r[21]?.trim() || '',
-      sold:        cleanSold(r[7]),
-      focusModel:  (r[22]?.trim() === 'Yes'),
-      gamingGroup: seriesGroup,
-      dataDate:    rowDate,        // ngày có data mới nhất
-      isStale:     isStale,        // true nếu không có data hôm nay
+      todayPrice:   todayP,          // giá ngày mới nhất (newToday), 0 nếu không có
+      prevPrice:    prevP,           // giá ngày prev
+      prev2Price:   prev2P,          // giá ngày prev2
+      priceOnDate:  priceOnDate,     // lookup đầy đủ: date → price
+      latestDate:   latestDate,      // ngày gần nhất model này có data
+      isStale:      !priceOnDate[newToday], // true = không có data hôm nay
+      dealer:       r[2]?.trim()  || '',
+      model:        model,
+      brand:        r[9]?.trim()  || '',
+      seriesGroup:  seriesGroup,
+      segment:      r[11]?.trim() || '',
+      cpuFamily:    r[12]?.trim() || '',
+      cpuDetail:    r[13]?.trim() || '',
+      ram:          r[14]?.trim() || '',
+      ssd:          r[15]?.trim() || '',
+      screen:       r[16]?.trim() || '',
+      gpuTag:       r[17]?.trim() || '',
+      vram:         r[18]?.trim() || '',
+      gpuLabel:     (() => { const _g=r[17]?.trim()||'',_v=r[18]?.trim()||''; return _g?(_v?_g+' '+_v:_g):''; })(),
+      origPrice:    parsePrice(r[4]),
+      kmPrice:      parsePrice(r[5]),
+      disc:         r[6]?.trim()  || '',
+      link:         r[20]?.trim() || '',
+      partNum:      r[21]?.trim() || '',
+      sold:         cleanSold(r[7]),
+      focusModel:   (r[22]?.trim() === 'Yes'),
+      gamingGroup:  seriesGroup,
     };
-  }).filter(p => p.model && p.todayPrice > 0);
+  }).filter(p => p.model && Object.keys(p.priceOnDate).length > 0);
 
   return { newToday, newPrev, newPrev2, newAllToday, newAllUnique, newDrops, newRises, newChanges, newStats };
 }
@@ -1949,7 +1960,7 @@ function applyNewData(derived, csv) {
   if (todayColIdx>=0) AL_COLS[todayColIdx][1] = `Price ${todayDate}`;
 }
 
-async function fetchSheetData(manual=false) {
+async async function fetchSheetData(manual=false) {
   const icon   = document.getElementById('sheetRefreshIcon');
   const status = document.getElementById('sheetRefreshStatus');
   const btn    = document.getElementById('btnSheetRefresh');
