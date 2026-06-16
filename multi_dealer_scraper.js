@@ -597,7 +597,7 @@ async function loadSpecCacheFromSheet(sheets) {
     try {
       const vRes = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME}!T1`,
+        range: `${SHEET_NAME}!S1`,
       });
       savedVersion = parseInt(vRes.data.values?.[0]?.[0] || '0') || 0;
     } catch(e) {}
@@ -695,7 +695,7 @@ async function writeToSheet(sheets, allProducts) {
   // Lưu FPT_MAPPING_VERSION vào T1 để track khi nào cần re-fetch
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!T1`,
+    range: `${SHEET_NAME}!S1`,
     valueInputOption: 'RAW',
     requestBody: { values: [[FPT_MAPPING_VERSION]] },
   });
