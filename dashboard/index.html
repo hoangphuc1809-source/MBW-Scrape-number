@@ -357,6 +357,12 @@ tbody tr:hover{background:#fafafa}
   content: '▾'; position: absolute; right: 10px; top: 50%;
   transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none;
 }
+.pp-clear-btn {
+  padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 8px;
+  background: #f9fafb; color: #6b7280; font-size: 13px; cursor: pointer;
+  line-height: 1; flex-shrink: 0;
+}
+.pp-clear-btn:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
 .pp-combo-dropdown {
   display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
   background: #fff; border: 1px solid #d1d5db; border-radius: 8px;
@@ -648,6 +654,8 @@ tbody tr:hover{background:#fafafa}
         onkeydown="ppComboKey(event)" />
       <div class="pp-combo-dropdown" id="posDropdown"></div>
     </div>
+    <button id="posClearBtn" onclick="ppComboClear()" title="Clear" style="display:none"
+      class="pp-clear-btn">✕</button>
     <span id="posCount" style="font-size:11px;color:#9ca3af;flex-shrink:0"></span>
   </div>
   <div id="posResult"></div>
@@ -2612,6 +2620,7 @@ function ppComboGetValue(){ return _ppSelValue; }
 
 function ppComboFilter(q){
   const norm = (q||'').toLowerCase().trim();
+  ppClearBtnToggle(!!norm || !!_ppSelValue);
   // If user clears input, clear selection
   if(!norm){ _ppSelValue = ''; renderPositioning(); return; }
   // If query exactly matches a known SKU, select it
@@ -2680,7 +2689,26 @@ function ppComboSelect(val){
   if(dd) dd.classList.remove('open');
   const cntEl = document.getElementById('posCount');
   if(cntEl) cntEl.textContent = '';
+  ppClearBtnToggle(!!val);
   renderPositioning();
+}
+
+function ppComboClear(){
+  _ppSelValue = '';
+  _ppActiveIdx = -1;
+  const inp = document.getElementById('posSKUInput');
+  if(inp){ inp.value = ''; inp.focus(); }
+  const dd = document.getElementById('posDropdown');
+  if(dd) dd.classList.remove('open');
+  const cntEl = document.getElementById('posCount');
+  if(cntEl) cntEl.textContent = '';
+  ppClearBtnToggle(false);
+  renderPositioning();
+}
+
+function ppClearBtnToggle(show){
+  const btn = document.getElementById('posClearBtn');
+  if(btn) btn.style.display = show ? '' : 'none';
 }
 
 function ppComboKey(e){
