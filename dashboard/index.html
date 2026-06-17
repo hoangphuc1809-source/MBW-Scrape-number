@@ -661,9 +661,6 @@ tbody tr:hover{background:#fafafa}
     </div>
     <button id="posClearBtn" onclick="ppComboClear()" title="Clear" style="display:none"
       class="pp-clear-btn">✕</button>
-    <select id="pp_vendor" multiple onchange="renderPositioning()" style="min-width:140px">
-      <option value="">All Vendors</option>
-    </select>
     <span id="posCount" style="font-size:11px;color:#9ca3af;flex-shrink:0"></span>
   </div>
   <div id="posResult"></div>
@@ -2435,15 +2432,30 @@ function renderPositioning(){
   const sortedSKUs = [..._ppSKUMap.keys()].sort((a,b)=>a.localeCompare(b,'vi'));
   ppComboSetList(sortedSKUs);
 
-  // Populate Vendor dropdown
-  const ppVendorSel = document.getElementById('pp_vendor');
-  if (ppVendorSel) {
-    const curVendor = window.getMultiVal('pp_vendor');
-    const vendors = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort();
+  // Populate Vendor dropdown (rendered inline — populate after innerHTML set)
+  // Dùng setTimeout để đảm bảo DOM đã render select#pp_vendor trước khi populate
+  setTimeout(() => {
+    const ppVendorSel = document.getElementById('pp_vendor');
+    if (!ppVendorSel) return;
+    const curVendor = ppVendorSel.tomselect
+      ? ppVendorSel.tomselect.getValue()
+      : [...ppVendorSel.selectedOptions].map(o=>o.value).filter(Boolean);
+    // Lấy vendors từ tất cả products trong _ppGroups (không chỉ allToday)
+    const vendors = [...new Set(
+      Object.values(_ppGroups).flatMap(g => g.allProducts.map(p=>p.brand)).filter(Boolean)
+    )].sort();
+    // Destroy TomSelect cũ nếu có (vì innerHTML vừa bị replace)
+    if (ppVendorSel.tomselect) { try { ppVendorSel.tomselect.destroy(); } catch(e){} }
     ppVendorSel.innerHTML = '<option value="">All Vendors</option>' +
       vendors.map(v=>`<option value="${v}"${curVendor.includes(v)?' selected':''}>${v}</option>`).join('');
-    if (window.tsSync) window.tsSync('pp_vendor');
-  }
+    // Init TomSelect
+    if (typeof TomSelect !== 'undefined' && !ppVendorSel.tomselect) {
+      const OPTS2 = { maxOptions:null, allowEmptyOption:false, sortField:{field:'$order'},
+                      maxItems:null, plugins:['remove_button'], placeholder:'All Vendors' };
+      [...ppVendorSel.options].forEach(o => { if(o.value==='') o.remove(); });
+      new TomSelect(ppVendorSel, OPTS2);
+    }
+  }, 0);
 
   const selectedSKU = ppComboGetValue();
 
@@ -2491,7 +2503,13 @@ function renderPositioning(){
   <div class="pp-section-title">📦 Sản phẩm tương đương cùng nhóm spec</div>
   ${ppEquivTable(g, selectedSKU, mbwMin)}
 
-  <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
+  <div class="pp-section-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span>🔍 Sản phẩm cùng phân khúc trên thị trường</span>
+    <select id="pp_vendor" multiple onchange="renderPositioning()"
+      style="font-size:11px;padding:3px 6px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;min-width:130px;max-width:220px">
+      <option value="">All Vendors</option>
+    </select>
+  </div>
   ${ppRenderCompetitive(g, _ppGroups, window.getMultiVal('pp_vendor'))}
   `;
 
