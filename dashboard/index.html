@@ -2525,7 +2525,7 @@ function renderPositioning(){
   ${ppEquivTable(g, selectedSKU, mbwMin)}
 
   <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
-  ${ppRenderCompetitive(g, _ppGroups, _ppVendorFilter)}
+  ${ppRenderCompetitive(g, _ppGroups, window.getMultiVal('pp_vendor'))}
   `;
 
   container.innerHTML = html;
