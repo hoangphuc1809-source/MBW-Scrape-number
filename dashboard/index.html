@@ -347,12 +347,12 @@ tbody tr:hover{background:#fafafa}
 #posSearchBar label { font-weight: 600; color: #374151; font-size: 12px; white-space: nowrap; }
 /* combobox */
 .pp-combo { position: relative; flex: 1; min-width: 260px; max-width: 500px; }
-#posSKUInput {
+#posSKUInput, #miSKUInput {
   width: 100%; padding: 7px 32px 7px 10px; border: 1px solid #d1d5db;
   border-radius: 8px; font-size: 12px; background: #f9fafb;
   box-sizing: border-box; outline: none;
 }
-#posSKUInput:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+#posSKUInput:focus, #miSKUInput:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
 .pp-combo::after {
   content: '▾'; position: absolute; right: 10px; top: 50%;
   transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none;
@@ -674,7 +674,22 @@ tbody tr:hover{background:#fafafa}
     <!-- Section 1: Price Trend -->
     <div>
       <div class="pp-section-title">📈 Price Trend Chart</div>
-      <div id="mi_trend" style="min-height:120px"></div>
+      <!-- MI Combo Search -->
+    <div class="filter-bar" style="position:sticky;top:0;z-index:50;background:#fff;padding:10px 14px;margin:-14px -14px 12px;border-bottom:1px solid #f0f0f0">
+      <label style="font-size:12px;font-weight:600;color:#374151;white-space:nowrap">🔍 SKU / Model:</label>
+      <div class="pp-combo" id="miCombo">
+        <input id="miSKUInput" type="text" autocomplete="off"
+          placeholder="Gõ để tìm hoặc chọn model..."
+          oninput="miComboFilter(this.value)"
+          onfocus="miComboOpen()"
+          onblur="setTimeout(miComboClose,150)"
+          onkeydown="miComboKey(event)" />
+        <div class="pp-combo-dropdown" id="miDropdown"></div>
+      </div>
+      <button id="miClearBtn" onclick="miComboClear()" title="Clear"
+        class="pp-clear-btn" style="display:none">✕</button>
+    </div>
+    <div id="mi_trend" style="min-height:120px"></div>
     </div>
 
     <!-- Section 2: Weekly Summary -->
@@ -2793,6 +2808,120 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
 }
 
 
+// ── Market Insights Combo (mirrors ppCombo, separate state/IDs) ───
+let _miAllModels = []; // list of model display strings
+let _miSelModel  = ''; // currently selected model label
+let _miModelMap  = {}; // label → {partNum, normPN}
+
+function miComboBuildList() {
+  const src = (allUnique && allUnique.length) ? allUnique : allToday;
+  const seen = new Set();
+  _miAllModels = [];
+  _miModelMap  = {};
+  for (const p of src) {
+    const label = p.model.trim();
+    if (!label || seen.has(label.toLowerCase())) continue;
+    seen.add(label.toLowerCase());
+    _miAllModels.push(label);
+    const pn = p.partNum ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'') : '';
+    _miModelMap[label] = { partNum: pn, dealer: p.dealer };
+  }
+  _miAllModels.sort((a,b) => a.localeCompare(b,'vi'));
+  if (_miSelModel && !_miAllModels.includes(_miSelModel)) _miSelModel = '';
+}
+
+function miComboRenderDropdown(q) {
+  const dd = document.getElementById('miDropdown');
+  if (!dd) return;
+  const filtered = q
+    ? _miAllModels.filter(m => m.toLowerCase().includes(q))
+    : _miAllModels;
+  const items = filtered.slice(0,80).map(m => {
+    const hl = q ? m.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi'), '<b>$1</b>') : m;
+    const sel = m === _miSelModel ? 'background:#eff6ff;font-weight:600;' : '';
+    return '<div class="pp-combo-item" style="' + sel + '" onmousedown="miComboSelect(\'' + m.replace(/'/g,"\\'") + '\')">' + hl + '</div>';
+  }).join('');
+  dd.innerHTML = items || '<div style="padding:8px 12px;color:#9ca3af;font-size:12px">No results</div>';
+}
+
+function miComboFilter(q) {
+  const norm = (q||'').toLowerCase().trim();
+  const clearBtn = document.getElementById('miClearBtn');
+  if (clearBtn) clearBtn.style.display = (norm || _miSelModel) ? 'flex' : 'none';
+  if (!norm) { _miSelModel = ''; renderInsights(); return; }
+  miComboRenderDropdown(norm);
+  const dd = document.getElementById('miDropdown');
+  if (dd) dd.classList.add('open');
+  // auto-select if exact match
+  const exact = _miAllModels.find(m => m.toLowerCase() === norm);
+  if (exact && exact !== _miSelModel) {
+    _miSelModel = exact;
+    renderInsights();
+  }
+}
+
+function miComboOpen() {
+  const dd = document.getElementById('miDropdown');
+  const inp = document.getElementById('miSKUInput');
+  if (!dd || !inp) return;
+  miComboBuildList();
+  miComboRenderDropdown(inp.value.toLowerCase().trim());
+  dd.classList.add('open');
+}
+
+function miComboClose() {
+  const dd = document.getElementById('miDropdown');
+  if (dd) dd.classList.remove('open');
+  const inp = document.getElementById('miSKUInput');
+  if (inp && _miSelModel) inp.value = _miSelModel;
+  else if (inp && !_miSelModel) inp.value = '';
+}
+
+function miComboSelect(val) {
+  _miSelModel = val;
+  const inp = document.getElementById('miSKUInput');
+  if (inp) inp.value = val;
+  const clearBtn = document.getElementById('miClearBtn');
+  if (clearBtn) clearBtn.style.display = 'flex';
+  miComboClose();
+  renderInsights();
+}
+
+function miComboClear() {
+  _miSelModel = '';
+  const inp = document.getElementById('miSKUInput');
+  if (inp) { inp.value = ''; inp.focus(); }
+  const clearBtn = document.getElementById('miClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderInsights();
+}
+
+function miComboKey(e) {
+  const dd = document.getElementById('miDropdown');
+  if (!dd) return;
+  const items = dd.querySelectorAll('.pp-combo-item');
+  const cur = dd.querySelector('.pp-combo-item.focused');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = cur ? cur.nextElementSibling : items[0];
+    if (cur) cur.classList.remove('focused');
+    if (next) { next.classList.add('focused'); next.scrollIntoView({block:'nearest'}); }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const prev = cur ? cur.previousElementSibling : items[items.length-1];
+    if (cur) cur.classList.remove('focused');
+    if (prev) { prev.classList.add('focused'); prev.scrollIntoView({block:'nearest'}); }
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const focused = dd.querySelector('.pp-combo-item.focused');
+    if (focused) focused.dispatchEvent(new MouseEvent('mousedown'));
+    else { const inp = document.getElementById('miSKUInput'); if (inp) miComboFilter(inp.value); }
+  } else if (e.key === 'Escape') {
+    miComboClose();
+  }
+}
+
+
 // ═══════════════════════════════════════════════════════════════════
 // TAB 5: MARKET INSIGHTS
 // Sections: Price Trend Chart | Weekly Summary | Stock Signal
@@ -2927,23 +3056,7 @@ function miRenderTrend(container) {
     return;
   }
 
-  // Build model list from allUnique (has partNum + model)
-  const modelMap = {}; // normPN → {label, partNum, groupKey}
-  const src = (allUnique && allUnique.length > allToday.length) ? allUnique : allToday;
-  for (const p of src) {
-    if (!p.partNum) continue;
-    const pn = p.partNum.toLowerCase().replace(/[\s\-_]/g,'');
-    if (!modelMap[pn]) modelMap[pn] = { label: p.model.replace(/\s+/g,' ').trim(), partNum: pn };
-  }
-  const models = Object.values(modelMap).sort((a,b) => a.label.localeCompare(b.label,'vi'));
-
-  if (!_miTrendModel && models.length) _miTrendModel = models[0].partNum;
-
-  // Combobox + day range buttons
-  const opts = models.map(m =>
-    '<option value="' + m.partNum + '"' + (m.partNum === _miTrendModel ? ' selected' : '') + '>'
-    + m.label + '</option>'
-  ).join('');
+  const selModel = _miSelModel;
 
   const dayBtns = [7,14,30].map(d =>
     '<button onclick="miSetDays(' + d + ')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:none;cursor:pointer;'
@@ -2951,16 +3064,32 @@ function miRenderTrend(container) {
     + d + 'd</button>'
   ).join('');
 
-  // Get dates for range
-  const chartDates = [...csvDates].reverse().slice(-_miTrendDays); // asc order
+  // No model selected yet
+  if (!selModel) {
+    container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;color:#9ca3af">'
+      + '🔍 Search and select a model above to view its price trend'
+      + '</div>';
+    return;
+  }
 
-  // Build price matrix for selected model
+  if (!csvDates.length) {
+    container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;color:#9ca3af">'
+      + '📊 Load data from Sheet to view price trend chart'
+      + '</div>';
+    return;
+  }
+
+  const chartDates = [...csvDates].reverse().slice(-_miTrendDays);
+
   const DEALERS = [
     {key:'MBW',        color:'#2563eb', label:'MBW'},
     {key:'FPT Retail', color:'#f97316', label:'FPT'},
     {key:'CellPhone S',color:'#16a34a', label:'CPS'},
   ];
   const normPN = s => (s||'').toLowerCase().replace(/[\s\-_]/g,'');
+  const selNorm = selModel.toLowerCase();
+  const selPN   = (_miModelMap[selModel]||{}).partNum || '';
+
   const series = DEALERS.map(dl => {
     const data = {};
     for (const [k, row] of Object.entries(csvLookup)) {
@@ -2969,8 +3098,11 @@ function miRenderTrend(container) {
       const date = k.slice(0,pipe1), dealer = k.slice(pipe1+1,pipe2);
       if (dealer !== dl.key) continue;
       if (!chartDates.includes(date)) continue;
-      const rowPN = normPN(row[21]||'') || normPN(row[3]||'');
-      if (!rowPN.includes(_miTrendModel) && _miTrendModel !== rowPN) continue;
+      // Match by Part# if available, else model name
+      const rowPN = normPN(row[21]||'');
+      const rowModel = (row[3]||'').toLowerCase();
+      const matched = selPN ? (rowPN === selPN) : (rowModel === selNorm);
+      if (!matched) continue;
       const price = parsePrice(row[5]) || parsePrice(row[4]);
       if (!price) continue;
       if (!data[date] || price < data[date]) data[date] = price;
@@ -2981,9 +3113,8 @@ function miRenderTrend(container) {
   const chartHTML = miLinechart(series, chartDates, 680, 220);
 
   container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
-    + '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">'
-      + '<span style="font-size:12px;font-weight:600;color:#475569">Model:</span>'
-      + '<select onchange="miSetModel(this.value)" style="font-size:12px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;max-width:340px">' + opts + '</select>'
+    + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+      + '<span style="font-size:12px;font-weight:600;color:#1e293b">' + selModel.slice(0,70) + '</span>'
       + '<div style="display:flex;gap:4px;margin-left:auto">' + dayBtns + '</div>'
     + '</div>'
     + chartHTML
@@ -3176,6 +3307,7 @@ function renderInsights() {
   const weeklyEl = document.getElementById('mi_weekly');
   const stockEl  = document.getElementById('mi_stock');
   if (!trendEl) return;
+  miComboBuildList(); // keep model list fresh
   miRenderTrend(trendEl);
   miRenderWeekly(weeklyEl);
   miRenderStock(stockEl);
