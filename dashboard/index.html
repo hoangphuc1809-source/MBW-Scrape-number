@@ -2463,6 +2463,23 @@ function renderPositioning(){
 
   const selectedSKU = ppComboGetValue();
 
+  // Show/hide + populate vendor bar (static DOM, init TomSelect only once)
+  const _posVendorBar = document.getElementById('posVendorBar');
+  const _posVendorSel = document.getElementById('pp_vendor');
+  if (_posVendorBar) _posVendorBar.style.display = selectedSKU ? 'flex' : 'none';
+  if (_posVendorSel && !_posVendorSel.tomselect && selectedSKU) {
+    const _vendors = [...new Set(
+      Object.values(_ppGroups).flatMap(g => g.allProducts.map(p => p.brand)).filter(Boolean)
+    )].sort();
+    _posVendorSel.innerHTML = _vendors.map(v => `<option value="${v}">${v}</option>`).join('');
+    if (typeof TomSelect !== 'undefined') {
+      new TomSelect(_posVendorSel, {
+        maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
+        maxItems: null, plugins: ['remove_button'], placeholder: 'All Vendors'
+      });
+    }
+  }
+
   if(!selectedSKU){
     container.innerHTML = ppRenderSegSummary(_ppGroups) ;
     return;
