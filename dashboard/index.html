@@ -648,13 +648,6 @@ tbody tr:hover{background:#fafafa}
 
 <!-- ── TAB: PRICE POSITIONING ── -->
 <div class="section" id="sec-positioning">
-  <div id="posVendorBar" style="display:none;padding:8px 14px 0;gap:8px;align-items:center;flex-wrap:wrap">
-    <label style="font-size:12px;font-weight:600;color:#374151;white-space:nowrap">🏷️ Vendor:</label>
-    <select id="pp_vendor" multiple onchange="renderPositioning()" style="min-width:160px">
-      <option value="">All Vendors</option>
-    </select>
-    <button onclick="ppVendorClear()" style="padding:5px 10px;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;color:#6b7280;cursor:pointer" title="Clear vendor filter">✕ Clear</button>
-  </div>
   <div id="posSearchBar" class="filter-bar">
     <label>🔍 SKU / Model:</label>
     <div class="pp-combo" id="posCombo">
@@ -2441,23 +2434,6 @@ function renderPositioning(){
   // selectedSKU phải khai báo TRƯỚC mọi logic dùng nó
   const selectedSKU = ppComboGetValue();
 
-  // Show/hide vendor bar (static DOM) + populate TomSelect một lần duy nhất
-  const _posVendorBar = document.getElementById('posVendorBar');
-  const _posVendorSel = document.getElementById('pp_vendor');
-  if (_posVendorBar) _posVendorBar.style.display = selectedSKU ? 'flex' : 'none';
-  if (_posVendorSel && !_posVendorSel.tomselect && selectedSKU) {
-    const _vendors = [...new Set(
-      Object.values(_ppGroups).flatMap(g => g.allProducts.map(p => p.brand)).filter(Boolean)
-    )].sort();
-    _posVendorSel.innerHTML = _vendors.map(v => `<option value="${v}">${v}</option>`).join('');
-    if (typeof TomSelect !== 'undefined') {
-      new TomSelect(_posVendorSel, {
-        maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
-        maxItems: null, plugins: ['remove_button'], placeholder: 'All Vendors'
-      });
-    }
-  }
-
   if(!selectedSKU){
     container.innerHTML = ppRenderSegSummary(_ppGroups) ;
     return;
@@ -2503,7 +2479,8 @@ function renderPositioning(){
   ${ppEquivTable(g, selectedSKU, mbwMin)}
 
   <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
-  ${ppRenderCompetitive(g, _ppGroups, window.getMultiVal('pp_vendor'))}
+  ${ppRenderVendorFilter(_ppGroups)}
+  ${ppRenderCompetitive(g, _ppGroups, ppGetVendorFilter())}
   `;
 
   container.innerHTML = html;
@@ -2996,6 +2973,51 @@ function ppComboSelect(val){
   if(cntEl) cntEl.textContent = '';
   ppClearBtnToggle(!!val);
   renderPositioning();
+}
+
+// ── Vendor filter for competitive table ────────────────────────────────────
+let _ppVendorState = []; // persists across re-renders
+
+function ppGetVendorFilter() { return _ppVendorState; }
+
+function ppSetVendor(val) {
+  const opt = document.getElementById('pp_vendor_chk_' + btoa(val).replace(/=/g,''));
+  if (!opt) return;
+  if (_ppVendorState.includes(val)) {
+    _ppVendorState = _ppVendorState.filter(v => v !== val);
+    opt.checked = false;
+  } else {
+    _ppVendorState.push(val);
+    opt.checked = true;
+  }
+  renderPositioning();
+}
+
+function ppRenderVendorFilter(groups) {
+  const vendors = [...new Set(
+    Object.values(groups).flatMap(g => g.allProducts.map(p => p.brand)).filter(Boolean)
+  )].sort();
+  if (!vendors.length) return '';
+  const chips = vendors.map(v => {
+    const id = 'pp_vendor_chk_' + btoa(unescape(encodeURIComponent(v))).replace(/=/g,'');
+    const active = _ppVendorState.includes(v);
+    const color = active ? '#2563eb' : '#6b7280';
+    const bg    = active ? '#eff6ff' : '#f9fafb';
+    const border= active ? '#2563eb' : '#d1d5db';
+    return `<label id="${id}" onclick="ppSetVendor('${v.replace(/'/g,"\'")}')" 
+      style="cursor:pointer;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;
+             color:${color};background:${bg};border:1px solid ${border};white-space:nowrap;user-select:none">
+      ${active ? '✓ ' : ''}${v}
+    </label>`;
+  }).join('');
+  const clearBtn = _ppVendorState.length
+    ? `<button onclick="ppVendorClear()" style="padding:4px 10px;border-radius:20px;font-size:11px;border:1px solid #fca5a5;background:#fee2e2;color:#b91c1c;cursor:pointer">✕ Clear</button>`
+    : '';
+  return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 0 10px;border-bottom:1px solid #f3f4f6;margin-bottom:4px">
+    <span style="font-size:11px;font-weight:600;color:#6b7280;white-space:nowrap">🏷️ Vendor:</span>
+    ${chips}
+    ${clearBtn}
+  </div>`;
 }
 
 function ppVendorClear(){
