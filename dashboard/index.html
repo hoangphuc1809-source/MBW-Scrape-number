@@ -2746,10 +2746,11 @@ function ppRenderCompetitive(g, groups) {
       };
 
       // 3 ngày gần nhất: today, prev, prev2
-      const pod = p.priceOnDate || {[todayDate]:p.todayPrice,[prevDate]:p.prevPrice};
-      const p0 = pod[todayDate] || 0;
-      const p1 = pod[prevDate]  || 0;
-      const p2 = pod[prev2Date] || 0;
+      // Dùng trực tiếp fields từ product object (todayPrice/prevPrice/prev2Price/prev3Price)
+      // Đây là giá theo newToday/newPrev/newPrev2 — đã được set đúng trong buildDerivedData
+      const p0 = p.todayPrice  || 0;   // newToday
+      const p1 = p.prevPrice   || 0;   // newPrev
+      const p2 = p.prev2Price  || 0;   // newPrev2
 
       const soldFmt = p.sold ? `<span style="font-size:11px;color:#6b7280">${p.sold}</span>` : '—';
 
