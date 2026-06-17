@@ -1798,7 +1798,8 @@ function buildDerivedData(rows) {
   // ── Build allUnique: all historical models, latest price per (dealer+model) ──
   // Strategy: start with allToday (has todayPrice, prevPrice, etc.)
   // Then add stale models from history that didn't appear today
-  const seenTodayKeys = new Set(newAllToday.map(p => p.dealer.toLowerCase() + '|' + p.model.toLowerCase()));
+  // Build seenTodayKeys từ todayRows RAW (trước filter) — tránh mất model có row hôm nay nhưng giá=0
+  const seenTodayKeys = new Set(todayRows.map(r => (r[2]?.trim()||'').toLowerCase() + '|' + (r[3]?.trim()||'').toLowerCase()));
   
   // Collect latest row for each (dealer, model) not in today
   const staleMap = {}; // key => {row, date}
