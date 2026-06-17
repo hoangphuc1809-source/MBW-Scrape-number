@@ -2434,7 +2434,9 @@ function ppKey(p){
     ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'')
     : ppExtractPN(p.model);
   if(pn && pn.length >= 4) {
-    // Segment (Katana/Cyborg/Vector...) làm prefix để tránh MSI Part# trùng cross-series
+    // Cook data đã clean → Part# >= 6 chars đủ unique, không cần segment prefix
+    // Part# ngắn (4-5 chars) → giữ segment prefix để tránh false match cross-series
+    if(pn.length >= 6) return 'pn:' + pn;
     const seg = ppNorm(p.segment || '');
     return seg ? 'pn:' + seg + '_' + pn : 'pn:' + pn;
   }
@@ -2463,9 +2465,11 @@ function ppAvgMinPrice(priceList){
 
 // Build groups from allToday
 function ppBuildGroups(){
-  if(!allToday||!allToday.length) return {};
+  // Use allUnique (all historical + today) so stale models appear in competitive table
+  const src = (allUnique && allUnique.length > allToday.length) ? allUnique : allToday;
+  if(!src||!src.length) return {};
   const groups = {};
-  for(const p of allToday){
+  for(const p of src){
     const k = ppKey(p);
     if(!groups[k]){
       const pn = p.partNum
@@ -2883,12 +2887,14 @@ function ppRenderCompetitive(g, groups, vendorF) {
         </td>`;
       };
 
-      rows += `<tr style="${rowBg}">
+      const staleRowBg = p.isStale && !isSelected ? 'background:rgba(251,191,36,0.07)' : rowBg;
+      rows += `<tr style="${staleRowBg}">
         <td style="text-align:left;padding:5px 8px;vertical-align:top">
           <div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word;text-align:left">
             ${isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : ''}${p.model}
           </div>
           <span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:${dlrColor};background:${dlrColor}18;padding:1px 6px;border-radius:4px;border:1px solid ${dlrColor}40">${dlrShort}</span>
+          ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px">⚠ ${p.latestDate}</span>` : ''}
         </td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;line-height:1.4">${p.cpuDetail||p.cpuFamily||'—'}</td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;white-space:nowrap">${p.ram||'—'}</td>
