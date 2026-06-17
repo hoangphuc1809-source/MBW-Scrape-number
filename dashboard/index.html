@@ -530,6 +530,7 @@ tbody tr:hover{background:#fafafa}
   <div class="tab active" onclick="sw('drops')">📉 Top Price Changes</div>
   <div class="tab" onclick="sw('allskus')">📋 All SKUs</div>
   <div class="tab" onclick="sw('positioning')">💰 Price Positioning</div>
+  <div class="tab" onclick="sw('insights')">📈 Market Insights</div>
 </div>
 
 <div class="main" id="mainWrapper">
@@ -664,6 +665,31 @@ tbody tr:hover{background:#fafafa}
     <span id="posCount" style="font-size:11px;color:#9ca3af;flex-shrink:0"></span>
   </div>
   <div id="posResult"></div>
+</div>
+
+<!-- ── TAB 5: MARKET INSIGHTS ─────────────────────────────── -->
+<div class="section" id="sec-insights">
+  <div style="padding:14px;display:flex;flex-direction:column;gap:16px">
+
+    <!-- Section 1: Price Trend -->
+    <div>
+      <div class="pp-section-title">📈 Price Trend Chart</div>
+      <div id="mi_trend" style="min-height:120px"></div>
+    </div>
+
+    <!-- Section 2: Weekly Summary -->
+    <div>
+      <div class="pp-section-title">📅 Weekly Summary</div>
+      <div id="mi_weekly" style="min-height:80px"></div>
+    </div>
+
+    <!-- Section 3: Stock Signal -->
+    <div>
+      <div class="pp-section-title">🔥 Stock Signal</div>
+      <div id="mi_stock" style="min-height:80px"></div>
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -1468,6 +1494,7 @@ function sw(name){
   if(name==='allskus') renderAllSkus();
   if(name==='positioning') renderPositioning();
   if(name==='alert') renderAlert();
+  if(name==='insights') renderInsights();
 }
 
 
@@ -2000,6 +2027,8 @@ function applyNewData(derived, csv) {
   // Re-render All Prices if it's active
   const allSec = document.getElementById('sec-all');
   if (allSec && allSec.classList.contains('active')) renderAll();
+  const insSec = document.getElementById('sec-insights');
+  if (insSec && insSec.classList.contains('active')) renderInsights();
   
   // Update AL_COLS date labels
   const priceColIdx = AL_COLS.findIndex(c => c[0]==='prevPrice');
@@ -2762,6 +2791,399 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
     + '</table>'
     + '</div>';
 }
+
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB 5: MARKET INSIGHTS
+// Sections: Price Trend Chart | Weekly Summary | Stock Signal
+// ═══════════════════════════════════════════════════════════════════
+
+let _miTrendModel  = '';   // selected model for trend chart
+let _miTrendDays   = 30;   // 7 | 14 | 30
+let _miWeekIdx     = 0;    // 0 = latest week, 1 = prev, etc.
+
+// ── helpers ────────────────────────────────────────────────────────
+function miParseDate(s) {
+  if (!s) return null;
+  const p = s.split('/');
+  if (p.length < 3) return null;
+  return new Date(+p[2], +p[1]-1, +p[0]);
+}
+function miDateKey(d) {
+  // Date → "dd/MM/yyyy"
+  return String(d.getDate()).padStart(2,'0') + '/' +
+         String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+}
+function miWeekLabel(dates) {
+  if (!dates.length) return '';
+  const a = dates[dates.length-1], b = dates[0];
+  return a.slice(0,5) + ' – ' + b.slice(0,5);
+}
+function miGetWeeks() {
+  // Group csvDates into ISO weeks (Mon–Sun)
+  if (!csvDates.length) return [];
+  const weeks = [];
+  let cur = [];
+  let curMon = null;
+  for (const d of [...csvDates].reverse()) { // asc order
+    const dt = miParseDate(d);
+    if (!dt) continue;
+    const mon = new Date(dt); mon.setDate(dt.getDate() - ((dt.getDay()+6)%7));
+    const monKey = miDateKey(mon);
+    if (curMon !== monKey) {
+      if (cur.length) weeks.push([...cur]);
+      cur = [d];
+      curMon = monKey;
+    } else {
+      cur.push(d);
+    }
+  }
+  if (cur.length) weeks.push([...cur]);
+  return weeks.reverse(); // latest first
+}
+
+// ── SVG line chart ─────────────────────────────────────────────────
+function miLinechart(series, dates, W, H) {
+  // series = [{label, color, data: {date: price}}]
+  // dates = ordered asc
+  const PAD = {t:20, r:10, b:32, l:72};
+  const w = W - PAD.l - PAD.r;
+  const h = H - PAD.t - PAD.b;
+
+  const allPrices = series.flatMap(s => dates.map(d => s.data[d]||0)).filter(p=>p>0);
+  if (!allPrices.length) return '<div style="text-align:center;color:#9ca3af;padding:40px">No price data available</div>';
+
+  const minP = Math.min(...allPrices) * 0.998;
+  const maxP = Math.max(...allPrices) * 1.002;
+  const rangeP = maxP - minP || 1;
+
+  const xOf = (i) => PAD.l + (i / Math.max(dates.length-1,1)) * w;
+  const yOf = (p) => PAD.t + h - ((p - minP) / rangeP) * h;
+
+  const fmt = (p) => {
+    if (p >= 1000000) return (p/1000000).toFixed(1) + 'M';
+    return p.toLocaleString();
+  };
+
+  // Y grid lines
+  const yTicks = 4;
+  let gridLines = '', yLabels = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const p = minP + (rangeP * i / yTicks);
+    const y = yOf(p);
+    gridLines += '<line x1="' + PAD.l + '" y1="' + y.toFixed(1) + '" x2="' + (PAD.l+w) + '" y2="' + y.toFixed(1) + '" stroke="#f0f0f0" stroke-width="1"/>';
+    yLabels   += '<text x="' + (PAD.l-6) + '" y="' + (y+4).toFixed(1) + '" text-anchor="end" font-size="9" fill="#9ca3af">' + fmt(p) + '</text>';
+  }
+
+  // X labels — show every N dates to avoid crowding
+  const step = Math.max(1, Math.ceil(dates.length / 8));
+  let xLabels = '';
+  dates.forEach((d, i) => {
+    if (i % step === 0 || i === dates.length-1) {
+      xLabels += '<text x="' + xOf(i).toFixed(1) + '" y="' + (PAD.t+h+18) + '" text-anchor="middle" font-size="9" fill="#9ca3af">' + d.slice(0,5) + '</text>';
+    }
+  });
+
+  // Series paths + dots
+  let paths = '', dots = '', legend = '';
+  series.forEach((s, si) => {
+    const pts = dates.map((d,i) => { const p = s.data[d]; return p ? {x: xOf(i), y: yOf(p), p} : null; });
+    const validPts = pts.filter(Boolean);
+    if (!validPts.length) return;
+
+    // Polyline
+    let d = '';
+    let lastValid = null;
+    pts.forEach((pt, i) => {
+      if (!pt) return;
+      if (!lastValid) d += 'M' + pt.x.toFixed(1) + ',' + pt.y.toFixed(1);
+      else d += ' L' + pt.x.toFixed(1) + ',' + pt.y.toFixed(1);
+      lastValid = pt;
+    });
+    paths += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round"/>';
+
+    // Dots for each data point
+    validPts.forEach(pt => {
+      dots += '<circle cx="' + pt.x.toFixed(1) + '" cy="' + pt.y.toFixed(1) + '" r="3" fill="' + s.color + '" stroke="white" stroke-width="1.5"/>';
+    });
+
+    // Legend
+    legend += '<g transform="translate(' + (PAD.l + si * 80) + ',' + (PAD.t + h + 30) + ')">'
+      + '<rect x="0" y="-7" width="14" height="3" fill="' + s.color + '" rx="1"/>'
+      + '<text x="18" y="0" font-size="10" fill="' + s.color + '" font-weight="600">' + s.label + '</text>'
+      + '</g>';
+  });
+
+  return '<svg viewBox="0 0 ' + W + ' ' + (H+20) + '" style="width:100%;max-width:' + W + 'px;display:block">'
+    + gridLines + yLabels + xLabels + paths + dots + legend
+    + '</svg>';
+}
+
+// ── SECTION 1: Price Trend Chart ───────────────────────────────────
+function miRenderTrend(container) {
+  if (!csvDates.length) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:#9ca3af">'
+      + '📊 Load data from Sheet to view price trend charts</div>';
+    return;
+  }
+
+  // Build model list from allUnique (has partNum + model)
+  const modelMap = {}; // normPN → {label, partNum, groupKey}
+  const src = (allUnique && allUnique.length > allToday.length) ? allUnique : allToday;
+  for (const p of src) {
+    if (!p.partNum) continue;
+    const pn = p.partNum.toLowerCase().replace(/[\s\-_]/g,'');
+    if (!modelMap[pn]) modelMap[pn] = { label: p.model.replace(/\s+/g,' ').trim(), partNum: pn };
+  }
+  const models = Object.values(modelMap).sort((a,b) => a.label.localeCompare(b.label,'vi'));
+
+  if (!_miTrendModel && models.length) _miTrendModel = models[0].partNum;
+
+  // Combobox + day range buttons
+  const opts = models.map(m =>
+    '<option value="' + m.partNum + '"' + (m.partNum === _miTrendModel ? ' selected' : '') + '>'
+    + m.label + '</option>'
+  ).join('');
+
+  const dayBtns = [7,14,30].map(d =>
+    '<button onclick="miSetDays(' + d + ')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:none;cursor:pointer;'
+    + (d === _miTrendDays ? 'background:#2563eb;color:#fff' : 'background:#f1f5f9;color:#64748b') + '">'
+    + d + 'd</button>'
+  ).join('');
+
+  // Get dates for range
+  const chartDates = [...csvDates].reverse().slice(-_miTrendDays); // asc order
+
+  // Build price matrix for selected model
+  const DEALERS = [
+    {key:'MBW',        color:'#2563eb', label:'MBW'},
+    {key:'FPT Retail', color:'#f97316', label:'FPT'},
+    {key:'CellPhone S',color:'#16a34a', label:'CPS'},
+  ];
+  const normPN = s => (s||'').toLowerCase().replace(/[\s\-_]/g,'');
+  const series = DEALERS.map(dl => {
+    const data = {};
+    for (const [k, row] of Object.entries(csvLookup)) {
+      const pipe1 = k.indexOf('|'), pipe2 = k.indexOf('|',pipe1+1);
+      if (pipe1<0||pipe2<0) continue;
+      const date = k.slice(0,pipe1), dealer = k.slice(pipe1+1,pipe2);
+      if (dealer !== dl.key) continue;
+      if (!chartDates.includes(date)) continue;
+      const rowPN = normPN(row[21]||'') || normPN(row[3]||'');
+      if (!rowPN.includes(_miTrendModel) && _miTrendModel !== rowPN) continue;
+      const price = parsePrice(row[5]) || parsePrice(row[4]);
+      if (!price) continue;
+      if (!data[date] || price < data[date]) data[date] = price;
+    }
+    return {label: dl.label, color: dl.color, data};
+  });
+
+  const chartHTML = miLinechart(series, chartDates, 680, 220);
+
+  container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
+    + '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">'
+      + '<span style="font-size:12px;font-weight:600;color:#475569">Model:</span>'
+      + '<select onchange="miSetModel(this.value)" style="font-size:12px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;max-width:340px">' + opts + '</select>'
+      + '<div style="display:flex;gap:4px;margin-left:auto">' + dayBtns + '</div>'
+    + '</div>'
+    + chartHTML
+    + '</div>';
+}
+
+// ── SECTION 2: Weekly Summary ──────────────────────────────────────
+function miRenderWeekly(container) {
+  if (!csvDates.length) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:#9ca3af">Load data from Sheet to view weekly summary</div>';
+    return;
+  }
+
+  const weeks = miGetWeeks();
+  if (!weeks.length) { container.innerHTML = '<div style="color:#9ca3af;padding:16px">No weekly data</div>'; return; }
+
+  const wIdx = Math.min(_miWeekIdx, weeks.length-1);
+  const weekDates = weeks[wIdx]; // desc order (latest first)
+  const prevWeekDates = weeks[wIdx+1] || [];
+
+  // Week picker buttons
+  const weekBtns = weeks.slice(0, Math.min(4, weeks.length)).map((w,i) =>
+    '<button onclick="miSetWeek(' + i + ')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:none;cursor:pointer;'
+    + (i===wIdx ? 'background:#2563eb;color:#fff' : 'background:#f1f5f9;color:#64748b') + '">'
+    + miWeekLabel(w) + '</button>'
+  ).join('');
+
+  // Aggregate stats for the week
+  const allPrices = {};  // "dealer|partNum" → [prices this week]
+  const prevPrices = {}; // same for prev week
+  const soldThisWeek = {}; // partNum → max sold seen
+
+  const getFromLookup = (dates, store) => {
+    for (const [k, row] of Object.entries(csvLookup)) {
+      const pipe1 = k.indexOf('|'), pipe2 = k.indexOf('|',pipe1+1);
+      if (pipe1<0||pipe2<0) continue;
+      const date = k.slice(0,pipe1), dealer = k.slice(pipe1+1,pipe2);
+      if (!dates.includes(date)) continue;
+      const pn = (row[21]||'').trim().toLowerCase().replace(/[\s\-_]/g,'');
+      const model = (row[3]||'').trim();
+      if (!pn && !model) continue;
+      const key = dealer + '|' + (pn || model.toLowerCase());
+      const price = parsePrice(row[5]) || parsePrice(row[4]);
+      if (!price) continue;
+      if (!store[key]) store[key] = { prices:[], model, dealer, pn, brand: row[9]||'' };
+      store[key].prices.push(price);
+    }
+  };
+  getFromLookup(weekDates, allPrices);
+  getFromLookup(prevWeekDates, prevPrices);
+
+  // Find biggest drops and rises this week vs last week
+  const changes = [];
+  for (const [key, cur] of Object.entries(allPrices)) {
+    const prev = prevPrices[key];
+    if (!prev || !prev.prices.length) continue;
+    const curMin  = Math.min(...cur.prices);
+    const prevMin = Math.min(...prev.prices);
+    const delta   = curMin - prevMin;
+    const pct     = prevMin ? (delta/prevMin*100) : 0;
+    if (Math.abs(pct) < 0.5) continue;
+    changes.push({ model: cur.model, dealer: cur.dealer, brand: cur.brand, curMin, prevMin, delta, pct });
+  }
+  changes.sort((a,b) => a.pct - b.pct);
+
+  const drops = changes.filter(c=>c.pct<0).slice(0,5);
+  const rises = changes.filter(c=>c.pct>0).reverse().slice(0,5);
+
+  // KPI cards
+  const totalSKUs  = new Set(Object.values(allPrices).map(v=>v.model)).size;
+  const dropCount  = changes.filter(c=>c.pct<0).length;
+  const riseCount  = changes.filter(c=>c.pct>0).length;
+  const avgDrop    = drops.length ? (drops.reduce((s,c)=>s+c.pct,0)/drops.length).toFixed(1) : 0;
+
+  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'};
+  const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'};
+
+  const mkRow = (c) => {
+    const dc = dlrColor[c.dealer]||'#666';
+    const ds = dlrShort[c.dealer]||c.dealer;
+    const clr = c.pct<0?'#ef4444':'#10b981';
+    const arrow = c.pct<0?'▼':'▲';
+    return '<tr style="border-bottom:1px solid #f3f4f6">'
+      + '<td style="padding:6px 8px;font-size:11px;max-width:220px">'
+        + '<div style="font-size:11px;line-height:1.3">' + c.model.slice(0,60) + '</div>'
+        + '<span style="display:inline-block;font-size:9px;font-weight:700;color:' + dc + ';background:' + dc + '18;padding:1px 5px;border-radius:3px;margin-top:2px">' + ds + '</span>'
+      + '</td>'
+      + '<td style="padding:6px 8px;font-size:11px;text-align:right;white-space:nowrap">' + ppFmt(c.prevMin) + '</td>'
+      + '<td style="padding:6px 8px;font-size:11px;text-align:right;white-space:nowrap">' + ppFmt(c.curMin) + '</td>'
+      + '<td style="padding:6px 8px;font-size:11px;font-weight:700;color:' + clr + ';text-align:right;white-space:nowrap">'
+        + arrow + ' ' + Math.abs(c.pct).toFixed(1) + '%'
+      + '</td>'
+      + '</tr>';
+  };
+
+  const mkTable = (rows, title, color) => rows.length ? (
+    '<div style="flex:1;min-width:280px">'
+      + '<div style="font-size:12px;font-weight:700;color:' + color + ';margin-bottom:6px">' + title + ' (' + rows.length + ')</div>'
+      + '<table style="width:100%;border-collapse:collapse">'
+        + '<thead><tr style="background:#f8fafc">'
+          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:left;font-weight:600">Model</th>'
+          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:right;font-weight:600">Prev</th>'
+          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:right;font-weight:600">This Wk</th>'
+          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:right;font-weight:600">Δ%</th>'
+        + '</tr></thead>'
+        + '<tbody>' + rows.map(mkRow).join('') + '</tbody>'
+      + '</table>'
+    + '</div>'
+  ) : '';
+
+  container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
+    + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+      + '<span style="font-size:12px;font-weight:600;color:#475569">Week:</span>'
+      + weekBtns
+    + '</div>'
+    + '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">'
+      + '<div style="background:#f8fafc;border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:#1e293b">' + totalSKUs + '</div><div style="font-size:10px;color:#64748b">SKUs tracked</div></div>'
+      + '<div style="background:#fef2f2;border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:#ef4444">' + dropCount + '</div><div style="font-size:10px;color:#64748b">Price drops · avg ' + avgDrop + '%</div></div>'
+      + '<div style="background:#f0fdf4;border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:#10b981">' + riseCount + '</div><div style="font-size:10px;color:#64748b">Price rises</div></div>'
+    + '</div>'
+    + (drops.length || rises.length
+        ? '<div style="display:flex;gap:16px;flex-wrap:wrap">'
+            + mkTable(drops,'▼ Biggest Drops','#ef4444')
+            + mkTable(rises,'▲ Biggest Rises','#10b981')
+          + '</div>'
+        : '<div style="text-align:center;padding:20px;color:#9ca3af">No significant price changes this week</div>')
+    + '</div>';
+}
+
+// ── SECTION 3: Stock Signal ────────────────────────────────────────
+function miRenderStock(container) {
+  const src = (allUnique && allUnique.length > allToday.length) ? allUnique : allToday;
+  if (!src.length) { container.innerHTML = '<div style="color:#9ca3af;padding:16px">No data</div>'; return; }
+
+  // Hot: sold > 50 + price stable (no disc or disc < 3%)
+  // Slow: sold = 0 or '' + been in market (has prevPrice)
+  // Promo opportunity: disc% > 10% but sold still low
+
+  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'};
+  const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'};
+
+  const parseSold = (s) => { const n = parseInt((s||'0').replace(/\D/g,'')); return isNaN(n)?0:n; };
+  const parseDisc = (s) => { const n = parseFloat((s||'0').replace('%','')); return isNaN(n)?0:Math.abs(n); };
+
+  const hot   = src.filter(p => parseSold(p.sold) >= 50 && parseDisc(p.disc) < 5 && p.todayPrice > 0)
+                   .sort((a,b) => parseSold(b.sold) - parseSold(a.sold)).slice(0,10);
+  const slow  = src.filter(p => parseSold(p.sold) === 0 && p.prevPrice > 0 && !p.isStale && p.todayPrice > 0)
+                   .sort((a,b) => (a.todayPrice||0) - (b.todayPrice||0)).slice(0,10);
+  const promo = src.filter(p => parseDisc(p.disc) >= 10 && parseSold(p.sold) < 20 && p.todayPrice > 0)
+                   .sort((a,b) => parseDisc(b.disc) - parseDisc(a.disc)).slice(0,10);
+
+  const mkCard = (p, badge, badgeColor) => {
+    const dc = dlrColor[p.dealer]||'#666';
+    const ds = dlrShort[p.dealer]||p.dealer;
+    return '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;background:#fff">'
+      + '<div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:4px;color:#1e293b">' + p.model.slice(0,55) + (p.model.length>55?'…':'') + '</div>'
+      + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+        + '<span style="font-size:9px;font-weight:700;color:' + dc + ';background:' + dc + '18;padding:1px 5px;border-radius:3px">' + ds + '</span>'
+        + '<span style="font-size:11px;font-weight:700;color:#1e293b">' + ppFmt(p.todayPrice) + '</span>'
+        + (p.sold ? '<span style="font-size:10px;color:#6b7280">· ' + p.sold + ' sold</span>' : '')
+        + (p.disc && p.disc !== '0%' ? '<span style="font-size:10px;color:#ef4444">' + p.disc + ' off</span>' : '')
+        + '<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + badgeColor + '20;color:' + badgeColor + ';margin-left:auto">' + badge + '</span>'
+      + '</div>'
+    + '</div>';
+  };
+
+  const mkSection = (items, title, emoji, color, emptyMsg) => {
+    return '<div style="margin-bottom:20px">'
+      + '<div style="font-size:13px;font-weight:700;color:' + color + ';margin-bottom:8px">' + emoji + ' ' + title + ' <span style="font-size:11px;font-weight:400;color:#94a3b8">(' + items.length + ' SKUs)</span></div>'
+      + (items.length
+          ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">'
+              + items.map(p => mkCard(p,
+                  title==='Hot Sellers' ? '🔥 Hot' : title==='Slow Movers' ? '🐢 Slow' : '🎯 Promo',
+                  color)).join('')
+            + '</div>'
+          : '<div style="color:#94a3b8;font-size:12px;padding:8px">' + emptyMsg + '</div>')
+    + '</div>';
+  };
+
+  container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
+    + mkSection(hot,   'Hot Sellers',         '🔥', '#f97316', 'No hot sellers detected')
+    + mkSection(slow,  'Slow Movers',          '🐢', '#94a3b8', 'No slow movers detected')
+    + mkSection(promo, 'Promo Opportunities',  '🎯', '#8b5cf6', 'No promo opportunities detected')
+    + '</div>';
+}
+
+// ── Main render ────────────────────────────────────────────────────
+function renderInsights() {
+  const trendEl  = document.getElementById('mi_trend');
+  const weeklyEl = document.getElementById('mi_weekly');
+  const stockEl  = document.getElementById('mi_stock');
+  if (!trendEl) return;
+  miRenderTrend(trendEl);
+  miRenderWeekly(weeklyEl);
+  miRenderStock(stockEl);
+}
+
+function miSetModel(val) { _miTrendModel = val; miRenderTrend(document.getElementById('mi_trend')); }
+function miSetDays(d)    { _miTrendDays  = d;   miRenderTrend(document.getElementById('mi_trend')); }
+function miSetWeek(i)    { _miWeekIdx    = i;   miRenderWeekly(document.getElementById('mi_weekly')); }
 
 
 // ── 7-day price history table ──────────────────────────────────────────────
