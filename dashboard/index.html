@@ -1031,6 +1031,24 @@ function parsePriceSeg(val) {
   return [0, 0];
 }
 
+// Get price segment label for a product (dùng cho competitive price-seg tab)
+function ppGetPriceSeg(p) {
+  const price = p.todayPrice || 0;
+  if (!price) return null;
+  if (price < 10000000)  return 'u10';
+  if (price < 15000000)  return '10-15';
+  if (price < 20000000)  return '15-20';
+  if (price < 25000000)  return '20-25';
+  if (price < 30000000)  return '25-30';
+  if (price < 40000000)  return '30-40';
+  if (price < 50000000)  return '40-50';
+  return 'ov50';
+}
+const PRICE_SEG_LABELS = {
+  'u10':'Under 10M','10-15':'10–15M','15-20':'15–20M','20-25':'20–25M',
+  '25-30':'25–30M','30-40':'30–40M','40-50':'40–50M','ov50':'Over 50M'
+};
+
 let _asSortCol = 'price'; // field to sort by
 let _asSortDir = 1;       // 1=asc, -1=desc
 
@@ -2583,11 +2601,151 @@ function renderPositioning(){
   ${ppEquivTable(g, selectedSKU, mbwMin)}
 
   <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
+  <!-- 2-tab switcher: CPU match | Price Segment match -->
+  <div style="display:flex;gap:0;margin-bottom:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;width:fit-content">
+    <button onclick="ppSetCompTab('cpu')" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;
+      background:${_ppCompTab==='cpu'?'#2563eb':'#f8fafc'};color:${_ppCompTab==='cpu'?'#fff':'#64748b'};
+      border-right:1px solid #e2e8f0;transition:all 0.15s">
+      🧠 Theo CPU
+    </button>
+    <button onclick="ppSetCompTab('price')" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;
+      background:${_ppCompTab==='price'?'#2563eb':'#f8fafc'};color:${_ppCompTab==='price'?'#fff':'#64748b'};
+      transition:all 0.15s">
+      💰 Theo Price Segment
+    </button>
+  </div>
   ${ppRenderVendorFilter(_ppGroups)}
-  ${ppRenderCompetitive(g, _ppGroups, ppGetVendorFilter())}
-  `;
+  ${_ppCompTab === 'price'
+      ? ppRenderCompetitivePriceSeg(g, _ppGroups, ppGetVendorFilter())
+      : ppRenderCompetitive(g, _ppGroups, ppGetVendorFilter())}
+  \`;
 
   container.innerHTML = html;
+}
+
+// ── Competitive table: Price Segment mode ─────────────────────────────────
+function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
+  // Lấy price seg của selected product
+  const refProducts = g.allProducts;
+  if (!refProducts.length) return '<div class="pp-empty" style="padding:12px">Không có dữ liệu giá.</div>';
+
+  // Dùng min price của group để xác định segment
+  const refMin = Math.min(...refProducts.map(p=>p.todayPrice||Infinity).filter(p=>p!==Infinity));
+  if (!refMin || refMin === Infinity) return '<div class="pp-empty" style="padding:12px">Không có dữ liệu giá.</div>';
+  const refSeg = ppGetPriceSeg({todayPrice: refMin});
+  if (!refSeg) return '<div class="pp-empty" style="padding:12px">Không xác định được phân khúc giá.</div>';
+
+  const [segMin, segMax] = parsePriceSeg(refSeg);
+  const isGaming = (g.seriesGroup||'').toLowerCase().includes('gaming') || !!g.gpuTag;
+
+  // Tìm tất cả groups có minPrice trong cùng segment, cùng Gaming/B&P direction
+  const peers = Object.values(groups).filter(grp => {
+    if (!grp.allProducts.length) return false;
+    const isg = (grp.seriesGroup||'').toLowerCase().includes('gaming') || !!grp.gpuTag;
+    if (isg !== isGaming) return false;
+    const gMin = Math.min(...grp.allProducts.map(p=>p.todayPrice||Infinity).filter(p=>p!==Infinity));
+    if (!gMin || gMin === Infinity) return false;
+    return gMin >= segMin && (segMax === 0 || gMin < segMax);
+  });
+
+  if (peers.length < 2) return \`<div class="pp-empty" style="padding:12px">Không đủ sản phẩm trong phân khúc <b>${PRICE_SEG_LABELS[refSeg]||refSeg}</b> để so sánh.</div>\`;
+
+  // Sort by minPrice asc
+  const getMin = (grp) => Math.min(...grp.allProducts.map(p=>p.todayPrice||Infinity).filter(p=>p!==Infinity)) || 0;
+  peers.sort((a,b) => (getMin(a)||999e9) - (getMin(b)||999e9));
+
+  // Same headers as ppRenderCompetitive
+  const C  = 'text-align:center';
+  const L  = 'text-align:left';
+  const NW = 'white-space:nowrap';
+  const thS = \`padding:8px 10px;font-size:11px;font-weight:600;color:#475569;background:#f8fafc;border-bottom:1px solid #e2e8f0;\${NW}\`;
+
+  let rows = '';
+  let rowIdx = 0;
+
+  for (const grp of peers) {
+    const products = grp.allProducts
+      .filter(p => !vendorF || !vendorF.length || vendorF.includes(p.brand))
+      .sort((a,b) => (a.todayPrice||999e9)-(b.todayPrice||999e9));
+
+    for (const p of products) {
+      const isSelected = grp.key === g.key;
+      const rowBg = isSelected ? 'background:#eff6ff' : rowIdx%2===0 ? '' : 'background:#fafafa';
+      const staleRowBg = p.isStale && !isSelected ? 'background:rgba(251,191,36,0.07)' : rowBg;
+      rowIdx++;
+
+      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'}[p.dealer]||'#666';
+      const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'}[p.dealer]||p.dealer;
+
+      const p0 = p.todayPrice  || 0;
+      const p1 = p.prevPrice   || 0;
+      const p2 = p.prev2Price  || 0;
+      const soldFmt = p.sold ? \`<span style="font-size:11px;color:#6b7280">\${p.sold}</span>\` : '—';
+
+      const mkPriceCell = (price, prevP, highlight) => {
+        const tdBg = highlight ? 'background:#dbeafe;' : '';
+        if (!price) return \`<td style="\${C};padding:5px 8px;vertical-align:top;\${tdBg}"><span style="color:#d1d5db">–</span></td>\`;
+        const delta    = (prevP > 0) ? price - prevP : 0;
+        const hasDelta = prevP > 0 && delta !== 0;
+        const pct      = hasDelta ? Math.abs((delta/prevP)*100).toFixed(1) : null;
+        const up = delta > 0, dn = delta < 0;
+        const priceClr = dn ? '#ef4444' : up ? '#10b981' : '#374151';
+        const pctClr   = dn ? '#ef4444' : up ? '#10b981' : '#9ca3af';
+        const arrow    = dn ? '▼' : up ? '▲' : '';
+        const pctLine  = pct
+          ? \`<div style="font-size:10px;color:\${pctClr};margin-top:1px;text-align:center">\${arrow} \${pct}%</div>\`
+          : \`<div style="font-size:10px;color:#9ca3af;margin-top:1px;text-align:center">0%</div>\`;
+        return \`<td style="\${C};padding:5px 8px;vertical-align:top;\${tdBg}">
+          <div style="font-weight:700;\${NW};color:\${priceClr};text-align:center">\${ppFmt(price)}</div>
+          \${pctLine}
+        </td>\`;
+      };
+
+      rows += \`<tr style="\${staleRowBg}">
+        <td style="\${L};padding:5px 8px;vertical-align:top">
+          <div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word">
+            \${isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : ''}\${p.model}
+          </div>
+          <span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:\${dlrColor};background:\${dlrColor}18;padding:1px 6px;border-radius:4px;border:1px solid \${dlrColor}40">\${dlrShort}</span>
+          \${p.isStale ? \`<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px">⚠ \${p.latestDate}</span>\` : ''}
+        </td>
+        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top;line-height:1.4">\${p.cpuDetail||p.cpuFamily||'—'}</td>
+        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top;\${NW}">\${p.ram||'—'}</td>
+        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top;\${NW}">\${p.ssd||'—'}</td>
+        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top">\${p.gpuTag||'—'}</td>
+        \${mkPriceCell(p2, 0,  false)}
+        \${mkPriceCell(p1, p2, false)}
+        \${mkPriceCell(p0, p1, isSelected)}
+        <td style="\${C};padding:5px 8px;vertical-align:top">\${soldFmt}</td>
+        <td style="\${C};padding:5px 8px;vertical-align:top">
+          \${p.link ? \`<a href="\${p.link}" target="_blank" style="font-size:11px;color:#2563eb">🔗</a>\` : '—'}
+        </td>
+      </tr>\`;
+    }
+  }
+
+  const segLabel = PRICE_SEG_LABELS[refSeg] || refSeg;
+  return \`
+    <div style="font-size:11px;color:#6b7280;margin-bottom:6px">
+      Phân khúc giá: <b style="color:#1e40af">\${segLabel}</b> · \${peers.length} nhóm sản phẩm · \${rows.split('<tr').length-1} SKUs
+    </div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr>
+        <th style="\${thS};\${L}">SKU</th>
+        <th style="\${thS};\${L}">CPU</th>
+        <th style="\${thS};\${L}">RAM</th>
+        <th style="\${thS};\${L}">SSD</th>
+        <th style="\${thS};\${L}">GPU</th>
+        <th style="\${thS};\${C}">\${(prev2Date||'—').slice(0,5)}</th>
+        <th style="\${thS};\${C}">\${(prevDate||'—').slice(0,5)}</th>
+        <th style="\${thS};\${C};color:#2563eb">\${(todayDate||'—').slice(0,5)} ↑</th>
+        <th style="\${thS};\${C}">Sold</th>
+        <th style="\${thS};\${C}">Link</th>
+      </tr></thead>
+      <tbody>\${rows}</tbody>
+    </table>
+    </div>\`;
 }
 
 // ── 7-day price history table ──────────────────────────────────────────────
@@ -3092,6 +3250,13 @@ function ppComboSelect(val){
 
 // ── Vendor filter for competitive table ────────────────────────────────────
 let _ppVendorState = []; // persists across re-renders
+let _ppCompTab     = 'cpu'; // 'cpu' | 'price' — active competitive sub-tab
+
+function ppSetCompTab(tab) {
+  _ppCompTab = tab;
+  _ppVendorState = []; // reset vendor filter khi đổi tab
+  renderPositioning();
+}
 
 function ppGetVendorFilter() { return _ppVendorState; }
 
