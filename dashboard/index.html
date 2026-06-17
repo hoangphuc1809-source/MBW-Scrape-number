@@ -2461,6 +2461,7 @@ function renderPositioning(){
       <span>🧠 ${g.cpuDetail||g.cpuFamily||'—'}</span>
       <span>💾 ${g.ram||'—'}</span>
       <span>💿 ${g.ssd||'—'}</span>
+      ${g.gpuTag ? `<span>🎮 ${g.gpuTag}</span>` : ''}
       <span>📂 ${g.segment||'—'}</span>
     </div>
 
