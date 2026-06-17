@@ -1201,6 +1201,7 @@ function renderAllSkus() {
           ${p2Cell}
           ${priceCell(prev,  prev2)}
           ${priceCell(today, prev)}
+          <td style="${C};padding:5px 4px;font-size:11px;color:#6b7280">${p.sold||'—'}</td>
           <td style="${L};padding:5px 4px">${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
         </tr>`;
       }).join('');
