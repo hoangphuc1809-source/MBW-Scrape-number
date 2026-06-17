@@ -2509,11 +2509,10 @@ function ppKey(p){
     ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'')
     : ppExtractPN(p.model);
   if(pn && pn.length >= 4) {
-    // Cook data đã clean → Part# >= 6 chars đủ unique, không cần segment prefix
-    // Part# ngắn (4-5 chars) → giữ segment prefix để tránh false match cross-series
-    if(pn.length >= 6) return 'pn:' + pn;
-    const seg = ppNorm(p.segment || '');
-    return seg ? 'pn:' + seg + '_' + pn : 'pn:' + pn;
+    // LUÔN thêm seriesGroup prefix để tránh false match cross-series
+    // VD: Katana 2410VN vs Cyborg 2410VN cùng Part# nhưng khác dòng hoàn toàn
+    const seriesPrefix = ppNorm(p.seriesGroup || p.gamingGroup || p.segment || '');
+    return seriesPrefix ? 'pn:' + seriesPrefix + '_' + pn : 'pn:' + pn;
   }
 
   // Fallback spec-based key
