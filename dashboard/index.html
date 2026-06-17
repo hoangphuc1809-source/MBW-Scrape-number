@@ -2789,6 +2789,7 @@ function ppRenderCompetitive(g, groups) {
         </td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;line-height:1.4">${p.cpuDetail||p.cpuFamily||'—'}</td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;white-space:nowrap">${p.ram||'—'}</td>
+        <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;white-space:nowrap">${p.ssd||'—'}</td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top">${p.gpuTag||'—'}</td>
         ${mkPriceCell(p2, 0,  false)}
         ${mkPriceCell(p1, p2, false)}
@@ -2812,6 +2813,7 @@ function ppRenderCompetitive(g, groups) {
         <th style="${thS};text-align:left">SKU</th>
         <th style="${thS};text-align:left">CPU</th>
         <th style="${thS};text-align:left">RAM</th>
+        <th style="${thS};text-align:left">SSD</th>
         <th style="${thS};text-align:left">GPU</th>
         <th style="${thS};text-align:center">${(prev2Date||'—').slice(0,5)}</th>
         <th style="${thS};text-align:center">${(prevDate||'—').slice(0,5)}</th>
