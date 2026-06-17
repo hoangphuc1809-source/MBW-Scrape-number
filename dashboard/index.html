@@ -648,6 +648,13 @@ tbody tr:hover{background:#fafafa}
 
 <!-- ── TAB: PRICE POSITIONING ── -->
 <div class="section" id="sec-positioning">
+  <div id="posVendorBar" style="display:none;padding:8px 14px 0;gap:8px;align-items:center;flex-wrap:wrap">
+    <label style="font-size:12px;font-weight:600;color:#374151;white-space:nowrap">🏷️ Vendor:</label>
+    <select id="pp_vendor" multiple onchange="renderPositioning()" style="min-width:160px">
+      <option value="">All Vendors</option>
+    </select>
+    <button onclick="ppVendorClear()" style="padding:5px 10px;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;color:#6b7280;cursor:pointer" title="Clear vendor filter">✕ Clear</button>
+  </div>
   <div id="posSearchBar" class="filter-bar">
     <label>🔍 SKU / Model:</label>
     <div class="pp-combo" id="posCombo">
@@ -2227,8 +2234,7 @@ async function checkLatestRun() {
     'as_gpu':   'All VGA',
     'as_cpu':   'All CPU',
     'as_series':'All Series',
-    'as_focus': 'All Models',
-    'pp_vendor':'All Vendors'
+    'as_focus': 'All Models'
   };
   const OPTS = {
     maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
@@ -2432,30 +2438,28 @@ function renderPositioning(){
   const sortedSKUs = [..._ppSKUMap.keys()].sort((a,b)=>a.localeCompare(b,'vi'));
   ppComboSetList(sortedSKUs);
 
-  // Populate Vendor dropdown (rendered inline — populate after innerHTML set)
-  // Dùng setTimeout để đảm bảo DOM đã render select#pp_vendor trước khi populate
-  setTimeout(() => {
-    const ppVendorSel = document.getElementById('pp_vendor');
-    if (!ppVendorSel) return;
-    const curVendor = ppVendorSel.tomselect
-      ? ppVendorSel.tomselect.getValue()
-      : [...ppVendorSel.selectedOptions].map(o=>o.value).filter(Boolean);
-    // Lấy vendors từ tất cả products trong _ppGroups (không chỉ allToday)
+  // Read vendor filter từ static DOM (không re-render)
+  const _ppVendorFilter = window.getMultiVal('pp_vendor');
+
+  // Show/hide vendor bar + populate options (chỉ cần init 1 lần)
+  const ppVendorBar = document.getElementById('posVendorBar');
+  const ppVendorSel = document.getElementById('pp_vendor');
+  if (ppVendorBar) ppVendorBar.style.display = selectedSKU ? 'flex' : 'none';
+  if (ppVendorSel && !ppVendorSel.tomselect) {
+    // First time init: populate + TomSelect
     const vendors = [...new Set(
-      Object.values(_ppGroups).flatMap(g => g.allProducts.map(p=>p.brand)).filter(Boolean)
+      Object.values(_ppGroups).flatMap(g => g.allProducts.map(p => p.brand)).filter(Boolean)
     )].sort();
-    // Destroy TomSelect cũ nếu có (vì innerHTML vừa bị replace)
-    if (ppVendorSel.tomselect) { try { ppVendorSel.tomselect.destroy(); } catch(e){} }
-    ppVendorSel.innerHTML = '<option value="">All Vendors</option>' +
-      vendors.map(v=>`<option value="${v}"${curVendor.includes(v)?' selected':''}>${v}</option>`).join('');
-    // Init TomSelect
-    if (typeof TomSelect !== 'undefined' && !ppVendorSel.tomselect) {
-      const OPTS2 = { maxOptions:null, allowEmptyOption:false, sortField:{field:'$order'},
-                      maxItems:null, plugins:['remove_button'], placeholder:'All Vendors' };
-      [...ppVendorSel.options].forEach(o => { if(o.value==='') o.remove(); });
-      new TomSelect(ppVendorSel, OPTS2);
+    ppVendorSel.innerHTML = vendors.map(v =>
+      `<option value="${v}">${v}</option>`
+    ).join('');
+    if (typeof TomSelect !== 'undefined') {
+      new TomSelect(ppVendorSel, {
+        maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
+        maxItems: null, plugins: ['remove_button'], placeholder: 'All Vendors'
+      });
     }
-  }, 0);
+  }
 
   const selectedSKU = ppComboGetValue();
 
@@ -2503,14 +2507,8 @@ function renderPositioning(){
   <div class="pp-section-title">📦 Sản phẩm tương đương cùng nhóm spec</div>
   ${ppEquivTable(g, selectedSKU, mbwMin)}
 
-  <div class="pp-section-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span>🔍 Sản phẩm cùng phân khúc trên thị trường</span>
-    <select id="pp_vendor" multiple onchange="renderPositioning()"
-      style="font-size:11px;padding:3px 6px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;min-width:130px;max-width:220px">
-      <option value="">All Vendors</option>
-    </select>
-  </div>
-  ${ppRenderCompetitive(g, _ppGroups, window.getMultiVal('pp_vendor'))}
+  <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
+  ${ppRenderCompetitive(g, _ppGroups, _ppVendorFilter)}
   `;
 
   container.innerHTML = html;
@@ -3002,6 +3000,14 @@ function ppComboSelect(val){
   const cntEl = document.getElementById('posCount');
   if(cntEl) cntEl.textContent = '';
   ppClearBtnToggle(!!val);
+  renderPositioning();
+}
+
+function ppVendorClear(){
+  const sel = document.getElementById('pp_vendor');
+  if (!sel) return;
+  if (sel.tomselect) sel.tomselect.clear();
+  else { [...sel.options].forEach(o => o.selected = false); }
   renderPositioning();
 }
 
