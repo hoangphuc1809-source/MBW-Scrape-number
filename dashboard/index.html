@@ -1122,6 +1122,7 @@ function renderAllSkus() {
     ${has3 ? '<col style="width:110px">' : ''}<!-- D-2 -->
     <col style="width:110px"><!-- D-1 -->
     <col style="width:110px"><!-- Today -->
+    <col style="width:55px"><!-- Sold -->
     <col style="width:60px"><!-- Link -->
   </colgroup>
   <thead><tr>
@@ -1134,6 +1135,7 @@ function renderAllSkus() {
     ${has3 ? `<th style="${C};${thStyle}" onclick="asSortBy('prev2')">Price (${prev2Date})${si('prev2')}</th>` : ''}
     <th style="${C};${thStyle}" onclick="asSortBy('prev')">Price (${prevDate})${si('prev')}</th>
     <th style="${C};${thStyle};color:var(--accent)" onclick="asSortBy('price')">Price (${todayDate})${si('price')}</th>
+    <th style="${C};${thStyle}" onclick="asSortBy('sold')">Sold${si('sold')}</th>
     <th style="${L};${thStyle}">Link</th>
   </tr></thead>`;
 
@@ -1154,7 +1156,7 @@ function renderAllSkus() {
 
   // ── Row builder ─────────────────────────────────────────────────
   const rows = data.length === 0
-    ? `<tr><td colspan="${8 + (has3?1:0)}" class="empty">No matching data.</td></tr>`
+    ? `<tr><td colspan="${9 + (has3?1:0)}" class="empty">No matching data.</td></tr>`
     : data.map((p, i) => {
         const cpuLabel = p.cpuDetail || p.cpuFamily || '–';
         const gpuRaw   = p.gpuLabel || p.gpuTag || '';
