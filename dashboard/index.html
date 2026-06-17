@@ -2438,32 +2438,10 @@ function renderPositioning(){
   const sortedSKUs = [..._ppSKUMap.keys()].sort((a,b)=>a.localeCompare(b,'vi'));
   ppComboSetList(sortedSKUs);
 
-  // Read vendor filter từ static DOM (không re-render)
-  const _ppVendorFilter = window.getMultiVal('pp_vendor');
-
-  // Show/hide vendor bar + populate options (chỉ cần init 1 lần)
-  const ppVendorBar = document.getElementById('posVendorBar');
-  const ppVendorSel = document.getElementById('pp_vendor');
-  if (ppVendorBar) ppVendorBar.style.display = selectedSKU ? 'flex' : 'none';
-  if (ppVendorSel && !ppVendorSel.tomselect) {
-    // First time init: populate + TomSelect
-    const vendors = [...new Set(
-      Object.values(_ppGroups).flatMap(g => g.allProducts.map(p => p.brand)).filter(Boolean)
-    )].sort();
-    ppVendorSel.innerHTML = vendors.map(v =>
-      `<option value="${v}">${v}</option>`
-    ).join('');
-    if (typeof TomSelect !== 'undefined') {
-      new TomSelect(ppVendorSel, {
-        maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
-        maxItems: null, plugins: ['remove_button'], placeholder: 'All Vendors'
-      });
-    }
-  }
-
+  // selectedSKU phải khai báo TRƯỚC mọi logic dùng nó
   const selectedSKU = ppComboGetValue();
 
-  // Show/hide + populate vendor bar (static DOM, init TomSelect only once)
+  // Show/hide vendor bar (static DOM) + populate TomSelect một lần duy nhất
   const _posVendorBar = document.getElementById('posVendorBar');
   const _posVendorSel = document.getElementById('pp_vendor');
   if (_posVendorBar) _posVendorBar.style.display = selectedSKU ? 'flex' : 'none';
