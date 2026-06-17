@@ -2787,13 +2787,13 @@ function ppRenderCompetitive(g, groups) {
           <span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:${dlrColor};background:${dlrColor}18;padding:1px 6px;border-radius:4px;border:1px solid ${dlrColor}40">${dlrShort}</span>
         </td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;line-height:1.4">${p.cpuDetail||p.cpuFamily||'—'}</td>
-        <td style="text-align:center;padding:5px 8px;font-size:11px;vertical-align:top;white-space:nowrap">${p.ram||'—'}</td>
-        <td style="text-align:center;padding:5px 8px;font-size:11px;vertical-align:top">${p.gpuTag||'—'}</td>
+        <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;white-space:nowrap">${p.ram||'—'}</td>
+        <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top">${p.gpuTag||'—'}</td>
         ${mkPriceCell(p2, 0,  false)}
         ${mkPriceCell(p1, p2, false)}
         ${mkPriceCell(p0, p1, isSelected)}
         <td style="text-align:center;padding:5px 8px;vertical-align:top">${soldFmt}</td>
-        <td style="text-align:center;padding:5px 8px;vertical-align:top">${p.link?`<a href="${p.link}" target="_blank" style="color:#2563eb;font-size:11px">View ↗</a>`:'—'}</td>
+        <td style="text-align:left;padding:5px 8px;vertical-align:top">${p.link?`<a href="${p.link}" target="_blank" style="color:#2563eb;font-size:11px">View ↗</a>`:'—'}</td>
       </tr>`;
     }
   }
@@ -2808,15 +2808,15 @@ function ppRenderCompetitive(g, groups) {
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr>
-        <th style="${thS};${L}">SKU</th>
-        <th style="${thS}">CPU</th>
-        <th style="${thS}">RAM</th>
-        <th style="${thS}">GPU</th>
-        <th style="${thS}">${(prev2Date||'—').slice(0,5)}</th>
-        <th style="${thS}">${(prevDate||'—').slice(0,5)}</th>
-        <th style="${thS};color:#2563eb">${(todayDate||'—').slice(0,5)} ↑</th>
-        <th style="${thS}">Sold</th>
-        <th style="${thS}">Link</th>
+        <th style="${thS};text-align:left">SKU</th>
+        <th style="${thS};text-align:left">CPU</th>
+        <th style="${thS};text-align:left">RAM</th>
+        <th style="${thS};text-align:left">GPU</th>
+        <th style="${thS};text-align:center">${(prev2Date||'—').slice(0,5)}</th>
+        <th style="${thS};text-align:center">${(prevDate||'—').slice(0,5)}</th>
+        <th style="${thS};text-align:center;color:#2563eb">${(todayDate||'—').slice(0,5)} ↑</th>
+        <th style="${thS};text-align:center">Sold</th>
+        <th style="${thS};text-align:left">Link</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
