@@ -2625,11 +2625,9 @@ function renderPositioning(){
 
 // ── Competitive table: Price Segment mode ─────────────────────────────────
 function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
-  // Lấy price seg của selected product
   const refProducts = g.allProducts;
   if (!refProducts.length) return '<div class="pp-empty" style="padding:12px">Không có dữ liệu giá.</div>';
 
-  // Dùng min price của group để xác định segment
   const refMin = Math.min(...refProducts.map(p=>p.todayPrice||Infinity).filter(p=>p!==Infinity));
   if (!refMin || refMin === Infinity) return '<div class="pp-empty" style="padding:12px">Không có dữ liệu giá.</div>';
   const refSeg = ppGetPriceSeg({todayPrice: refMin});
@@ -2638,7 +2636,6 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
   const [segMin, segMax] = parsePriceSeg(refSeg);
   const isGaming = (g.seriesGroup||'').toLowerCase().includes('gaming') || !!g.gpuTag;
 
-  // Tìm tất cả groups có minPrice trong cùng segment, cùng Gaming/B&P direction
   const peers = Object.values(groups).filter(grp => {
     if (!grp.allProducts.length) return false;
     const isg = (grp.seriesGroup||'').toLowerCase().includes('gaming') || !!grp.gpuTag;
@@ -2648,17 +2645,15 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
     return gMin >= segMin && (segMax === 0 || gMin < segMax);
   });
 
-  if (peers.length < 2) return \`<div class="pp-empty" style="padding:12px">Không đủ sản phẩm trong phân khúc <b>${PRICE_SEG_LABELS[refSeg]||refSeg}</b> để so sánh.</div>\`;
+  if (peers.length < 2) return `<div class="pp-empty" style="padding:12px">Không đủ sản phẩm trong phân khúc <b>${PRICE_SEG_LABELS[refSeg]||refSeg}</b> để so sánh.</div>`;
 
-  // Sort by minPrice asc
   const getMin = (grp) => Math.min(...grp.allProducts.map(p=>p.todayPrice||Infinity).filter(p=>p!==Infinity)) || 0;
   peers.sort((a,b) => (getMin(a)||999e9) - (getMin(b)||999e9));
 
-  // Same headers as ppRenderCompetitive
   const C  = 'text-align:center';
   const L  = 'text-align:left';
   const NW = 'white-space:nowrap';
-  const thS = \`padding:8px 10px;font-size:11px;font-weight:600;color:#475569;background:#f8fafc;border-bottom:1px solid #e2e8f0;\${NW}\`;
+  const thS = `padding:8px 10px;font-size:11px;font-weight:600;color:#475569;background:#f8fafc;border-bottom:1px solid #e2e8f0;${NW}`;
 
   let rows = '';
   let rowIdx = 0;
@@ -2680,11 +2675,11 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
       const p0 = p.todayPrice  || 0;
       const p1 = p.prevPrice   || 0;
       const p2 = p.prev2Price  || 0;
-      const soldFmt = p.sold ? \`<span style="font-size:11px;color:#6b7280">\${p.sold}</span>\` : '—';
+      const soldFmt = p.sold ? `<span style="font-size:11px;color:#6b7280">${p.sold}</span>` : '—';
 
       const mkPriceCell = (price, prevP, highlight) => {
         const tdBg = highlight ? 'background:#dbeafe;' : '';
-        if (!price) return \`<td style="\${C};padding:5px 8px;vertical-align:top;\${tdBg}"><span style="color:#d1d5db">–</span></td>\`;
+        if (!price) return `<td style="${C};padding:5px 8px;vertical-align:top;${tdBg}"><span style="color:#d1d5db">–</span></td>`;
         const delta    = (prevP > 0) ? price - prevP : 0;
         const hasDelta = prevP > 0 && delta !== 0;
         const pct      = hasDelta ? Math.abs((delta/prevP)*100).toFixed(1) : null;
@@ -2693,60 +2688,61 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
         const pctClr   = dn ? '#ef4444' : up ? '#10b981' : '#9ca3af';
         const arrow    = dn ? '▼' : up ? '▲' : '';
         const pctLine  = pct
-          ? \`<div style="font-size:10px;color:\${pctClr};margin-top:1px;text-align:center">\${arrow} \${pct}%</div>\`
-          : \`<div style="font-size:10px;color:#9ca3af;margin-top:1px;text-align:center">0%</div>\`;
-        return \`<td style="\${C};padding:5px 8px;vertical-align:top;\${tdBg}">
-          <div style="font-weight:700;\${NW};color:\${priceClr};text-align:center">\${ppFmt(price)}</div>
-          \${pctLine}
-        </td>\`;
+          ? `<div style="font-size:10px;color:${pctClr};margin-top:1px;text-align:center">${arrow} ${pct}%</div>`
+          : `<div style="font-size:10px;color:#9ca3af;margin-top:1px;text-align:center">0%</div>`;
+        return `<td style="${C};padding:5px 8px;vertical-align:top;${tdBg}">
+          <div style="font-weight:700;${NW};color:${priceClr};text-align:center">${ppFmt(price)}</div>
+          ${pctLine}
+        </td>`;
       };
 
-      rows += \`<tr style="\${staleRowBg}">
-        <td style="\${L};padding:5px 8px;vertical-align:top">
+      rows += `<tr style="${staleRowBg}">
+        <td style="${L};padding:5px 8px;vertical-align:top">
           <div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word">
-            \${isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : ''}\${p.model}
+            ${isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : ''}${p.model}
           </div>
-          <span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:\${dlrColor};background:\${dlrColor}18;padding:1px 6px;border-radius:4px;border:1px solid \${dlrColor}40">\${dlrShort}</span>
-          \${p.isStale ? \`<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px">⚠ \${p.latestDate}</span>\` : ''}
+          <span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:${dlrColor};background:${dlrColor}18;padding:1px 6px;border-radius:4px;border:1px solid ${dlrColor}40">${dlrShort}</span>
+          ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px">⚠ ${p.latestDate}</span>` : ''}
         </td>
-        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top;line-height:1.4">\${p.cpuDetail||p.cpuFamily||'—'}</td>
-        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top;\${NW}">\${p.ram||'—'}</td>
-        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top;\${NW}">\${p.ssd||'—'}</td>
-        <td style="\${L};padding:5px 8px;font-size:11px;vertical-align:top">\${p.gpuTag||'—'}</td>
-        \${mkPriceCell(p2, 0,  false)}
-        \${mkPriceCell(p1, p2, false)}
-        \${mkPriceCell(p0, p1, isSelected)}
-        <td style="\${C};padding:5px 8px;vertical-align:top">\${soldFmt}</td>
-        <td style="\${C};padding:5px 8px;vertical-align:top">
-          \${p.link ? \`<a href="\${p.link}" target="_blank" style="font-size:11px;color:#2563eb">🔗</a>\` : '—'}
+        <td style="${L};padding:5px 8px;font-size:11px;vertical-align:top;line-height:1.4">${p.cpuDetail||p.cpuFamily||'—'}</td>
+        <td style="${L};padding:5px 8px;font-size:11px;vertical-align:top;${NW}">${p.ram||'—'}</td>
+        <td style="${L};padding:5px 8px;font-size:11px;vertical-align:top;${NW}">${p.ssd||'—'}</td>
+        <td style="${L};padding:5px 8px;font-size:11px;vertical-align:top">${p.gpuTag||'—'}</td>
+        ${mkPriceCell(p2, 0,  false)}
+        ${mkPriceCell(p1, p2, false)}
+        ${mkPriceCell(p0, p1, isSelected)}
+        <td style="${C};padding:5px 8px;vertical-align:top">${soldFmt}</td>
+        <td style="${C};padding:5px 8px;vertical-align:top">
+          ${p.link ? `<a href="${p.link}" target="_blank" style="font-size:11px;color:#2563eb">🔗</a>` : '—'}
         </td>
-      </tr>\`;
+      </tr>`;
     }
   }
 
   const segLabel = PRICE_SEG_LABELS[refSeg] || refSeg;
-  return \`
+  return `
     <div style="font-size:11px;color:#6b7280;margin-bottom:6px">
-      Phân khúc giá: <b style="color:#1e40af">\${segLabel}</b> · \${peers.length} nhóm sản phẩm · \${rows.split('<tr').length-1} SKUs
+      Phân khúc giá: <b style="color:#1e40af">${segLabel}</b> · ${peers.length} nhóm sản phẩm · ${rowIdx} SKUs
     </div>
     <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr>
-        <th style="\${thS};\${L}">SKU</th>
-        <th style="\${thS};\${L}">CPU</th>
-        <th style="\${thS};\${L}">RAM</th>
-        <th style="\${thS};\${L}">SSD</th>
-        <th style="\${thS};\${L}">GPU</th>
-        <th style="\${thS};\${C}">\${(prev2Date||'—').slice(0,5)}</th>
-        <th style="\${thS};\${C}">\${(prevDate||'—').slice(0,5)}</th>
-        <th style="\${thS};\${C};color:#2563eb">\${(todayDate||'—').slice(0,5)} ↑</th>
-        <th style="\${thS};\${C}">Sold</th>
-        <th style="\${thS};\${C}">Link</th>
+        <th style="${thS};${L}">SKU</th>
+        <th style="${thS};${L}">CPU</th>
+        <th style="${thS};${L}">RAM</th>
+        <th style="${thS};${L}">SSD</th>
+        <th style="${thS};${L}">GPU</th>
+        <th style="${thS};${C}">${(prev2Date||'—').slice(0,5)}</th>
+        <th style="${thS};${C}">${(prevDate||'—').slice(0,5)}</th>
+        <th style="${thS};${C};color:#2563eb">${(todayDate||'—').slice(0,5)} ↑</th>
+        <th style="${thS};${C}">Sold</th>
+        <th style="${thS};${C}">Link</th>
       </tr></thead>
-      <tbody>\${rows}</tbody>
+      <tbody>${rows}</tbody>
     </table>
-    </div>\`;
+    </div>`;
 }
+
 
 // ── 7-day price history table ──────────────────────────────────────────────
 function ppPriceHistory(group) {
