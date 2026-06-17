@@ -661,6 +661,9 @@ tbody tr:hover{background:#fafafa}
     </div>
     <button id="posClearBtn" onclick="ppComboClear()" title="Clear" style="display:none"
       class="pp-clear-btn">✕</button>
+    <select id="pp_vendor" multiple onchange="renderPositioning()" style="min-width:140px">
+      <option value="">All Vendors</option>
+    </select>
     <span id="posCount" style="font-size:11px;color:#9ca3af;flex-shrink:0"></span>
   </div>
   <div id="posResult"></div>
@@ -2227,7 +2230,8 @@ async function checkLatestRun() {
     'as_gpu':   'All VGA',
     'as_cpu':   'All CPU',
     'as_series':'All Series',
-    'as_focus': 'All Models'
+    'as_focus': 'All Models',
+    'pp_vendor':'All Vendors'
   };
   const OPTS = {
     maxOptions: null, allowEmptyOption: false, sortField: { field: '$order' },
@@ -2431,6 +2435,16 @@ function renderPositioning(){
   const sortedSKUs = [..._ppSKUMap.keys()].sort((a,b)=>a.localeCompare(b,'vi'));
   ppComboSetList(sortedSKUs);
 
+  // Populate Vendor dropdown
+  const ppVendorSel = document.getElementById('pp_vendor');
+  if (ppVendorSel) {
+    const curVendor = window.getMultiVal('pp_vendor');
+    const vendors = [...new Set(allToday.map(p=>p.brand).filter(Boolean))].sort();
+    ppVendorSel.innerHTML = '<option value="">All Vendors</option>' +
+      vendors.map(v=>`<option value="${v}"${curVendor.includes(v)?' selected':''}>${v}</option>`).join('');
+    if (window.tsSync) window.tsSync('pp_vendor');
+  }
+
   const selectedSKU = ppComboGetValue();
 
   if(!selectedSKU){
@@ -2478,7 +2492,7 @@ function renderPositioning(){
   ${ppEquivTable(g, selectedSKU, mbwMin)}
 
   <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
-  ${ppRenderCompetitive(g, _ppGroups)}
+  ${ppRenderCompetitive(g, _ppGroups, window.getMultiVal('pp_vendor'))}
   `;
 
   container.innerHTML = html;
@@ -2685,7 +2699,7 @@ function ppEquivTable(g, selectedSKU, mbwRef){
   return t;
 }
 
-function ppRenderCompetitive(g, groups) {
+function ppRenderCompetitive(g, groups, vendorF) {
   // Match key:
   // Gaming  → so sánh theo GPU + CPU family
   // B&P     → so sánh theo CPU family + RAM
@@ -2722,7 +2736,8 @@ function ppRenderCompetitive(g, groups) {
   let rowIdx = 0;
   for (const grp of peers) {
     // 1 row per product (across all dealers in this group)
-    const products = grp.allProducts.slice()
+    const products = grp.allProducts
+      .filter(p => !vendorF || !vendorF.length || vendorF.includes(p.brand))
       .sort((a,b) => (a.todayPrice||999e9)-(b.todayPrice||999e9));
 
     for (const p of products) {
