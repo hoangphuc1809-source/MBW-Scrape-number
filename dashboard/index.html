@@ -2797,9 +2797,18 @@ function ppRenderCompetitive(g, groups, vendorF) {
   // B&P     → so sánh theo CPU family + RAM
   const isGaming = (g.seriesGroup||'').toLowerCase().includes('gaming') || !!g.gpuTag;
   
+  // Normalize RAM → chỉ lấy số GB để match cross-dealer format
+  // "16GB DDR4-3200" / "RAM 16 GB" / "16 GB (1 thanh 16 GB)" → "16"
+  const normRamGB = (ram) => {
+    const m = (ram||'').match(/(\d+)\s*gb/i);
+    return m ? m[1] : ppNorm(ram);
+  };
+  // CPU key: dùng cpuDetail (Core 5 120U) nếu có, fallback cpuFamily
+  const normCPU = (grp) => ppNorm(grp.cpuDetail || grp.cpuFamily || '');
+
   const matchKey = (grp) => {
     if (isGaming) return ppNorm(grp.gpuTag) + '|' + ppNorm(grp.cpuFamily);
-    else          return ppNorm(grp.cpuFamily) + '|' + ppNorm(grp.ram);
+    else          return normCPU(grp) + '|' + normRamGB(grp.ram);
   };
   const refKey = matchKey(g);
   if (!refKey.replace(/\|/g,'').trim()) return '';
