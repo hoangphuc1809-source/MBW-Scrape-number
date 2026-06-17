@@ -2808,7 +2808,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
 
   const matchKey = (grp) => {
     if (isGaming) return ppNorm(grp.gpuTag) + '|' + ppNorm(grp.cpuFamily);
-    else          return normCPU(grp) + '|' + normRamGB(grp.ram);
+    else          return normCPU(grp);  // B&P: match tất cả SKU cùng CPU (bỏ RAM filter)
   };
   const refKey = matchKey(g);
   if (!refKey.replace(/\|/g,'').trim()) return '';
