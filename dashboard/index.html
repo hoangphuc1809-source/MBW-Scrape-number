@@ -2476,8 +2476,8 @@ function renderPositioning(){
   <div class="pp-section-title">📦 Sản phẩm tương đương cùng nhóm spec</div>
   ${ppEquivTable(g, selectedSKU, mbwMin)}
 
-  <div class="pp-section-title">📊 Price Index toàn thị trường theo Segment</div>
-  ${ppRenderSegSummary(_ppGroups)}
+  <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
+  ${ppRenderCompetitive(g, _ppGroups)}
   `;
 
   container.innerHTML = html;
@@ -2682,6 +2682,122 @@ function ppEquivTable(g, selectedSKU, mbwRef){
   }
   t += '</tbody></table></div>';
   return t;
+}
+
+function ppRenderCompetitive(g, groups) {
+  // Match key:
+  // Gaming  → so sánh theo GPU + CPU family
+  // B&P     → so sánh theo CPU family + RAM
+  const isGaming = (g.seriesGroup||'').toLowerCase().includes('gaming') || !!g.gpuTag;
+  
+  const matchKey = (grp) => {
+    if (isGaming) return ppNorm(grp.gpuTag) + '|' + ppNorm(grp.cpuFamily);
+    else          return ppNorm(grp.cpuFamily) + '|' + ppNorm(grp.ram);
+  };
+  const refKey = matchKey(g);
+  if (!refKey.replace(/\|/g,'').trim()) return '';
+
+  // Tìm tất cả groups cùng matchKey, cùng seriesGroup direction (Gaming/B&P)
+  const peers = Object.values(groups).filter(grp => {
+    if (!grp.allProducts.length) return false;
+    const isg = (grp.seriesGroup||'').toLowerCase().includes('gaming') || !!grp.gpuTag;
+    if (isg !== isGaming) return false;
+    return matchKey(grp) === refKey;
+  });
+
+  if (peers.length < 2) return '<div class="pp-empty" style="padding:12px">Không đủ sản phẩm tương đương để so sánh.</div>';
+
+  // Sort by minPrice asc
+  const getMin = (grp) => Math.min(...grp.allProducts.map(p=>p.todayPrice||Infinity).filter(p=>p!==Infinity)) || 0;
+  peers.sort((a,b) => (getMin(a)||999e9) - (getMin(b)||999e9));
+
+  // Headers
+  const C = 'text-align:center';
+  const L = 'text-align:left';
+  const NW = 'white-space:nowrap';
+  const thS = `padding:8px 10px;font-size:11px;font-weight:600;color:#475569;background:#f8fafc;border-bottom:1px solid #e2e8f0;${NW}`;
+
+  let rows = '';
+  let rowIdx = 0;
+  for (const grp of peers) {
+    // 1 row per product (across all dealers in this group)
+    const products = grp.allProducts.slice()
+      .sort((a,b) => (a.todayPrice||999e9)-(b.todayPrice||999e9));
+
+    for (const p of products) {
+      const isSelected = grp.key === g.key;
+      const rowBg = isSelected
+        ? 'background:#eff6ff'
+        : rowIdx%2===0 ? '' : 'background:#fafafa';
+      rowIdx++;
+
+      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'}[p.dealer]||'#666';
+      const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'}[p.dealer]||p.dealer;
+
+      const priceFmt = (price, base) => {
+        if (!price) return '<span style="color:#d1d5db">–</span>';
+        const delta = base ? price - base : 0;
+        const pct   = base ? ((delta/base)*100).toFixed(1) : null;
+        const clr   = delta < 0 ? '#ef4444' : delta > 0 ? '#10b981' : '#374151';
+        const arrow = delta < 0 ? '▼' : delta > 0 ? '▲' : '';
+        const chg   = pct && Math.abs(parseFloat(pct)) > 0.1
+          ? `<span style="font-size:10px;color:${clr}"> ${arrow}${Math.abs(pct)}%</span>` : '';
+        return `<span style="font-weight:600;color:${clr};${NW}">${ppFmt(price)}${chg}</span>`;
+      };
+
+      // 3 ngày gần nhất: today, prev, prev2
+      const pod = p.priceOnDate || {[todayDate]:p.todayPrice,[prevDate]:p.prevPrice};
+      const p0 = pod[todayDate] || 0;
+      const p1 = pod[prevDate]  || 0;
+      const p2 = pod[prev2Date] || 0;
+
+      const soldFmt = p.sold ? `<span style="font-size:11px;color:#6b7280">${p.sold}</span>` : '—';
+
+      rows += `<tr style="${rowBg}">
+        <td style="${L};padding:6px 8px;vertical-align:top">
+          <div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word">
+            ${isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : ''}${p.model}
+          </div>
+          <span style="font-size:10px;font-weight:700;color:${dlrColor};background:${dlrColor}18;padding:1px 5px;border-radius:4px">${dlrShort}</span>
+        </td>
+        <td style="${C};padding:6px 8px;font-size:11px;vertical-align:top">${p.cpuDetail||p.cpuFamily||'—'}</td>
+        <td style="${C};padding:6px 8px;font-size:11px;vertical-align:top;${NW}">${p.ram||'—'}</td>
+        <td style="${C};padding:6px 8px;font-size:11px;vertical-align:top">${p.gpuTag||'—'}</td>
+        <td style="${C};padding:6px 8px;vertical-align:top">${priceFmt(p2, 0)}<br><span style="font-size:10px;color:#9ca3af">${(prev2Date||'').slice(0,5)||'—'}</span></td>
+        <td style="${C};padding:6px 8px;vertical-align:top">${priceFmt(p1, p2)}<br><span style="font-size:10px;color:#9ca3af">${(prevDate||'').slice(0,5)||'—'}</span></td>
+        <td style="${C};padding:6px 8px;vertical-align:top;background:${isSelected?'#dbeafe':''}">
+          ${priceFmt(p0, p1)}<br>
+          <span style="font-size:10px;color:#9ca3af">${(todayDate||'').slice(0,5)||'—'}</span>
+        </td>
+        <td style="${C};padding:6px 8px;vertical-align:top">${soldFmt}</td>
+        <td style="${C};padding:6px 8px;vertical-align:top">${p.link?`<a href="${p.link}" target="_blank" style="color:#2563eb;font-size:11px">View ↗</a>`:'—'}</td>
+      </tr>`;
+    }
+  }
+
+  const matchLabel = isGaming
+    ? `GPU: ${g.gpuTag||'—'} · CPU: ${g.cpuFamily||'—'}`
+    : `CPU: ${g.cpuFamily||'—'} · RAM: ${g.ram||'—'}`;
+
+  return `<div class="pp-equiv-wrapper">
+    <div style="padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:11px;color:#6b7280">
+      ${isGaming ? '🎮 Gaming' : '💼 B&P'} · So sánh theo: <strong>${matchLabel}</strong> · ${peers.length} nhóm · ${peers.reduce((s,grp)=>s+grp.allProducts.length,0)} SKU
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr>
+        <th style="${thS};${L}">SKU</th>
+        <th style="${thS}">CPU</th>
+        <th style="${thS}">RAM</th>
+        <th style="${thS}">GPU</th>
+        <th style="${thS}">${(prev2Date||'—').slice(0,5)}</th>
+        <th style="${thS}">${(prevDate||'—').slice(0,5)}</th>
+        <th style="${thS};color:#2563eb">${(todayDate||'—').slice(0,5)} ↑</th>
+        <th style="${thS}">Sold</th>
+        <th style="${thS}">Link</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
 }
 
 function ppRenderSegSummary(groups){
