@@ -2216,6 +2216,8 @@ async function doLogin() {
   }
   sessionStorage.setItem(SESSION_KEY, JSON.stringify({ user, ts: Date.now() }));
   document.getElementById('loginOverlay').classList.add('hidden');
+  // Re-render All SKUs after login — data may have loaded while overlay was visible
+  renderAllSkus();
 }
 
 function doLogout() {
@@ -2397,6 +2399,8 @@ async function checkLatestRun() {
   if (checkSession()) {
     document.getElementById('loginOverlay').classList.add('hidden');
     checkLatestRun(); // show last run status on load
+    // Data may already be loaded — ensure All SKUs tab renders correctly
+    setTimeout(() => renderAllSkus(), 0);
   }
   document.getElementById('loginUser')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('loginPass')?.focus();
