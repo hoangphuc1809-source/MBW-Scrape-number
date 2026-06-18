@@ -2042,6 +2042,10 @@ function applyNewData(derived, csv) {
   // Re-render All Prices if it's active
   const allSec = document.getElementById('sec-all');
   if (allSec && allSec.classList.contains('active')) renderAll();
+  // Invalidate ppGroups cache — live CSV có partNum/seriesGroup đầy đủ hơn DATA cache
+  _ppGroups = null;
+  _ppSKUMap = null;
+
   const insSec = document.getElementById('sec-insights');
   if (insSec && insSec.classList.contains('active')) renderInsights();
   
