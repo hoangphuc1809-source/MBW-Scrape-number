@@ -2068,6 +2068,8 @@ function applyNewData(derived, csv) {
 
   // Re-render all tabs
   renderKPIs(); renderDrops();
+  // Re-render All SKUs — always re-render so live data replaces stale static DATA
+  renderAllSkus();
   
   // Re-render All Prices if it's active
   const allSec = document.getElementById('sec-all');
