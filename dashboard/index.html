@@ -2513,9 +2513,10 @@ function ppKey(p){
     ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'')
     : ppExtractPN(p.model);
   if(pn && pn.length >= 4) {
-    // LUÔN thêm seriesGroup prefix để tránh false match cross-series
-    // VD: Katana 2410VN vs Cyborg 2410VN cùng Part# nhưng khác dòng hoàn toàn
-    const seriesPrefix = ppNorm(p.seriesGroup || p.gamingGroup || p.segment || '');
+    // Dùng segment (col L: Katana/Cyborg/Modern/...) làm prefix — specific hơn seriesGroup
+    // seriesGroup thường = 'Gaming' cho tất cả gaming → quá chung, gây collision
+    // gamingGroup cũng vậy → không dùng
+    const seriesPrefix = ppNorm(p.segment || p.seriesGroup || '');
     return seriesPrefix ? 'pn:' + seriesPrefix + '_' + pn : 'pn:' + pn;
   }
 
