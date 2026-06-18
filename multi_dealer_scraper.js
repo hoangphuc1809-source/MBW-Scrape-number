@@ -496,9 +496,9 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       const link = href.startsWith('http') ? href : BASE + href;
       if (!href || seen.has(link)) return;
       seen.add(link);
-      const name      = card.querySelector('h3, h2')?.innerText?.trim() || '';
-      const salePrice = parseInt((card.querySelector('p.b1-semibold,[class*="b1-semibold"]')?.innerText||'').replace(/\D/g,'')) || 0;
-      const origPrice = parseInt((card.querySelector('span[class*="line-through"]')?.innerText||'').replace(/\D/g,'')) || 0;
+      const name      = card.querySelector('h3, h2')?.textContent?.trim() || '';
+      const salePrice = parseInt((card.querySelector('p.b1-semibold,[class*="b1-semibold"]')?.textContent||'').replace(/\D/g,'')) || 0;
+      const origPrice = parseInt((card.querySelector('span[class*="line-through"]')?.textContent||'').replace(/\D/g,'')) || 0;
       const discount  = card.querySelector('[class*="discount"],[class*="percent"]')?.innerText?.trim() || '';
       if (!name || name.length < 5) return;
       out.push({
