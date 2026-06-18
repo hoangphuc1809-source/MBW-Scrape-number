@@ -526,11 +526,11 @@ tbody tr:hover{background:#fafafa}
 </div>
 
 <div class="tabs">
-  <div class="tab" onclick="sw('alert')">🚨 Price Alert</div>
-  <div class="tab active" onclick="sw('drops')">📉 Top Price Changes</div>
-  <div class="tab" onclick="sw('allskus')">📋 All SKUs</div>
+  <div class="tab active" onclick="sw('allskus')">📋 All SKUs</div>
   <div class="tab" onclick="sw('positioning')">💰 Price Positioning</div>
   <div class="tab" onclick="sw('insights')">📈 Market Insights</div>
+  <div class="tab" onclick="sw('drops')">📉 Top Price Changes</div>
+  <div class="tab" onclick="sw('alert')">🚨 Price Alert</div>
 </div>
 
 <div class="main" id="mainWrapper">
@@ -541,7 +541,7 @@ tbody tr:hover{background:#fafafa}
 </div>
 
 <!-- ── TAB 2: TOP PRICE CHANGES ── -->
-<div class="section active" id="sec-drops">
+<div class="section" id="sec-drops">
   <div class="kpi-row" id="kpiRow"></div>
   <div class="sec-title">
     Price changes: <b id="todayLbl"></b> vs <b id="prevLbl"></b>
@@ -587,7 +587,7 @@ tbody tr:hover{background:#fafafa}
 </div>
 
 <!-- ── TAB: ALL SKUs ── -->
-<div class="section" id="sec-allskus">
+<div class="section active" id="sec-allskus">
   <div class="filter-bar">
     <span class="filter-lbl">Filter</span>
     <div class="filter-sep"></div>
