@@ -1140,8 +1140,12 @@ function renderAllSkus() {
   // sort — stale rows sink to bottom unless sorting by model/dealer/brand
   data.sort((a,b) => {
     // Push stale rows to bottom for numeric sorts (price/sold)
+    // Không sort stale xuống cuối nữa — giá đã ở đúng cột, sort bình thường
+    // Chỉ stale cũ hơn prev2 mới sink xuống cuối
     const numericSort = ['price','prev','prev2','sold'].includes(_asSortCol);
-    if (numericSort && a.isStale !== b.isStale) return a.isStale ? 1 : -1;
+    const aOld = a.isStale && a.latestDate !== prevDate && a.latestDate !== prev2Date;
+    const bOld = b.isStale && b.latestDate !== prevDate && b.latestDate !== prev2Date;
+    if (numericSort && aOld !== bOld) return aOld ? 1 : -1;
     let va, vb;
     const fn = _asSortCol;
     if (fn === 'price')   { va=a.todayPrice||a.kmPrice||0;  vb=b.todayPrice||b.kmPrice||0; }
@@ -1163,7 +1167,7 @@ function renderAllSkus() {
   if (cnt) {
     const staleCount = data.filter(p=>p.isStale).length;
     cnt.textContent = staleCount > 0
-      ? `${data.length} SKUs (${staleCount} từ ngày trước ⚠)`
+      ? `${data.length} SKUs (${staleCount} no data today)`
       : `${data.length} SKUs`;
   }
 
@@ -1235,10 +1239,36 @@ function renderAllSkus() {
           : (gpuRaw==='UMA' ? 'Integrated' : '–');
         const ramTxt = normRAM(p.ram);
         const ssdTxt = normSSD(p.ssd);
-        const today  = p.todayPrice || p.kmPrice || 0;
-        const prev   = p.prevPrice  || 0;
-        const prev2  = p.prev2Price || 0;
-        const prev3  = p.prev3Price || 0;
+        // Stale rows: shift giá vào đúng cột ngày của nó
+        // latestDate = ngày cuối cùng có data (VD: 17/06/2026)
+        let today, prev, prev2, prev3;
+        if (p.isStale && p.latestDate) {
+          const ld = p.latestDate; // "dd/MM/yyyy"
+          if (ld === prevDate) {
+            // Data ở ngày prev → cột today trống, giá đặt vào prev
+            today = 0;
+            prev  = p.todayPrice || p.kmPrice || 0;
+            prev2 = p.prevPrice  || 0;
+            prev3 = p.prev2Price || 0;
+          } else if (ld === prev2Date) {
+            // Data ở ngày prev2 → 2 cột gần nhất trống
+            today = 0;
+            prev  = 0;
+            prev2 = p.todayPrice || p.kmPrice || 0;
+            prev3 = p.prevPrice  || 0;
+          } else {
+            // Older than prev2 or same as today — show in today col as-is
+            today = p.todayPrice || p.kmPrice || 0;
+            prev  = p.prevPrice  || 0;
+            prev2 = p.prev2Price || 0;
+            prev3 = p.prev3Price || 0;
+          }
+        } else {
+          today = p.todayPrice || p.kmPrice || 0;
+          prev  = p.prevPrice  || 0;
+          prev2 = p.prev2Price || 0;
+          prev3 = p.prev3Price || 0;
+        }
         const origP  = p.origPrice || 0;
         const discPct = (origP > 0 && today < origP) ? Math.round((origP - today) / origP * 100) : 0;
         const rowBg  = i%2===0 ? '' : 'background:rgba(0,0,0,0.018)';
@@ -1265,7 +1295,7 @@ function renderAllSkus() {
           <td style="${L};padding:5px 6px">
             <div class="mname" style="font-size:12px;line-height:1.35">${p.model}${p.focusModel ? ' <span class="dlr dlr-key" style="font-size:9px;padding:1px 4px">⭐ Key Model</span>' : ''}</div>
             <span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span>
-            ${p.isStale ? `<span style="font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px;margin-left:3px">⚠ ${p.latestDate}</span>` : ''}
+            
             ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">${discPct}% off SRP</span>` : ''}
           </td>
           <td style="${L};padding:5px 4px;font-size:11px;line-height:1.3;vertical-align:top;word-break:break-word">${cpuLabel}</td>
