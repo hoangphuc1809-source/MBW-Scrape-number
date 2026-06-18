@@ -446,24 +446,35 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   let clicks = 0;
   while (true) {
     const clicked = await page.evaluate(() => {
-      const sels = [
-        'button[class*="show-more"]', 'a[class*="show-more"]',
-        'button[class*="load-more"]', 'a[class*="load-more"]',
-        '.view-more button', '.view-more a', 'button.view-more',
-        '[class*="ViewMore"] button', '[class*="viewmore"]',
-      ];
-      for (const sel of sels) {
-        const el = document.querySelector(sel);
-        if (el && el.offsetParent !== null) { el.scrollIntoView({block:'center'}); el.click(); return true; }
-      }
-      // Fallback: tìm theo text "Xem thêm"
-      const els = [...document.querySelectorAll('a, button')];
-      const btn = els.find(el =>
-        /xem\s*thêm/i.test(el.textContent || '') &&
-        (el.textContent || '').trim().length < 60 &&
+      // FPT button: "Xem thêm N kết quả" — match by text pattern /xem thêm \d+ kết quả/i
+      // Must exclude product-card overlay buttons (short "Xem thêm" without digit)
+      const allBtns = [...document.querySelectorAll('button, a')];
+      
+      // Primary: "Xem thêm N kết quả" (load more results button)
+      const loadMoreBtn = allBtns.find(el =>
+        /xem\s*thêm\s+\d+/i.test(el.textContent || '') &&
         el.offsetParent !== null
       );
-      if (btn) { btn.scrollIntoView({block:'center'}); btn.click(); return true; }
+      if (loadMoreBtn) {
+        loadMoreBtn.scrollIntoView({block:'center'});
+        loadMoreBtn.click();
+        return true;
+      }
+      
+      // Fallback: any visible button/link with "xem thêm" NOT in product card overlay
+      // Exclude buttons inside cardInfo (those are card-level overlays)
+      const fallbackBtn = allBtns.find(el => {
+        if (!/xem\s*thêm/i.test(el.textContent || '')) return false;
+        if ((el.textContent || '').trim().length > 80) return false;
+        if (el.closest('div.cardInfo')) return false; // skip card overlays
+        if (!el.offsetParent) return false;
+        return true;
+      });
+      if (fallbackBtn) {
+        fallbackBtn.scrollIntoView({block:'center'});
+        fallbackBtn.click();
+        return true;
+      }
       return false;
     }).catch(() => false);
     if (!clicked) break;
