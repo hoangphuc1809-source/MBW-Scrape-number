@@ -2864,7 +2864,8 @@ function miComboBuildList() {
     seen.add(label.toLowerCase());
     _miAllModels.push(label);
     const pn = p.partNum ? p.partNum.toLowerCase().replace(/[\s\-_]/g,'') : '';
-    _miModelMap[label] = { partNum: pn, dealer: p.dealer };
+    const seg = ppNorm(p.segment || p.seriesGroup || '');
+    _miModelMap[label] = { partNum: pn, segment: seg, dealer: p.dealer };
   }
   _miAllModels.sort((a,b) => a.localeCompare(b,'vi'));
   if (_miSelModel && !_miAllModels.includes(_miSelModel)) _miSelModel = '';
@@ -3205,7 +3206,9 @@ function miRenderTrend(container) {
   ];
   const normPN = s => (s||'').toLowerCase().replace(/[\s\-_]/g,'');
   const selNorm = selModel.toLowerCase();
-  const selPN   = (_miModelMap[selModel]||{}).partNum || '';
+  const selInfo = _miModelMap[selModel] || {};
+  const selPN   = selInfo.partNum || '';
+  const selSeg  = selInfo.segment || '';
 
   const series = DEALERS.map(dl => {
     const data = {};
@@ -3215,10 +3218,18 @@ function miRenderTrend(container) {
       const date = k.slice(0,pipe1), dealer = k.slice(pipe1+1,pipe2);
       if (dealer !== dl.key) continue;
       if (!chartDates.includes(date)) continue;
-      // Match by Part# if available, else model name
-      const rowPN = normPN(row[21]||'');
+      // Match by Part# + Segment together (e.g. "katana_676vn" vs "cyborg_676vn") —
+      // Part# alone collides across series (Katana 676VN ≠ Cyborg 676VN). Fall back
+      // to exact model-name match only when no Part# is available at all.
+      const rowPN  = normPN(row[21]||'');
+      const rowSeg = ppNorm(row[11]||'');
       const rowModel = (row[3]||'').toLowerCase();
-      const matched = selPN ? (rowPN === selPN) : (rowModel === selNorm);
+      let matched;
+      if (selPN) {
+        matched = (rowPN === selPN) && (!selSeg || !rowSeg || rowSeg === selSeg);
+      } else {
+        matched = (rowModel === selNorm);
+      }
       if (!matched) continue;
       const price = parsePrice(row[5]) || parsePrice(row[4]);
       if (!price) continue;
