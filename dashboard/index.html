@@ -1159,8 +1159,12 @@ function renderAllSkus() {
     // Không sort stale xuống cuối nữa — giá đã ở đúng cột, sort bình thường
     // Chỉ stale cũ hơn prev2 mới sink xuống cuối
     const numericSort = ['price','prev','prev2','sold'].includes(_asSortCol);
-    const aOld = a.isStale && a.latestDate !== prevDate && a.latestDate !== prev2Date;
-    const bOld = b.isStale && b.latestDate !== prevDate && b.latestDate !== prev2Date;
+    // NOTE: isStale is `true` or simply absent (undefined) on fresh items — never
+    // explicitly `false`. Comparing `aOld !== bOld` without boolean coercion treats
+    // `false !== undefined` as true, triggering a hard-coded -1/1 return that
+    // completely ignores _asSortDir. Coercing with !! fixes this.
+    const aOld = !!(a.isStale && a.latestDate !== prevDate && a.latestDate !== prev2Date);
+    const bOld = !!(b.isStale && b.latestDate !== prevDate && b.latestDate !== prev2Date);
     if (numericSort && aOld !== bOld) return aOld ? 1 : -1;
     let va, vb;
     const fn = _asSortCol;
