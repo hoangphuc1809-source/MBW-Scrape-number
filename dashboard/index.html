@@ -1137,6 +1137,22 @@ function renderAllSkus() {
     return true;
   });
 
+  // Helper: compute the price that actually appears in the "today" / "prev" columns
+  // for a given item, accounting for stale-row date shifting (see row renderer below).
+  // Without this, sorting by "price" used the raw todayPrice field even when that
+  // price is actually displayed in the prev/prev2 column for stale rows — causing
+  // sorted rows to show "-" in the column being sorted.
+  const shiftedPrices = (p) => {
+    if (p.isStale && p.latestDate) {
+      if (p.latestDate === prevDate) {
+        return { today: 0, prev: p.todayPrice||p.kmPrice||0, prev2: p.prevPrice||0 };
+      } else if (p.latestDate === prev2Date) {
+        return { today: 0, prev: 0, prev2: p.todayPrice||p.kmPrice||0 };
+      }
+    }
+    return { today: p.todayPrice||p.kmPrice||0, prev: p.prevPrice||0, prev2: p.prev2Price||0 };
+  };
+
   // sort — stale rows sink to bottom unless sorting by model/dealer/brand
   data.sort((a,b) => {
     // Push stale rows to bottom for numeric sorts (price/sold)
@@ -1148,9 +1164,9 @@ function renderAllSkus() {
     if (numericSort && aOld !== bOld) return aOld ? 1 : -1;
     let va, vb;
     const fn = _asSortCol;
-    if (fn === 'price')   { va=a.todayPrice||a.kmPrice||0;  vb=b.todayPrice||b.kmPrice||0; }
-    else if (fn === 'prev')  { va=a.prevPrice||0;  vb=b.prevPrice||0; }
-    else if (fn === 'prev2') { va=a.prev2Price||0; vb=b.prev2Price||0; }
+    if (fn === 'price')   { const sa=shiftedPrices(a), sb=shiftedPrices(b); va=sa.today; vb=sb.today; }
+    else if (fn === 'prev')  { const sa=shiftedPrices(a), sb=shiftedPrices(b); va=sa.prev; vb=sb.prev; }
+    else if (fn === 'prev2') { const sa=shiftedPrices(a), sb=shiftedPrices(b); va=sa.prev2; vb=sb.prev2; }
     else if (fn === 'gpu')   { va=a.gpuLabel||a.gpuTag||''; vb=b.gpuLabel||b.gpuTag||''; }
     else if (fn === 'cpu')   { va=a.cpuDetail||a.cpuFamily||''; vb=b.cpuDetail||b.cpuFamily||''; }
     else if (fn === 'ram')   { va=parseInt((a.ram||'0').match(/\d+/)?.[0])||0; vb=parseInt((b.ram||'0').match(/\d+/)?.[0])||0; }
@@ -1159,6 +1175,14 @@ function renderAllSkus() {
     else if (fn === 'model') { va=a.model||''; vb=b.model||''; }
     else if (fn === 'dealer'){ va=a.dealer||''; vb=b.dealer||''; }
     else { va=0; vb=0; }
+    // Missing values (0) always sink to bottom for numeric price/sold sorts,
+    // regardless of asc/desc direction — otherwise they jump to the top on ascending sort.
+    if (numericSort) {
+      const aZero = !va, bZero = !vb;
+      if (aZero && !bZero) return 1;
+      if (bZero && !aZero) return -1;
+      if (aZero && bZero) return 0;
+    }
     if (typeof va==='number' && typeof vb==='number') return (va-vb)*_asSortDir;
     return va.toString().localeCompare(vb.toString(),'vi')*_asSortDir;
   });
