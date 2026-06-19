@@ -1587,6 +1587,12 @@ function renderAll() {
     data = [...data].sort((a, b) => {
       const va = getAlSortVal(a, _alSortCol);
       const vb = getAlSortVal(b, _alSortCol);
+      const aMissing = isAlMissingVal(_alSortCol, va);
+      const bMissing = isAlMissingVal(_alSortCol, vb);
+      // Missing values always sink to bottom, regardless of asc/desc direction
+      if (aMissing && !bMissing) return 1;
+      if (bMissing && !aMissing) return -1;
+      if (aMissing && bMissing) return 0;
       if (va < vb) return -_alSortDir;
       if (va > vb) return  _alSortDir;
       return 0;
@@ -1626,7 +1632,8 @@ const AL_COLS = [
 function getAlSortVal(item, colIdx) {
   const key = AL_COLS[colIdx][0];
   if (key === 'delta') return (item.todayPrice||0) - (item.prevPrice||0);
-  if (key === 'todayPrice' || key === 'prevPrice' || key === 'd1') return item.prevPrice || 0;
+  if (key === 'todayPrice') return item.todayPrice || 0;
+  if (key === 'prevPrice' || key === 'd1') return item.prevPrice || 0;
   if (key === 'd4' || key === 'd3' || key === 'd2') return 0;
   if (key === 'cpu_combo') return ((item.cpuFamily||'') + ' ' + (item.cpuDetail||'')).toLowerCase();
   if (key === 'sold') {
@@ -1635,6 +1642,15 @@ function getAlSortVal(item, colIdx) {
     return parseFloat(s) || 0;
   }
   return (item[key] || '').toString().toLowerCase();
+}
+
+// Price columns ('-' / no data) must always sink to the bottom of the table,
+// regardless of sort direction — otherwise missing values (treated as 0)
+// jump to the top on ascending sort, which looks like broken sorting.
+function isAlMissingVal(colIdx, val) {
+  const key = AL_COLS[colIdx][0];
+  const isPriceCol = key === 'todayPrice' || key === 'prevPrice' || key === 'delta';
+  return isPriceCol && (!val || val === 0);
 }
 
 function renderAllHead() {
