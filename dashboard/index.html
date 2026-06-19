@@ -3033,7 +3033,6 @@ function miLinechart(series, dates, W, H) {
     if (p >= 1000000) return (p/1000000).toFixed(1) + 'M';
     return p.toLocaleString();
   };
-  const fmtFull = (p) => p ? p.toLocaleString('vi-VN') + '₫' : '—';
 
   // Y grid lines
   const yTicks = 4;
@@ -3084,13 +3083,7 @@ function miLinechart(series, dates, W, H) {
       + '</g>';
   });
 
-  // ── Hover tooltip overlay ──
-  // Per-date hover line + invisible hit zones; tooltip built/positioned via JS on hover.
-  const chartId = 'michart_' + Math.random().toString(36).slice(2,9);
-  const seriesJson = JSON.stringify(series.map(s => ({label:s.label, color:s.color, data:s.data})))
-    .replace(/</g,'\\u003c'); // safety for inline script
-  const datesJson = JSON.stringify(dates);
-
+  // ── Hover hit-zones (one invisible rect per date column) ──
   let hitZones = '';
   dates.forEach((d, i) => {
     const zoneW = w / dates.length;
@@ -3099,7 +3092,9 @@ function miLinechart(series, dates, W, H) {
       + 'fill="transparent" data-idx="' + i + '" data-x="' + xOf(i).toFixed(1) + '" class="mi-hitzone" style="cursor:crosshair"/>';
   });
 
-  const svg = '<div id="' + chartId + '" style="position:relative;width:100%;max-width:' + W + 'px">'
+  const chartId = 'michart_' + Math.random().toString(36).slice(2,9);
+
+  const html = '<div id="' + chartId + '" class="mi-chart-wrap" style="position:relative;width:100%;max-width:' + W + 'px">'
     + '<svg viewBox="0 0 ' + W + ' ' + (H+20) + '" style="width:100%;display:block">'
     + gridLines + yLabels + xLabels + paths + dots
     + '<line class="mi-hoverline" x1="0" y1="' + PAD.t + '" x2="0" y2="' + (PAD.t+h) + '" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3" style="display:none;pointer-events:none"/>'
@@ -3107,48 +3102,67 @@ function miLinechart(series, dates, W, H) {
     + legend
     + '</svg>'
     + '<div class="mi-tooltip" style="display:none;position:absolute;pointer-events:none;background:#1e293b;color:#fff;border-radius:6px;padding:8px 10px;font-size:11px;line-height:1.6;box-shadow:0 4px 12px rgba(0,0,0,0.25);z-index:10;white-space:nowrap"></div>'
-    + '</div>'
-    + '<script>(function(){'
-    + 'var root=document.getElementById("' + chartId + '");'
-    + 'if(!root||root._miInit)return; root._miInit=true;'
-    + 'var series=' + seriesJson + ';'
-    + 'var dates=' + datesJson + ';'
-    + 'var svgEl=root.querySelector("svg");'
-    + 'var hoverLine=root.querySelector(".mi-hoverline");'
-    + 'var tooltip=root.querySelector(".mi-tooltip");'
-    + 'var zones=root.querySelectorAll(".mi-hitzone");'
-    + 'function fmtFull(p){return p?p.toLocaleString("vi-VN")+"\\u20ab":"\\u2014";}'
-    + 'zones.forEach(function(z){'
-    + '  z.addEventListener("mouseenter",function(e){'
-    + '    var idx=parseInt(z.getAttribute("data-idx"));'
-    + '    var x=parseFloat(z.getAttribute("data-x"));'
-    + '    var date=dates[idx];'
-    + '    hoverLine.setAttribute("x1",x); hoverLine.setAttribute("x2",x); hoverLine.style.display="block";'
-    + '    var rows=series.map(function(s){'
-    + '      var p=s.data[date];'
-    + '      return "<div style=\\"display:flex;align-items:center;gap:6px\\">"'
-    + '        +"<span style=\\"width:8px;height:8px;border-radius:50%;background:"+s.color+";display:inline-block\\"></span>"'
-    + '        +"<span style=\\"flex:1\\">"+s.label+"</span>"'
-    + '        +"<b style=\\"margin-left:8px\\">"+fmtFull(p)+"</b></div>";'
-    + '    }).join("");'
-    + '    tooltip.innerHTML="<div style=\\"font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:4px\\">"+date+"</div>"+rows;'
-    + '    tooltip.style.display="block";'
-    + '  });'
-    + '  z.addEventListener("mousemove",function(e){'
-    + '    var rect=root.getBoundingClientRect();'
-    + '    var mx=e.clientX-rect.left, my=e.clientY-rect.top;'
-    + '    var tw=tooltip.offsetWidth||140;'
-    + '    var left=mx+12; if(left+tw>rect.width) left=mx-tw-12;'
-    + '    tooltip.style.left=left+"px";'
-    + '    tooltip.style.top=Math.max(0,my-10)+"px";'
-    + '  });'
-    + '  z.addEventListener("mouseleave",function(){'
-    + '    hoverLine.style.display="none"; tooltip.style.display="none";'
-    + '  });'
-    + '});'
-    + '})();</script>';
+    + '</div>';
 
-  return svg;
+  // Bind hover interactivity after the HTML is inserted into the DOM.
+  // Using a microtask (setTimeout 0) ensures the container's innerHTML has been
+  // applied by the caller before we try to query the chart's DOM nodes.
+  setTimeout(() => miBindChartHover(chartId, series, dates), 0);
+
+  return html;
+}
+
+// Attaches hover/tooltip behavior to a rendered chart. Called after the chart's
+// HTML has been inserted into the DOM (see miLinechart above).
+function miBindChartHover(chartId, series, dates) {
+  const root = document.getElementById(chartId);
+  if (!root || root._miInit) return;
+  root._miInit = true;
+
+  const hoverLine = root.querySelector('.mi-hoverline');
+  const tooltip   = root.querySelector('.mi-tooltip');
+  const zones     = root.querySelectorAll('.mi-hitzone');
+
+  const fmtFull = (p) => p ? p.toLocaleString('vi-VN') + '₫' : '—';
+
+  zones.forEach(z => {
+    z.addEventListener('mouseenter', () => {
+      const idx  = parseInt(z.getAttribute('data-idx'), 10);
+      const x    = parseFloat(z.getAttribute('data-x'));
+      const date = dates[idx];
+
+      hoverLine.setAttribute('x1', x);
+      hoverLine.setAttribute('x2', x);
+      hoverLine.style.display = 'block';
+
+      const rows = series.map(s => {
+        const p = s.data[date];
+        return '<div style="display:flex;align-items:center;gap:6px">'
+          + '<span style="width:8px;height:8px;border-radius:50%;background:' + s.color + ';display:inline-block"></span>'
+          + '<span style="flex:1">' + s.label + '</span>'
+          + '<b style="margin-left:8px">' + fmtFull(p) + '</b></div>';
+      }).join('');
+
+      tooltip.innerHTML = '<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:4px">'
+        + date + '</div>' + rows;
+      tooltip.style.display = 'block';
+    });
+
+    z.addEventListener('mousemove', (e) => {
+      const rect = root.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const tw = tooltip.offsetWidth || 140;
+      let left = mx + 12;
+      if (left + tw > rect.width) left = mx - tw - 12;
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = Math.max(0, my - 10) + 'px';
+    });
+
+    z.addEventListener('mouseleave', () => {
+      hoverLine.style.display = 'none';
+      tooltip.style.display = 'none';
+    });
+  });
 }
 
 // ── SECTION 1: Price Trend Chart ───────────────────────────────────
