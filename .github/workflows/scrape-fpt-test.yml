@@ -1,74 +1,74 @@
+# ════════════════════════════════════════════════════════════════════
+# scrape-fpt-test.yml  —  PARALLEL TEST (v4 — GAS approach)
+# Không scrape từ GitHub Actions runner (datacenter IP bị CF block)
+# Thay vào đó: trigger Google Apps Script để fetch FPT
+# GAS dùng UrlFetchApp trên Google server IP → không bị CF block
+# ════════════════════════════════════════════════════════════════════
 name: scrape-fpt-test
 
 on:
   schedule:
-    - cron: '0 1 * * *'
-    - cron: '0 4 * * *'
-    - cron: '0 6 * * *'
-    - cron: '0 10 * * *'
+    - cron: '0 1 * * *'   # 08:00 VN
+    - cron: '0 4 * * *'   # 11:00 VN
+    - cron: '0 6 * * *'   # 13:00 VN
+    - cron: '0 10 * * *'  # 17:00 VN
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (no GAS write)'
+        description: 'Dry run (skip GAS trigger)'
         required: false
         default: 'false'
         type: choice
         options: ['false', 'true']
 
 jobs:
-  scrape-fpt-fetch:
-    name: FPT HTTPS Fetch (ubuntu-latest)
+  trigger-fpt-gas-scrape:
+    name: Trigger GAS FPT Scraper
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Test FPT connectivity
+      - name: Trigger GAS scrapeFpt
+        id: trigger
+        if: github.event.inputs.dry_run != 'true'
         run: |
-          echo "=== Testing FPT connectivity ==="
-          HTTP_CODE=$(curl -s -o /tmp/fpt_test.html -w "%{http_code}" \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
-            -H "Accept: text/html,*/*" \
-            -H "Accept-Language: vi-VN,vi;q=0.9" \
-            --compressed --max-time 15 \
-            "https://fptshop.com.vn/may-tinh-xach-tay/msi" || echo "000")
-          echo "HTTP Code: $HTTP_CODE"
-          echo "Response size: $(wc -c < /tmp/fpt_test.html) bytes"
-          echo "First 500 chars:"
-          head -c 500 /tmp/fpt_test.html
-          echo ""
-          echo "Contains 'cardInfo': $(grep -c 'cardInfo' /tmp/fpt_test.html || echo 0)"
-          echo "Contains 'Just a moment': $(grep -c 'Just a moment' /tmp/fpt_test.html || echo 0)"
-          echo "Contains 'msi-gaming': $(grep -c 'msi-gaming' /tmp/fpt_test.html || echo 0)"
-
-      - name: Run FPT Fetch Scraper
-        id: scrape
-        run: node fpt_byparr_scraper_v2.js
+          echo "Triggering GAS FPT scraper..."
+          RESPONSE=$(curl -s -L -X POST "$GAS_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"action":"scrapeFpt","sheetName":"FPT_TEST"}' \
+            --max-time 60)
+          echo "Response: $RESPONSE"
+          
+          # Check success
+          SUCCESS=$(echo "$RESPONSE" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); print(d.get('success','?'))" 2>/dev/null || echo "parse_error")
+          COUNT=$(echo "$RESPONSE" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); print(d.get('written',0))" 2>/dev/null || echo "0")
+          
+          echo "Success: $SUCCESS | Products written: $COUNT"
+          
+          if [ "$SUCCESS" != "True" ] && [ "$SUCCESS" != "true" ]; then
+            echo "::error::GAS scraper returned success=false"
+            exit 1
+          fi
         env:
-          GAS_URL: ${{ github.event.inputs.dry_run == 'true' && '' || secrets.GAS_DEPLOYMENT_URL }}
-          SHEET_NAME: FPT_TEST
-          METHOD_TAG: fetch
-        continue-on-error: true
+          GAS_URL: ${{ secrets.GAS_DEPLOYMENT_URL }}
+
+      - name: Dry run notice
+        if: github.event.inputs.dry_run == 'true'
+        run: echo "Dry run — GAS trigger skipped"
 
       - name: Job summary
         if: always()
         run: |
-          RESULT="${{ steps.scrape.outcome }}"
+          RESULT="${{ steps.trigger.outcome }}"
           NOW=$(date -u '+%Y-%m-%d %H:%M UTC')
-          echo "## FPT Fetch Scrape — $NOW" >> $GITHUB_STEP_SUMMARY
+          echo "## FPT GAS Scrape — $NOW" >> $GITHUB_STEP_SUMMARY
           if [ "$RESULT" = "success" ]; then
-            echo "✅ **Status: SUCCESS**" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Status: SUCCESS** (GAS UrlFetchApp)" >> $GITHUB_STEP_SUMMARY
+          elif [ "$RESULT" = "skipped" ]; then
+            echo "⏭ **Dry run — skipped**" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Status: FAILED**" >> $GITHUB_STEP_SUMMARY
           fi
-
-      - name: Check scrape result
-        if: steps.scrape.outcome == 'failure'
-        run: exit 1
+          echo "| Method | Google Apps Script UrlFetchApp |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------------------------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | FPT_TEST tab |" >> $GITHUB_STEP_SUMMARY
