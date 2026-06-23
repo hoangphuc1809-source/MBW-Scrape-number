@@ -1,119 +1,119 @@
 /**
- * FPT Shop Test Scraper — Byparr (Camoufox) + SSR HTML Parser
- * v2.2 — Tăng timeout 180s + retry 2 lần khi CF timeout
+ * FPT Shop Test Scraper — Pure HTTPS fetch (no browser)
+ * v3.0 — Bỏ Byparr/Camoufox, dùng node https trực tiếp
  *
- * Target: https://fptshop.com.vn/may-tinh-xach-tay/msi (~40 MSI products)
- * Method: Byparr giải Cloudflare → full SSR HTML → regex parser
+ * Insight: FPT Shop SSR trả HTML đầy đủ cho plain GET requests.
+ * Byparr (headless browser) bị Cloudflare detect → timeout.
+ * Plain HTTPS với browser headers KHÔNG bị block.
+ *
+ * Target: https://fptshop.com.vn/may-tinh-xach-tay/msi
  * Output: FPT_TEST tab (format RAW DATA + col S: method, T: status)
  */
 
 const https = require('https');
-const http  = require('http');
+const zlib  = require('zlib');
 
-const BYPARR_URL  = process.env.BYPARR_URL  || 'http://localhost:8191';
-const GAS_URL     = process.env.GAS_URL     || '';
-const SHEET_NAME  = process.env.SHEET_NAME  || 'FPT_TEST';
-const METHOD_TAG  = process.env.METHOD_TAG  || 'byparr';
-
-// Tăng timeout: Camoufox cần nhiều thời gian hơn trên datacenter IP
-const MAX_TIMEOUT    = 180000; // 3 phút
-const BYPARR_TIMEOUT = 180;    // seconds (gửi vào Byparr API)
-const MAX_RETRIES    = 3;      // số lần retry khi CF challenge timeout
-const RETRY_DELAY    = 8000;   // ms giữa các lần retry
+const GAS_URL    = process.env.GAS_URL    || '';
+const SHEET_NAME = process.env.SHEET_NAME || 'FPT_TEST';
+const METHOD_TAG = process.env.METHOD_TAG || 'fetch';
 
 const TARGET_URL  = 'https://fptshop.com.vn/may-tinh-xach-tay/msi';
 const DEALER_NAME = 'FPT';
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5000;
 
-// ─── HTTP ─────────────────────────────────────────────────────────────────
-function httpReq(url, opts = {}, body = null) {
+// ─── Fetch với browser-like headers ──────────────────────────────────────
+function fetchPage(url, attempt = 1) {
   return new Promise((resolve, reject) => {
-    const p = new URL(url);
-    const lib = p.protocol === 'https:' ? https : http;
-    const payload = body ? JSON.stringify(body) : null;
-    const req = lib.request({
-      hostname: p.hostname,
-      port:     p.port || (p.protocol === 'https:' ? 443 : 80),
-      path:     p.pathname + p.search,
-      method:   opts.method || 'GET',
+    const parsed = new URL(url);
+    const req = https.request({
+      hostname: parsed.hostname,
+      path:     parsed.pathname + parsed.search,
+      method:   'GET',
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': '*/*',
-        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
+        'User-Agent':                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Accept':                    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language':           'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept-Encoding':           'gzip, deflate, br',
+        'Cache-Control':             'no-cache',
+        'Pragma':                    'no-cache',
+        'Sec-Ch-Ua':                 '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+        'Sec-Ch-Ua-Mobile':          '?0',
+        'Sec-Ch-Ua-Platform':        '"Windows"',
+        'Sec-Fetch-Dest':            'document',
+        'Sec-Fetch-Mode':            'navigate',
+        'Sec-Fetch-Site':            'none',
+        'Sec-Fetch-User':            '?1',
+        'Upgrade-Insecure-Requests': '1',
+        'Connection':                'keep-alive',
       },
-    }, res => {
-      let raw = '';
-      res.on('data', c => raw += c);
-      res.on('end', () => resolve({ status: res.statusCode, body: raw }));
+    }, (res) => {
+      const status = res.statusCode;
+      const ct     = res.headers['content-type'] || '';
+      const enc    = res.headers['content-encoding'] || '';
+
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        const buf = Buffer.concat(chunks);
+
+        // Decompress nếu cần
+        const decompress = (buf, cb) => {
+          if (enc === 'br') {
+            zlib.brotliDecompress(buf, cb);
+          } else if (enc === 'gzip') {
+            zlib.gunzip(buf, cb);
+          } else if (enc === 'deflate') {
+            zlib.inflate(buf, cb);
+          } else {
+            cb(null, buf);
+          }
+        };
+
+        decompress(buf, (err, decoded) => {
+          if (err) return reject(new Error('Decompress error: ' + err.message));
+          const html = decoded.toString('utf8');
+          resolve({ status, html, contentType: ct });
+        });
+      });
     });
+
     req.on('error', reject);
-    req.setTimeout(MAX_TIMEOUT + 10000, () => req.destroy(new Error('HTTP Timeout')));
-    if (payload) req.write(payload);
+    req.setTimeout(30000, () => req.destroy(new Error('Request timeout')));
     req.end();
   });
 }
 
-// ─── Wait for Byparr ──────────────────────────────────────────────────────
-async function waitForByparr(ms = 120000) {
-  const t0 = Date.now();
-  process.stdout.write('⏳ Byparr');
-  while (Date.now() - t0 < ms) {
+// ─── Fetch với retry ──────────────────────────────────────────────────────
+async function fetchWithRetry(url) {
+  for (let i = 1; i <= MAX_RETRIES; i++) {
     try {
-      const r = await httpReq(`${BYPARR_URL}/health`);
-      if (r.status === 200) { console.log(' ✅ ready'); return; }
-    } catch (_) {}
-    await new Promise(r => setTimeout(r, 3000));
-    process.stdout.write('.');
-  }
-  throw new Error('Byparr not ready after ' + ms / 1000 + 's');
-}
+      console.log(`📡 Fetch attempt ${i}/${MAX_RETRIES}: ${url}`);
+      const { status, html, contentType } = await fetchPage(url);
+      console.log(`   Status: ${status} | ${html.length.toLocaleString()} chars | ${contentType.slice(0, 40)}`);
 
-// ─── Fetch via Byparr với retry ───────────────────────────────────────────
-async function fetchViaByparr(url) {
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    console.log(`\n🔓 Byparr attempt ${attempt}/${MAX_RETRIES} → ${url}`);
-    console.log(`   maxTimeout=${BYPARR_TIMEOUT}s  (waiting up to ${BYPARR_TIMEOUT + 15}s...)`);
-
-    try {
-      const res  = await httpReq(`${BYPARR_URL}/v1`, { method: 'POST' }, {
-        cmd:        'request.get',
-        url,
-        maxTimeout: BYPARR_TIMEOUT * 1000,
-      });
-
-      let data;
-      try { data = JSON.parse(res.body); }
-      catch (e) { throw new Error('Byparr bad JSON: ' + res.body.slice(0, 200)); }
-
-      if (data.status === 'ok') {
-        const html = data.solution?.response || '';
-        if (!html) throw new Error('Byparr returned empty HTML');
-        if (/Just a moment|Checking your browser|challenge-platform/i.test(html)) {
-          throw new Error('CF challenge not solved — still on challenge page');
-        }
-        console.log(`   ✅ HTML ${html.length.toLocaleString()} chars | cookies ${data.solution?.cookies?.length || 0}`);
-        return html;
+      if (status === 403 || status === 429) {
+        throw new Error(`HTTP ${status} — blocked`);
+      }
+      if (status !== 200) {
+        throw new Error(`HTTP ${status}`);
+      }
+      if (/Just a moment|Checking your browser|challenge-platform/i.test(html.slice(0, 2000))) {
+        throw new Error('Cloudflare challenge page returned');
+      }
+      if (!html.includes('fptshop') && !html.includes('may-tinh-xach-tay')) {
+        throw new Error('Unexpected response — not FPT page');
       }
 
-      // Byparr error
-      const errMsg = JSON.stringify(data.message || data.detail || data).slice(0, 300);
-      const isTimeout = /timeout|timed out/i.test(errMsg);
-      console.log(`   ❌ Byparr: ${errMsg}`);
-
-      if (attempt < MAX_RETRIES) {
-        const waitSec = isTimeout ? RETRY_DELAY * attempt : RETRY_DELAY;
-        console.log(`   ⏳ Retry in ${waitSec / 1000}s...`);
-        await new Promise(r => setTimeout(r, waitSec));
-      } else {
-        throw new Error(`Byparr failed after ${MAX_RETRIES} attempts: ${errMsg}`);
-      }
+      return html;
 
     } catch (err) {
-      // Network error hoặc throw từ trên
-      if (attempt < MAX_RETRIES && !/failed after/i.test(err.message)) {
-        console.log(`   ⚠️  ${err.message} — retry in ${RETRY_DELAY / 1000}s...`);
+      console.log(`   ❌ ${err.message}`);
+      if (i < MAX_RETRIES) {
+        console.log(`   ⏳ Retry in ${RETRY_DELAY / 1000}s...`);
         await new Promise(r => setTimeout(r, RETRY_DELAY));
       } else {
-        throw err;
+        throw new Error(`Fetch failed after ${MAX_RETRIES} attempts: ${err.message}`);
       }
     }
   }
@@ -166,6 +166,8 @@ function parseProducts(html) {
 
   for (const p of products) {
     const hrefPos = html.indexOf(`href="${p.path}"`);
+
+    // Nearest price block after href (within 3000 chars)
     let best = null, bestDist = Infinity;
     for (const pb of prices) {
       const d = pb.pos - hrefPos;
@@ -179,6 +181,7 @@ function parseProducts(html) {
       if (singleM) p.priceNew = parseInt(singleM[1].replace(/\./g, ''), 10);
     }
 
+    // Specs from title
     const t = p.name;
     const cpuM = t.match(/Core\s+Ultra\s+\d+|Core\s+[i\d]+\s+\d+[A-Z]+\w*|Ryzen\s+\d+\s+\d+\w*/i);
     p.cpu = cpuM ? cpuM[0].trim() : '';
@@ -214,7 +217,31 @@ function formatRows(products, method) {
   ]);
 }
 
-// ─── GAS ──────────────────────────────────────────────────────────────────
+// ─── POST to GAS ──────────────────────────────────────────────────────────
+function postToGAS(payload) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(payload);
+    const p    = new URL(GAS_URL);
+    const req  = https.request({
+      hostname: p.hostname,
+      path:     p.pathname + p.search,
+      method:   'POST',
+      headers: {
+        'Content-Type':   'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, (res) => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => resolve(raw));
+    });
+    req.on('error', reject);
+    req.setTimeout(30000, () => req.destroy(new Error('GAS timeout')));
+    req.write(body);
+    req.end();
+  });
+}
+
 async function sendToGAS(rows, method, status, meta = {}) {
   if (!GAS_URL) {
     console.log(`\n⚠️  GAS_URL not set — dry run (${rows.length} rows not written)`);
@@ -222,26 +249,24 @@ async function sendToGAS(rows, method, status, meta = {}) {
   }
   console.log(`\n📤 GAS → ${rows.length} rows (${SHEET_NAME})...`);
   try {
-    const r = await httpReq(GAS_URL, { method: 'POST' }, {
+    const r = await postToGAS({
       action: 'writeFptTest', sheetName: SHEET_NAME,
       rows, method, status, runAt: new Date().toISOString(), ...meta,
     });
-    console.log('✅ GAS:', r.body.slice(0, 200));
+    console.log('✅ GAS:', r.slice(0, 200));
   } catch (e) { console.error('❌ GAS:', e.message); }
 }
 
 // ─── Main ──────────────────────────────────────────────────────────────────
 async function main() {
   const t0 = Date.now();
-  console.log('🚀 FPT Byparr Scraper v2.2');
-  console.log(`   maxTimeout=${BYPARR_TIMEOUT}s | retries=${MAX_RETRIES}`);
+  console.log('🚀 FPT Scraper v3.0 (pure HTTPS fetch — no browser)');
   console.log(`   ${new Date().toISOString()}\n`);
 
-  const meta = { method: METHOD_TAG, success: false, productCount: 0, version: '2.2' };
+  const meta = { method: METHOD_TAG, success: false, productCount: 0, version: '3.0' };
 
   try {
-    await waitForByparr();
-    const html     = await fetchViaByparr(TARGET_URL);
+    const html     = await fetchWithRetry(TARGET_URL);
     const products = parseProducts(html);
 
     console.log(`\n📦 ${products.length} products parsed`);
@@ -254,18 +279,18 @@ async function main() {
     });
     if (products.length > 5) console.log(`  ... +${products.length - 5} more`);
 
-    if (products.length === 0) throw new Error('0 products — HTML structure changed?');
+    if (products.length === 0) throw new Error('0 products — HTML changed or CF blocked?');
 
-    meta.success = true;
+    meta.success      = true;
     meta.productCount = products.length;
 
     const rows = formatRows(products, METHOD_TAG);
     await sendToGAS(rows, METHOD_TAG, 'ok', meta);
 
     const dur = ((Date.now() - t0) / 1000).toFixed(1);
-    console.log(`\n✅ Done in ${dur}s — ${products.length} products (${products.filter(p=>p.priceNew).length} with price, ${products.filter(p=>p.gpu).length} with GPU)`);
+    console.log(`\n✅ Done in ${dur}s — ${products.length} products (${products.filter(p=>p.priceNew).length} with price)`);
 
-    if (products.length < 5) { console.warn('⚠️  Too few products — possible partial block'); process.exit(1); }
+    if (products.length < 5) { console.warn('⚠️  Too few products'); process.exit(1); }
 
   } catch (err) {
     console.error(`\n❌ FAILED: ${err.message}`);
