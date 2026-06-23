@@ -1,16 +1,11 @@
-# ════════════════════════════════════════════════════════════════════
-# scrape-fpt-test.yml  —  PARALLEL TEST (v3)
-# Pure HTTPS fetch — no Byparr, no browser, no Docker service
-# FPT Shop SSR trả full HTML cho plain GET requests
-# ════════════════════════════════════════════════════════════════════
 name: scrape-fpt-test
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # 08:00 VN
-    - cron: '0 4 * * *'   # 11:00 VN
-    - cron: '0 6 * * *'   # 13:00 VN
-    - cron: '0 10 * * *'  # 17:00 VN
+    - cron: '0 1 * * *'
+    - cron: '0 4 * * *'
+    - cron: '0 6 * * *'
+    - cron: '0 10 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -24,7 +19,7 @@ jobs:
   scrape-fpt-fetch:
     name: FPT HTTPS Fetch (ubuntu-latest)
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Plain fetch = fast, max 10min
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -34,6 +29,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Test FPT connectivity
+        run: |
+          echo "=== Testing FPT connectivity ==="
+          HTTP_CODE=$(curl -s -o /tmp/fpt_test.html -w "%{http_code}" \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+            -H "Accept: text/html,*/*" \
+            -H "Accept-Language: vi-VN,vi;q=0.9" \
+            --compressed --max-time 15 \
+            "https://fptshop.com.vn/may-tinh-xach-tay/msi" || echo "000")
+          echo "HTTP Code: $HTTP_CODE"
+          echo "Response size: $(wc -c < /tmp/fpt_test.html) bytes"
+          echo "First 500 chars:"
+          head -c 500 /tmp/fpt_test.html
+          echo ""
+          echo "Contains 'cardInfo': $(grep -c 'cardInfo' /tmp/fpt_test.html || echo 0)"
+          echo "Contains 'Just a moment': $(grep -c 'Just a moment' /tmp/fpt_test.html || echo 0)"
+          echo "Contains 'msi-gaming': $(grep -c 'msi-gaming' /tmp/fpt_test.html || echo 0)"
 
       - name: Run FPT Fetch Scraper
         id: scrape
@@ -50,18 +63,11 @@ jobs:
           RESULT="${{ steps.scrape.outcome }}"
           NOW=$(date -u '+%Y-%m-%d %H:%M UTC')
           echo "## FPT Fetch Scrape — $NOW" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           if [ "$RESULT" = "success" ]; then
             echo "✅ **Status: SUCCESS**" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Status: FAILED**" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Runner | ubuntu-latest (no browser!) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Method | Pure HTTPS fetch v3.0 |" >> $GITHUB_STEP_SUMMARY
-          echo "| Sheet | FPT_TEST |" >> $GITHUB_STEP_SUMMARY
-          echo "| Dry run | ${{ github.event.inputs.dry_run || 'false' }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Check scrape result
         if: steps.scrape.outcome == 'failure'
