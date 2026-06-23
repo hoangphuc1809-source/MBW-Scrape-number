@@ -1,0 +1,118 @@
+# ════════════════════════════════════════════════════════════════════
+# scrape-fpt-test.yml  —  PARALLEL TEST WORKFLOW
+# Chạy song song với production (scrape.yml), KHÔNG thay thế
+# Ghi → FPT_TEST tab (không đụng RAW DATA)
+#
+# Schedule: 4x/day Vietnam time
+#   08:00 VN = 01:00 UTC
+#   11:00 VN = 04:00 UTC
+#   13:00 VN = 06:00 UTC
+#   17:00 VN = 10:00 UTC
+#
+# Method: Byparr (Camoufox) Docker service trong ubuntu-latest
+#   - Không cần self-hosted runner
+#   - Byparr giải Cloudflare → full SSR HTML → regex parser
+#
+# Cutover criteria (sau 7-14 ngày theo dõi FPT_TEST_LOG):
+#   ≥90% runs status=ok + productCount ≥95% so production
+# ════════════════════════════════════════════════════════════════════
+name: scrape-fpt-test
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 08:00 VN
+    - cron: '0 4 * * *'   # 11:00 VN
+    - cron: '0 6 * * *'   # 13:00 VN
+    - cron: '0 10 * * *'  # 17:00 VN
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no GAS write)'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+env:
+  SHEET_NAME: FPT_TEST
+  METHOD_TAG: byparr
+
+jobs:
+  scrape-fpt-byparr:
+    name: FPT Byparr (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      byparr:
+        image: ghcr.io/thephaseless/byparr:latest
+        ports:
+          - 8191:8191
+        options: >-
+          --health-cmd "curl -sf http://localhost:8191/health || exit 1"
+          --health-interval 5s
+          --health-timeout 10s
+          --health-retries 18
+          --health-start-period 45s
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install puppeteer --no-save
+
+      - name: Wait for Byparr
+        run: |
+          echo "Waiting for Byparr service (max 90s)..."
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8191/health 2>/dev/null || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Byparr ready after attempt $i"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Byparr failed to start"
+              exit 1
+            fi
+            sleep 3
+          done
+
+      - name: Run FPT Byparr Scraper
+        id: scrape
+        run: node fpt_byparr_scraper_v2.js
+        env:
+          BYPARR_URL: http://localhost:8191
+          GAS_URL: ${{ github.event.inputs.dry_run == 'true' && '' || secrets.GAS_DEPLOYMENT_URL }}
+          SHEET_NAME: ${{ env.SHEET_NAME }}
+          METHOD_TAG: ${{ env.METHOD_TAG }}
+        continue-on-error: true
+
+      - name: Job summary
+        if: always()
+        run: |
+          RESULT="${{ steps.scrape.outcome }}"
+          NOW=$(date -u '+%Y-%m-%d %H:%M UTC')
+          echo "## FPT Byparr Scrape — $NOW" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$RESULT" = "success" ]; then
+            echo "✅ **Status: SUCCESS**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status: FAILED**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Runner | ubuntu-latest (no self-hosted) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Method | Byparr (Camoufox) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target sheet | FPT_TEST |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dry run | ${{ github.event.inputs.dry_run || 'false' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check scrape result
+        if: steps.scrape.outcome == 'failure'
+        run: exit 1
