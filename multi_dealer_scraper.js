@@ -1,5 +1,5 @@
 /**
- * multi_dealer_scraper.js  — v2.9
+ * multi_dealer_scraper.js  — v3.0
  *
  * FIX v2.9:
  *  [BUG7] Bỏ giới hạn 30 specs/lần → fetch tất cả SP chưa có specs
@@ -7,6 +7,11 @@
  *  [BUG8] MBW specs hoán đổi CPU/Màn hình → dùng findSpec() theo keyword
  *  [BUG9] FPT/CPS mapSpecs cập nhật đủ fields theo bảng chuẩn
  *  [KEY]  Specs chỉ fetch 1 lần duy nhất, lưu vào cache (sheet)
+ *
+ * v3.0:
+ *  [NEW]  FPT: đổi từ per-brand → 1 URL tổng /may-tinh-xach-tay (lấy đủ 400+)
+ *  [NEW]  FPT: auto-detect brand từ tên sản phẩm (detectBrand)
+ *  [NEW]  FPT_MAPPING_VERSION=3 → force re-fetch toàn bộ FPT specs lần đầu
  *         Các lần chạy sau: copy specs từ cache vào row mới tự động
  */
 
@@ -43,7 +48,12 @@ const CREDS_PATH     = path.join(os.tmpdir(), 'scraper_gcp.json');
 const DEADLINE_MS    = 75 * 60 * 1000;
 // Tăng version này mỗi khi thay đổi mapping FPT → force re-fetch toàn bộ FPT specs
 // CPS cache giữ nguyên (không bị ảnh hưởng)
-const FPT_MAPPING_VERSION = 2; // v2.9: fix GPU dual card + RAM/Storage/Screen fields
+const FPT_MAPPING_VERSION = 3; // v3.0: scrape tất cả laptop FPT (1 URL duy nhất thay vì per-brand)
+
+// FPT: scrape toàn bộ laptop qua 1 URL tổng thay vì loop per-brand
+// Lợi ích: (1) lấy đủ 400+ products, (2) không bỏ sót brand nào,
+//           (3) pagination "Xem thêm" load hết không giới hạn
+const FPT_ALL_URL = 'https://fptshop.com.vn/may-tinh-xach-tay';
 
 // MBW: scrape trang tổng /laptop để lấy đủ ~464 SP (thay vì per-brand chỉ ~150)
 // FPT và CPS: vẫn scrape per-brand như cũ
@@ -486,9 +496,26 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   }
   if (clicks) console.log(`    → Xem thêm: ${clicks} lần`);
 
-  const products = await page.evaluate((brandName, BASE) => {
+  const products = await page.evaluate((BASE) => {
     const out  = [];
     const seen = new Set();
+    // Auto-detect brand từ tên sản phẩm
+    function detectBrand(name) {
+      const n = (name || '').toLowerCase();
+      if (n.includes('msi'))     return 'MSI';
+      if (n.includes('asus') || n.includes('vivobook') || n.includes('zenbook') || n.includes('rog') || n.includes('tuf')) return 'Asus';
+      if (n.includes('acer') || n.includes('aspire') || n.includes('predator') || n.includes('nitro') || n.includes('swift')) return 'Acer';
+      if (n.includes('dell') || n.includes('inspiron') || n.includes('xps') || n.includes('alienware') || n.includes('latitude') || n.includes('vostro')) return 'Dell';
+      if (n.includes('hp ') || n.includes('pavilion') || n.includes('envy') || n.includes('spectre') || n.includes('omen') || n.includes('elitebook') || n.includes('probook') || n.includes('victus')) return 'HP';
+      if (n.includes('lenovo') || n.includes('ideapad') || n.includes('thinkpad') || n.includes('legion') || n.includes('yoga') || n.includes('loq')) return 'Lenovo';
+      if (n.includes('samsung') || n.includes('galaxy book')) return 'Samsung';
+      if (n.includes('macbook') || n.includes('apple')) return 'MacBook';
+      if (n.includes('gigabyte') || n.includes('aorus')) return 'Gigabyte';
+      if (n.includes('lg ') || n.includes('gram')) return 'LG';
+      if (n.includes('huawei') || n.includes('matebook')) return 'Huawei';
+      if (n.includes('microsoft') || n.includes('surface')) return 'Microsoft';
+      return 'Other';
+    }
     document.querySelectorAll('div.cardInfo').forEach(card => {
       const linkEl = card.querySelector('a[href*="may-tinh-xach-tay/"]');
       if (!linkEl) return;
@@ -502,13 +529,13 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       const discount  = card.querySelector('[class*="discount"],[class*="percent"]')?.innerText?.trim() || '';
       if (!name || name.length < 5) return;
       out.push({
-        dealer:'FPT Retail', name, brand:brandName,
+        dealer:'FPT Retail', name, brand: detectBrand(name),
         cpu:'', ram:'', storage:'', screen:'', gpu:'', weight:'',
         origPrice, salePrice, discount, sold:'', rating:'', link,
       });
     });
     return out;
-  }, brand.name, 'https://fptshop.com.vn');
+  }, 'https://fptshop.com.vn');
 
   console.log(`    → ${products.length} SP`);
   if (products.length === 0) {
@@ -765,21 +792,14 @@ async function writeToSheet(sheets, allProducts) {
       let pageFPT = await browser.newPage();
       await pageFPT.setViewport({ width: 1280, height: 900 });
       await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-      for (const brand of BRANDS) {
-        try {
-          const products = await scrapeFPT(pageFPT, brand, specCache, startTime);
-          allProducts.push(...products);
-        } catch (e) {
-          // Lỗi Puppeteer/CDP thoáng qua (vd: "Network.setCacheDisabled timed out")
-          // không nên làm crash toàn bộ job — bỏ qua brand này, tạo page mới
-          // (page cũ có thể đã ở trạng thái CDP hỏng) rồi tiếp tục brand sau.
-          console.log(`    💥 ${brand.name} lỗi: ${e.message.substring(0,100)}`);
-          try { await pageFPT.close(); } catch(_) {}
-          pageFPT = await browser.newPage();
-          await pageFPT.setViewport({ width: 1280, height: 900 });
-          await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-        }
-        await sleep(800);
+      // v3.0: scrape TẤT CẢ laptop qua 1 URL tổng thay vì loop per-brand
+      // → lấy đủ 400+ products, không bỏ sót brand, pagination hoạt động tốt hơn
+      try {
+        const fptAllBrand = { name: 'All', fptUrl: FPT_ALL_URL };
+        const products = await scrapeFPT(pageFPT, fptAllBrand, specCache, startTime);
+        allProducts.push(...products);
+      } catch (e) {
+        console.log(`    💥 FPT All lỗi: ${e.message.substring(0,100)}`);
       }
       await pageFPT.close();
     } else {
@@ -831,3 +851,4 @@ async function writeToSheet(sheets, allProducts) {
   console.error('💥 Fatal:', err);
   process.exit(1);
 });
+
