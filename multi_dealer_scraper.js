@@ -118,6 +118,7 @@ const HEADERS = [
   'Ngày','Giờ','STT','Dealer','Tên Model','Hãng',
   'CPU','RAM','Ổ cứng','Màn hình','Card đồ họa','Trọng lượng',
   'Giá gốc (₫)','Giá KM (₫)','Giảm (%)','Đã bán','Rating (★)','Link sản phẩm',
+  'Tình trạng',
 ];
 
 // ── Helpers ───────────────────────────────────────────────
@@ -166,6 +167,21 @@ async function fetchSpecsFPT(page, url) {
     const ok = await safeGoto(page, url);
     if (!ok) return {};
     await sleep(1200);
+    // Detect stock status TRƯỚC khi click "Xem tất cả thông số"
+    const stockStatus = await page.evaluate(() => {
+      const body = document.body.innerText || '';
+      // "Hàng sắp về" — button/div đặc biệt trên FPT
+      if (/hàng sắp về/i.test(body)) return 'Hàng sắp về';
+      // "Ngừng kinh doanh" / "Ngừng bán"
+      if (/ngừng kinh doanh|ngừng bán|stop.*sell/i.test(body)) return 'Ngừng KD';
+      // "Hết hàng"
+      if (/hết hàng/i.test(body)) return 'Hết hàng';
+      // "Liên hệ" thay vì giá
+      const priceEl = document.querySelector('[class*="b1-semibold"],[class*="price"]');
+      if (priceEl && /liên hệ/i.test(priceEl.innerText || '')) return 'Liên hệ';
+      return 'Còn hàng';
+    }).catch(() => 'Còn hàng');
+
     const clicked = await page.evaluate(() => {
       const btn = [...document.querySelectorAll('span, button, a')]
         .find(b => b.innerText?.trim() === 'Xem tất cả thông số');
@@ -185,7 +201,9 @@ async function fetchSpecsFPT(page, url) {
       });
       return specs;
     }).catch(() => ({}));
-    return mapSpecsFPT(raw);
+    const result = mapSpecsFPT(raw);
+    result.stockStatus = stockStatus;
+    return result;
   } catch (e) {
     return {};
   }
@@ -224,6 +242,18 @@ async function fetchSpecsCPS(page, url) {
     const ok = await safeGoto(page, url);
     if (!ok) return {};
     await sleep(1200);
+    // Detect stock status từ CPS detail page
+    const stockStatus = await page.evaluate(() => {
+      const body = document.body.innerText || '';
+      if (/ngừng kinh doanh|ngừng bán|không còn bán/i.test(body)) return 'Ngừng KD';
+      if (/hết hàng|out of stock/i.test(body)) return 'Hết hàng';
+      if (/sắp về|pre.?order|đặt trước/i.test(body)) return 'Hàng sắp về';
+      // CPS: nếu không có giá hiển thị → Liên hệ
+      const priceEl = document.querySelector('.product__price--show,.tpt-price,.price-show');
+      if (!priceEl || !/\d/.test(priceEl.innerText || '')) return 'Liên hệ';
+      return 'Còn hàng';
+    }).catch(() => 'Còn hàng');
+
     const raw = await page.evaluate(() => {
       const specs = {};
       document.querySelectorAll('tr.technical-content-item').forEach(row => {
@@ -236,7 +266,9 @@ async function fetchSpecsCPS(page, url) {
       });
       return specs;
     }).catch(() => ({}));
-    return mapSpecsCPS(raw);
+    const result = mapSpecsCPS(raw);
+    result.stockStatus = stockStatus;
+    return result;
   } catch (e) {
     return {};
   }
@@ -427,11 +459,20 @@ async function scrapeMBW(page) {
       const weightRaw = parseSpec('Kích thước') || parseSpec('trọng lượng') || findSpec('kg') || '';
       const weight = weightRaw;
 
+      // MBW: detect stock status từ listing page
+      // "Ngừng kinh doanh" → thường không có giá (origPrice=0, salePrice=0)
+      // và có text "Ngừng" hoặc không có nút mua
+      const mbwStatus = (() => {
+        // Nếu đã bán rất nhiều nhưng không còn giá → ngừng KD
+        if (!origPrice && !salePrice) return 'Chưa rõ';
+        return 'Còn hàng';
+      })();
       out.push({
         dealer: 'MBW', name, brand: brandName,
         cpu, screen, gpu, weight,
         ram: compare[0]||'', storage: compare[1]||'',
         origPrice, salePrice, discount, sold, rating, link,
+        stockStatus: mbwStatus,
       });
     });
     return out;
@@ -536,10 +577,20 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       const origPrice = parseInt((card.querySelector('span[class*="line-through"]')?.textContent||'').replace(/\D/g,'')) || 0;
       const discount  = card.querySelector('[class*="discount"],[class*="percent"]')?.innerText?.trim() || '';
       if (!name || name.length < 5) return;
+      // FPT listing: detect "Hàng sắp về" từ card text
+      // Detail page sẽ update chính xác hơn khi fetch specs
+      const fptStatus = (() => {
+        const cardText = (card.innerText || '').toLowerCase();
+        if (/hàng sắp về/.test(cardText)) return 'Hàng sắp về';
+        if (/ngừng/.test(cardText)) return 'Ngừng KD';
+        if (!salePrice && !origPrice) return 'Chưa rõ';
+        return 'Còn hàng';
+      })();
       out.push({
         dealer:'FPT Retail', name, brand: detectBrand(name),
         cpu:'', ram:'', storage:'', screen:'', gpu:'', weight:'',
         origPrice, salePrice, discount, sold:'', rating:'', link,
+        stockStatus: fptStatus,
       });
     });
     return out;
@@ -615,10 +666,12 @@ async function scrapeCPS(page, brand, specCache, startTime) {
       const soldEl    = [...card.querySelectorAll('span,p')].find(el => /[Đđ]ã bán/.test(el.innerText));
       const sold      = soldEl?.innerText?.replace(/[Đđ]ã bán\s*/i,'')?.trim() || '';
       if (!name || name.length < 5) return;
+      const cpsStatus = (!salePrice && !origPrice) ? 'Chưa rõ' : 'Còn hàng';
       out.push({
         dealer:'CellPhone S', name, brand:brandName,
         cpu:'', ram:'', storage:'', screen:'', gpu:'', weight:'',
         origPrice, salePrice, discount, sold, rating, link,
+        stockStatus: cpsStatus,
       });
     });
     return out;
@@ -635,7 +688,7 @@ async function loadSpecCacheFromSheet(sheets) {
   try {
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A2:R`,
+      range: `${SHEET_NAME}!A2:S`,
     });
 
     // Đọc version đã lưu trong sheet (cell T1 — ngoài range data chính)
@@ -643,7 +696,7 @@ async function loadSpecCacheFromSheet(sheets) {
     try {
       const vRes = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME}!S1`,
+        range: `${SHEET_NAME}!T1`,  // T1: FPT mapping version (S giờ là cột Tình trạng data)
       });
       savedVersion = parseInt(vRes.data.values?.[0]?.[0] || '0') || 0;
     } catch(e) {}
@@ -662,8 +715,10 @@ async function loadSpecCacheFromSheet(sheets) {
 
       const cpu=row[6]||'', ram=row[7]||'', storage=row[8]||'';
       const screen=row[9]||'', gpu=row[10]||'', weight=row[11]||'';
-      if (cpu||ram||storage||screen||gpu||weight) {
-        cache.set(link, { cpu, ram, storage, screen, gpu, weight });
+      // Cache specs + stockStatus (col S = index 18)
+      const stockStatus = row[18] || '';
+      if (cpu||ram||storage||screen||gpu||weight||stockStatus) {
+        cache.set(link, { cpu, ram, storage, screen, gpu, weight, stockStatus });
       }
     });
 
@@ -707,6 +762,7 @@ async function writeToSheet(sheets, allProducts) {
     p.cpu, p.ram, p.storage, p.screen, p.gpu, p.weight,
     p.origPrice||'', p.salePrice||'', p.discount,
     p.sold, p.rating, p.link,
+    p.stockStatus || 'Còn hàng',
   ]);
 
   // Safety guard: nếu scrape được 0 SP thì KHÔNG clear sheet
@@ -733,7 +789,7 @@ async function writeToSheet(sheets, allProducts) {
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A1:R1`,
+    range: `${SHEET_NAME}!A1:S1`,
     valueInputOption: 'RAW',
     requestBody: { values: [HEADERS] },
   });
@@ -741,7 +797,7 @@ async function writeToSheet(sheets, allProducts) {
   // Lưu FPT_MAPPING_VERSION vào T1 để track khi nào cần re-fetch
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!S1`,
+    range: `${SHEET_NAME}!T1`,  // T1: FPT mapping version
     valueInputOption: 'RAW',
     requestBody: { values: [[FPT_MAPPING_VERSION]] },
   });
@@ -754,7 +810,7 @@ async function writeToSheet(sheets, allProducts) {
 // ── MAIN ──────────────────────────────────────────────────
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.2');
+  console.log('🚀 Multi-Dealer Scraper v3.3');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -859,6 +915,7 @@ async function writeToSheet(sheets, allProducts) {
   console.error('💥 Fatal:', err);
   process.exit(1);
 });
+
 
 
 
