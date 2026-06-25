@@ -131,16 +131,21 @@ function formatTime(d) {
 }
 
 async function scrollToBottom(page) {
-  await page.evaluate(async () => {
-    await new Promise(resolve => {
-      let total = 0;
-      const timer = setInterval(() => {
-        window.scrollBy(0, 600);
-        total += 600;
-        if (total >= document.body.scrollHeight) { clearInterval(timer); resolve(); }
-      }, 300);
-    });
-  });
+  // BUG FIX v3.2: async evaluate với long-running Promise → CDP timeout trên trang lớn
+  // Fix: scroll nhiều bước nhỏ từ Node.js thay vì 1 evaluate async block lớn
+  let lastHeight = 0;
+  for (let i = 0; i < 40; i++) {
+    const height = await page.evaluate(() => document.body.scrollHeight).catch(() => 0);
+    if (height === lastHeight && i > 0) break;
+    lastHeight = height;
+    const steps = Math.ceil(height / 1500);
+    for (let s = 0; s <= steps; s++) {
+      await page.evaluate((y) => window.scrollTo(0, y), s * 1500).catch(() => {});
+    }
+    await sleep(400);
+    const newHeight = await page.evaluate(() => document.body.scrollHeight).catch(() => 0);
+    if (newHeight === height) break;
+  }
 }
 
 async function safeGoto(page, url) {
@@ -439,20 +444,18 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   // FPT bị Cloudflare bot-challenge ngay cả qua Worker proxy (Cloudflare Worker
   // → Cloudflare-protected origin bị chặn ở edge-to-edge level) → gọi trực tiếp.
   try {
-    await page.goto(brand.fptUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(brand.fptUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await page.waitForSelector('div.cardInfo', { timeout: 15000 }).catch(() => {});
   } catch(e) {
     console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
     return [];
   }
   await sleep(2000);
 
-  let prevCount = 0;
-  for (let i = 0; i < 8; i++) {
-    await scrollToBottom(page);
-    await sleep(1500);
-    const count = await page.evaluate(() => document.querySelectorAll('div.cardInfo').length);
-    if (count === prevCount && count > 0) break;
-    prevCount = count;
+  // Simple scroll để trigger lazy load đầu trang
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {});
+    await sleep(2000);
   }
 
   // FPT Shop giới hạn ~15-20 SP/trang qua lazy-load cuộn — cần click nút
@@ -494,8 +497,9 @@ async function scrapeFPT(page, brand, specCache, startTime) {
     if (!clicked) break;
     clicks++;
     await sleep(2000);
-    await scrollToBottom(page);
-    await sleep(1000);
+    // Simple scroll: KHÔNG dùng scrollToBottom() vì CDP timeout trên trang 400+ products
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {});
+    await sleep(1500);
     if (clicks > 50) break; // safety cap
   }
   if (clicks) console.log(`    → Xem thêm: ${clicks} lần`);
@@ -750,7 +754,7 @@ async function writeToSheet(sheets, allProducts) {
 // ── MAIN ──────────────────────────────────────────────────
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v2.9');
+  console.log('🚀 Multi-Dealer Scraper v3.2');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -855,5 +859,6 @@ async function writeToSheet(sheets, allProducts) {
   console.error('💥 Fatal:', err);
   process.exit(1);
 });
+
 
 
