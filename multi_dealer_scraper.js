@@ -1,5 +1,5 @@
 /**
- * multi_dealer_scraper.js  — v3.0
+ * multi_dealer_scraper.js  — v3.1
  *
  * FIX v2.9:
  *  [BUG7] Bỏ giới hạn 30 specs/lần → fetch tất cả SP chưa có specs
@@ -340,15 +340,16 @@ async function scrapeMBW(page) {
 
     if (!result.clicked) break;
     clicks++;
-    await sleep(2500); // Chờ content load sau click
+    await sleep(3500); // tăng wait: proxy AJAX render cần thêm thời gian
 
-    // Kiểm tra số SP có tăng không — nếu không tăng sau 2 lần → dừng
+    // BUG FIX: đếm a.main-contain (product thực) không đếm banner/skeleton
+    // Tăng threshold 2→3 để chịu được 1 lần proxy lag.
     const count = await page.evaluate(() =>
-      document.querySelectorAll('ul.listproduct li.item').length
+      document.querySelectorAll('ul.listproduct li.item a.main-contain').length
     );
     if (count === prevCount) {
       stagnant++;
-      if (stagnant >= 2) break; // chỉ dừng sau 2 lần liên tiếp không tăng
+      if (stagnant >= 3) break;
     } else {
       stagnant = 0;
       prevCount = count;
@@ -359,7 +360,10 @@ async function scrapeMBW(page) {
   const totalItems = await page.evaluate(() =>
     document.querySelectorAll('ul.listproduct li.item').length
   );
-  console.log(`    → Tổng items trên trang: ${totalItems}`);
+  const productItems = await page.evaluate(() =>
+    document.querySelectorAll('ul.listproduct li.item a.main-contain').length
+  );
+  console.log(`    → Tổng items trên trang: ${totalItems} (products: ${productItems})`);
 
   if (totalItems === 0) {
     const diag = await page.evaluate(() => ({
@@ -851,4 +855,5 @@ async function writeToSheet(sheets, allProducts) {
   console.error('💥 Fatal:', err);
   process.exit(1);
 });
+
 
