@@ -295,8 +295,11 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime) {
   let fetched = 0;
   for (const p of products) {
     if (specCache.has(p.link)) {
-      // Luôn copy specs từ cache vào product (kể cả SP cũ)
-      Object.assign(p, specCache.get(p.link));
+      // Copy specs từ cache NHƯNG KHÔNG override stockStatus:
+      // stockStatus đã được detect chính xác từ listing/detail page HÔM NAY.
+      // Cache chỉ lưu specs tĩnh (cpu/ram/...) — stockStatus thay đổi hàng ngày.
+      const { stockStatus: _skip, ...cachedSpecs } = specCache.get(p.link);
+      Object.assign(p, cachedSpecs);
     } else {
       // Kiểm tra deadline trước khi fetch
       if (Date.now() - startTime > DEADLINE_MS) {
@@ -304,8 +307,13 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime) {
         break;
       }
       const specs = await fetchFn(page, p.link);
+      // Khi fetch detail page: stockStatus từ detail page chính xác hơn listing
+      // → dùng stockStatus từ detail page (override listing status)
       Object.assign(p, specs);
-      specCache.set(p.link, specs);
+      // Lưu vào cache: chỉ lưu specs tĩnh, KHÔNG lưu stockStatus
+      // (tránh cache stockStatus cũ gây lỗi ngày hôm sau)
+      const { stockStatus: _skip2, ...specsToCache } = specs;
+      specCache.set(p.link, specsToCache);
       fetched++;
       await sleep(600);
     }
@@ -716,9 +724,10 @@ async function loadSpecCacheFromSheet(sheets) {
       const cpu=row[6]||'', ram=row[7]||'', storage=row[8]||'';
       const screen=row[9]||'', gpu=row[10]||'', weight=row[11]||'';
       // Cache specs + stockStatus (col S = index 18)
-      const stockStatus = row[18] || '';
-      if (cpu||ram||storage||screen||gpu||weight||stockStatus) {
-        cache.set(link, { cpu, ram, storage, screen, gpu, weight, stockStatus });
+      // KHONG load stockStatus vào cache — stockStatus thay đổi hàng ngày,
+      // phải detect lại từ listing/detail page mỗi lần scrape.
+      if (cpu||ram||storage||screen||gpu||weight) {
+        cache.set(link, { cpu, ram, storage, screen, gpu, weight });
       }
     });
 
@@ -915,6 +924,7 @@ async function writeToSheet(sheets, allProducts) {
   console.error('💥 Fatal:', err);
   process.exit(1);
 });
+
 
 
 
