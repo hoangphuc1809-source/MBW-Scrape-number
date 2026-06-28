@@ -1,5 +1,14 @@
 /**
- * multi_dealer_scraper.js  — v3.1
+ * multi_dealer_scraper.js  — v3.4
+ *
+ * FIX v3.4:
+ *  [BUG10] FPT hung process khi Cloudflare chặn detail page → safeGoto retry
+ *          loop không exit, toàn bộ job treo 45 phút rồi bị workflow kill.
+ *          Fix:
+ *           (a) FPT_DEADLINE_MS = 25 phút (riêng FPT, thay vì dùng chung DEADLINE_MS)
+ *           (b) Promise.race timeout bọc ngoài scrapeFPT() → tự thoát sau 28 phút
+ *           (c) FPT page setDefaultTimeout 20s (override 0=vô hạn của puppeteer)
+ *           (d) process.exit(0) kill-timer 60 phút → safety net cuối
  *
  * FIX v2.9:
  *  [BUG7] Bỏ giới hạn 30 specs/lần → fetch tất cả SP chưa có specs
@@ -46,6 +55,10 @@ const CREDS_PATH     = path.join(os.tmpdir(), 'scraper_gcp.json');
 // Deadline: dừng fetch specs sau 50 phút kể từ lúc start
 // Đảm bảo còn đủ thời gian ghi sheet trước khi GitHub Actions timeout (6h)
 const DEADLINE_MS    = 75 * 60 * 1000;
+// FPT-specific deadline cho enrichSpecs: 25 phút (FPT detail page hay bị CF chặn → chạy lâu)
+const FPT_DEADLINE_MS = 25 * 60 * 1000;
+// Timeout bọc ngoài scrapeFPT(): nếu toàn bộ FPT scrape treo quá 28 phút → reject
+const FPT_SCRAPE_TIMEOUT_MS = 28 * 60 * 1000;
 // Tăng version này mỗi khi thay đổi mapping FPT → force re-fetch toàn bộ FPT specs
 // CPS cache giữ nguyên (không bị ảnh hưởng)
 const FPT_MAPPING_VERSION = 3; // v3.0: scrape tất cả laptop FPT (1 URL duy nhất thay vì per-brand)
@@ -291,7 +304,8 @@ function mapSpecsCPS(raw) {
 }
 
 // ── enrichSpecs: fetch specs cho SP chưa có, dừng khi hết deadline ──
-async function enrichSpecs(products, specCache, fetchFn, page, startTime) {
+async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadlineMs) {
+  const effectiveDeadline = deadlineMs || DEADLINE_MS;
   let fetched = 0;
   for (const p of products) {
     if (specCache.has(p.link)) {
@@ -302,8 +316,8 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime) {
       Object.assign(p, cachedSpecs);
     } else {
       // Kiểm tra deadline trước khi fetch
-      if (Date.now() - startTime > DEADLINE_MS) {
-        console.log(`    ⏱ Deadline reached — dừng fetch specs`);
+      if (Date.now() - startTime > effectiveDeadline) {
+        console.log(`    ⏱ Deadline reached (${Math.round(effectiveDeadline/60000)}m) — dừng fetch specs`);
         break;
       }
       const specs = await fetchFn(page, p.link);
@@ -621,7 +635,7 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       console.log(`    🔍 body: ${diag.bodySnippet}`);
     }
   }
-  await enrichSpecs(products, specCache, fetchSpecsFPT, page, startTime);
+  await enrichSpecs(products, specCache, fetchSpecsFPT, page, startTime, FPT_DEADLINE_MS);
   return products;
 }
 
@@ -817,9 +831,18 @@ async function writeToSheet(sheets, allProducts) {
 }
 
 // ── MAIN ──────────────────────────────────────────────────
+// Safety net: nếu toàn bộ process treo quá 60 phút → force exit
+// Ngăn workflow GitHub Actions bị hang 90 phút rồi fail do timeout
+const PROCESS_KILL_TIMEOUT_MS = 60 * 60 * 1000;
+const killTimer = setTimeout(() => {
+  console.error(`\n💀 Process kill-timer (${PROCESS_KILL_TIMEOUT_MS/60000} phút) — force exit để tránh workflow timeout`);
+  process.exit(1);
+}, PROCESS_KILL_TIMEOUT_MS);
+killTimer.unref(); // Không giữ event loop nếu process kết thúc bình thường trước đó
+
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.3');
+  console.log('🚀 Multi-Dealer Scraper v3.4');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -865,16 +888,28 @@ async function writeToSheet(sheets, allProducts) {
       let pageFPT = await browser.newPage();
       await pageFPT.setViewport({ width: 1280, height: 900 });
       await pageFPT.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+      // v3.4: đặt timeout mặc định cho tất cả operation trên FPT page
+      // Puppeteer default = 0 (vô hạn) → nếu CF chặn 1 page.evaluate/waitForSelector
+      // thì block mãi mãi. 20s đủ cho normal page, bắt buộc timeout nếu bị chặn.
+      pageFPT.setDefaultTimeout(20000);
+      pageFPT.setDefaultNavigationTimeout(30000);
       // v3.0: scrape TẤT CẢ laptop qua 1 URL tổng thay vì loop per-brand
       // → lấy đủ 400+ products, không bỏ sót brand, pagination hoạt động tốt hơn
+      // v3.4: Promise.race với FPT_SCRAPE_TIMEOUT_MS → nếu toàn bộ FPT treo thì tự thoát
       try {
         const fptAllBrand = { name: 'All', fptUrl: FPT_ALL_URL };
-        const products = await scrapeFPT(pageFPT, fptAllBrand, specCache, startTime);
+        const fptTimeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`FPT scrape timeout sau ${FPT_SCRAPE_TIMEOUT_MS/60000} phút`)), FPT_SCRAPE_TIMEOUT_MS)
+        );
+        const products = await Promise.race([
+          scrapeFPT(pageFPT, fptAllBrand, specCache, startTime),
+          fptTimeoutPromise,
+        ]);
         allProducts.push(...products);
       } catch (e) {
         console.log(`    💥 FPT All lỗi: ${e.message.substring(0,100)}`);
       }
-      await pageFPT.close();
+      await pageFPT.close().catch(() => {});
     } else {
       console.log('\n═══ FPT Retail ═══ (skip — không trong SCRAPE_DEALERS)');
     }
