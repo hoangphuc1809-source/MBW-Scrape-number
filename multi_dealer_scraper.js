@@ -1,5 +1,9 @@
 /**
- * multi_dealer_scraper.js  — v3.4
+ * multi_dealer_scraper.js  — v3.4.1
+ *
+ * FIX v3.4.1:
+ *  [BUG11] Process không exit sau khi xong — googleapis/puppeteer giữ event
+ *          loop qua HTTP keep-alive + Chrome subprocess → thêm process.exit(0)
  *
  * FIX v3.4:
  *  [BUG10] FPT hung process khi Cloudflare chặn detail page → safeGoto retry
@@ -842,7 +846,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4');
+  console.log('🚀 Multi-Dealer Scraper v3.4.1');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -955,6 +959,9 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
   const elapsed = Math.round((Date.now()-startTime)/1000);
   console.log(`\n✅ Xong trong ${Math.floor(elapsed/60)}p${elapsed%60}s`);
   fs.unlinkSync(CREDS_PATH);
+  // v3.4.1: force exit sau khi xong — googleapis/puppeteer giữ event loop
+  // sống vô thời hạn qua HTTP keep-alive connections và Chrome subprocess.
+  process.exit(0);
 })().catch(err => {
   console.error('💥 Fatal:', err);
   process.exit(1);
