@@ -1932,8 +1932,14 @@ function buildDerivedData(rows) {
   // ── Build allUnique: all historical models, latest price per (dealer+model) ──
   // Strategy: start with allToday (has todayPrice, prevPrice, etc.)
   // Then add stale models from history that didn't appear today
-  // Build seenTodayKeys từ todayRows RAW (trước filter) — tránh mất model có row hôm nay nhưng giá=0
-  const seenTodayKeys = new Set(todayRows.map(r => (r[2]?.trim()||'').toLowerCase() + '|' + (r[3]?.trim()||'').toLowerCase()));
+  // Build seenTodayKeys — CHỈ tính là "có data hôm nay" nếu giá > 0.
+  // (Trước đây tính cả row giá=0 → khi scraper ghi placeholder "bị bỏ sót/ngừng
+  // kinh doanh" với giá=0 cho SKU mất khỏi listing, model đó sẽ biến mất khỏi
+  // cả 2 nhóm fresh/stale thay vì hiện badge cảnh báo như mong muốn.)
+  const seenTodayKeys = new Set(
+    todayRows.filter(r => parsePrice(r[5]) || parsePrice(r[4]))
+             .map(r => (r[2]?.trim()||'').toLowerCase() + '|' + (r[3]?.trim()||'').toLowerCase())
+  );
   
   // Collect latest row for each (dealer, model) not in today
   const staleMap = {}; // key => {row, date}

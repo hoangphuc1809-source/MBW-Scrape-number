@@ -339,12 +339,15 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
   if (fetched > 0) console.log(`    → Fetched specs: ${fetched} SP mới`);
 }
 
-// ── FIX #2: SKU MBW rớt khỏi listing hôm nay — thay vì im lặng biến mất, ────
-// ghé thẳng trang chi tiết để xác nhận "Ngừng kinh doanh" hay chỉ là lỗi
-// scrape tạm thời, rồi ghi status rõ ràng vào sheet.
-const MBW_MISSING_CHECK_CAP = 20; // giới hạn số SP check/lần để không kéo dài job
+// ── FIX #2: SKU rớt khỏi listing hôm nay (mọi dealer) — thay vì im lặng ────
+// biến mất, ghé thẳng trang chi tiết để phân biệt 3 trường hợp:
+//   (a) Ngừng kinh doanh / hết hàng thật  → đúng như kỳ vọng, không phải bug
+//   (b) SP vẫn còn bán bình thường trên web → XÁC NHẬN đây là lỗi scrape thật
+//       (vd: FPT B85LNPA 06/07 — web vẫn bán nhưng bị bỏ sót ở trang listing)
+//   (c) Trang lỗi/không tải được → cần soát lại thủ công
+const MISSING_CHECK_CAP = 20; // giới hạn số SP check/lần/dealer để không kéo dài job
 
-async function getMbwMissingCandidates(sheets, todayLinks) {
+async function getMissingCandidates(sheets, dealerName, todayLinks) {
   try {
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
@@ -355,15 +358,16 @@ async function getMbwMissingCandidates(sheets, todayLinks) {
       const [dd, mm, yyyy] = (d || '').split('/').map(Number);
       return (dd && mm && yyyy) ? new Date(yyyy, mm - 1, dd) : null;
     };
-    // SKU đã từng được xác nhận "Ngừng kinh doanh" ở bất kỳ ngày nào → bỏ qua,
-    // không check lại mỗi ngày nữa (đỡ tốn thời gian job)
-    const confirmedDiscontinued = new Set(
-      rows.filter(r => r[3] === 'MBW' && r[18] === 'Ngừng kinh doanh').map(r => r[17])
+    // SKU đã từng được xác nhận "Ngừng kinh doanh"/"Hết hàng" → bỏ qua, không
+    // check lại mỗi ngày nữa (đỡ tốn thời gian job). SKU dạng "bị bỏ sót khi
+    // scrape" thì VẪN check lại mỗi ngày vì đó là lỗi cần theo dõi tiếp.
+    const confirmedGone = new Set(
+      rows.filter(r => r[3] === dealerName && ['Ngừng kinh doanh','Hết hàng'].includes(r[18]))
+          .map(r => r[17])
     );
-    // Tìm ngày MBW gần nhất trước hôm nay
     let latestDate = null, latestDt = null;
     rows.forEach(r => {
-      if (r[3] !== 'MBW' || !r[0]) return;
+      if (r[3] !== dealerName || !r[0]) return;
       const dt = parseVN(r[0]);
       if (dt && (!latestDt || dt > latestDt)) { latestDt = dt; latestDate = r[0]; }
     });
@@ -371,51 +375,56 @@ async function getMbwMissingCandidates(sheets, todayLinks) {
     const candidates = [];
     const seen = new Set();
     rows.forEach(r => {
-      if (r[3] !== 'MBW' || r[0] !== latestDate) return;
+      if (r[3] !== dealerName || r[0] !== latestDate) return;
       const link = r[17];
       if (!link || seen.has(link)) return;
       seen.add(link);
-      if (todayLinks.has(link)) return;          // vẫn còn trong listing hôm nay
-      if (confirmedDiscontinued.has(link)) return; // đã xác nhận trước đó rồi
+      if (todayLinks.has(link)) return;
+      if (confirmedGone.has(link)) return;
       candidates.push({ link, name: r[4] || '', brand: r[5] || '' });
     });
     return candidates;
   } catch (e) {
-    console.log(`⚠ getMbwMissingCandidates lỗi: ${e.message}`);
+    console.log(`⚠ getMissingCandidates(${dealerName}) lỗi: ${e.message}`);
     return [];
   }
 }
 
-async function checkMissingMbwProducts(browser, candidates, specCache) {
+async function checkMissingProducts(browser, dealerName, candidates, specCache) {
   if (candidates.length === 0) return [];
-  const toCheck = candidates.slice(0, MBW_MISSING_CHECK_CAP);
-  if (candidates.length > MBW_MISSING_CHECK_CAP) {
-    console.log(`    ℹ ${candidates.length} SP mất khỏi listing, chỉ check ${MBW_MISSING_CHECK_CAP} SP/lần (phần còn lại sẽ check ở lần chạy sau)`);
+  const toCheck = candidates.slice(0, MISSING_CHECK_CAP);
+  if (candidates.length > MISSING_CHECK_CAP) {
+    console.log(`    ℹ [${dealerName}] ${candidates.length} SP mất khỏi listing, chỉ check ${MISSING_CHECK_CAP} SP/lần (còn lại check ở lần chạy sau)`);
   }
   const out = [];
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 900 });
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-  await enableProxyInterception(page, MBW_REAL_HOST, 'mbw');
+  const isMBW = dealerName === 'MBW';
+  if (isMBW) await enableProxyInterception(page, MBW_REAL_HOST, 'mbw');
 
   for (const c of toCheck) {
-    const url = PROXY_HOST ? c.link.replace(`https://${MBW_REAL_HOST}`, MBW_BASE) : c.link;
-    let status = 'Mất khỏi listing - cần kiểm tra thủ công';
+    const url = isMBW && PROXY_HOST ? c.link.replace(`https://${MBW_REAL_HOST}`, MBW_BASE) : c.link;
+    let status = 'Trang không tải đủ nội dung - cần kiểm tra thủ công';
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
       await sleep(1200);
       const bodyText = await page.evaluate(() => document.body.innerText || '').catch(() => '');
-      if (/ngừng\s*kinh\s*doanh/i.test(bodyText)) {
+      if (/ngừng\s*kinh\s*doanh|ngừng sản xuất|không tìm thấy sản phẩm|sản phẩm không tồn tại/i.test(bodyText)) {
         status = 'Ngừng kinh doanh';
-      } else if (bodyText.length < 300) {
-        status = 'Trang không tải đủ nội dung - cần kiểm tra thủ công';
+      } else if (/tạm hết hàng|đã hết hàng|hàng sắp về/i.test(bodyText)) {
+        status = 'Hết hàng';
+      } else if (bodyText.length >= 300) {
+        // Trang tải bình thường, không thấy dấu hiệu ngừng bán/hết hàng
+        // → SP thực sự vẫn đang bán, chứng tỏ đây là lỗi scrape THẬT
+        status = 'Còn hàng - bị bỏ sót khi scrape (lỗi thật, cần kiểm tra thuật toán tải trang)';
       }
     } catch (e) {
       status = 'Không tải được trang - cần kiểm tra thủ công';
     }
     const spec = specCache.get(c.link) || {};
     out.push({
-      dealer: 'MBW', name: c.name, brand: c.brand,
+      dealer: dealerName, name: c.name, brand: c.brand,
       cpu: spec.cpu || '', screen: spec.screen || '', gpu: spec.gpu || '', weight: spec.weight || '',
       ram: spec.ram || '', storage: spec.storage || '',
       origPrice: 0, salePrice: 0, discount: '', sold: '', rating: '',
@@ -424,7 +433,9 @@ async function checkMissingMbwProducts(browser, candidates, specCache) {
     await sleep(600);
   }
   await page.close().catch(() => {});
-  console.log(`    → Đã kiểm tra ${toCheck.length} SP mất khỏi listing: ${out.filter(p=>p.stockStatus==='Ngừng kinh doanh').length} Ngừng kinh doanh, ${out.filter(p=>p.stockStatus!=='Ngừng kinh doanh').length} cần kiểm tra thêm`);
+  const realMiss = out.filter(p => p.stockStatus.startsWith('Còn hàng - bị bỏ sót')).length;
+  const gone     = out.filter(p => p.stockStatus === 'Ngừng kinh doanh' || p.stockStatus === 'Hết hàng').length;
+  console.log(`    → [${dealerName}] Đã kiểm tra ${toCheck.length} SP mất khỏi listing: ${gone} ngừng/hết hàng thật, ${realMiss} LỖI SCRAPE THẬT (vẫn còn bán), ${toCheck.length-gone-realMiss} cần kiểm tra thêm`);
   return out;
 }
 
@@ -1025,12 +1036,12 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
         // FIX #2: SP nào hôm qua có mà hôm nay không thấy trong listing nữa
         // → ghé trang chi tiết xác nhận Ngừng kinh doanh thay vì để im lặng mất tích
-        const todayLinks = new Set(mbwProducts.map(p => p.link));
-        const missingCandidates = await getMbwMissingCandidates(sheets, todayLinks);
-        if (missingCandidates.length > 0) {
-          console.log(`    🔍 ${missingCandidates.length} SP MBW mất khỏi listing hôm nay — đang kiểm tra...`);
-          const missingChecked = await checkMissingMbwProducts(browser, missingCandidates, specCache);
-          allProducts.push(...missingChecked);
+        const todayLinksMBW = new Set(mbwProducts.map(p => p.link));
+        const missingCandidatesMBW = await getMissingCandidates(sheets, 'MBW', todayLinksMBW);
+        if (missingCandidatesMBW.length > 0) {
+          console.log(`    🔍 ${missingCandidatesMBW.length} SP MBW mất khỏi listing hôm nay — đang kiểm tra...`);
+          const missingCheckedMBW = await checkMissingProducts(browser, 'MBW', missingCandidatesMBW, specCache);
+          allProducts.push(...missingCheckedMBW);
         }
       } catch (e) {
         console.log(`    💥 MBW lỗi: ${e.message.substring(0,100)}`);
@@ -1063,6 +1074,15 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
           fptTimeoutPromise,
         ]);
         allProducts.push(...products);
+
+        // FIX #2: SP FPT nào hôm qua có mà hôm nay không thấy trong listing
+        const todayLinksFPT = new Set(products.map(p => p.link));
+        const missingCandidatesFPT = await getMissingCandidates(sheets, 'FPT Retail', todayLinksFPT);
+        if (missingCandidatesFPT.length > 0) {
+          console.log(`    🔍 ${missingCandidatesFPT.length} SP FPT mất khỏi listing hôm nay — đang kiểm tra...`);
+          const missingCheckedFPT = await checkMissingProducts(browser, 'FPT Retail', missingCandidatesFPT, specCache);
+          allProducts.push(...missingCheckedFPT);
+        }
       } catch (e) {
         console.log(`    💥 FPT All lỗi: ${e.message.substring(0,100)}`);
       }
@@ -1077,10 +1097,12 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
       let pageCPS = await browser.newPage();
       await pageCPS.setViewport({ width: 1280, height: 900 });
       await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+      const todayLinksCPS = new Set();
       for (const brand of BRANDS) {
         try {
           const products = await scrapeCPS(pageCPS, brand, specCache, startTime);
           allProducts.push(...products);
+          products.forEach(p => todayLinksCPS.add(p.link));
         } catch (e) {
           console.log(`    💥 ${brand.name} lỗi: ${e.message.substring(0,100)}`);
           try { await pageCPS.close(); } catch(_) {}
@@ -1091,6 +1113,14 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
         await sleep(800);
       }
       await pageCPS.close();
+
+      // FIX #2: SP CPS nào hôm qua có mà hôm nay không thấy trong listing
+      const missingCandidatesCPS = await getMissingCandidates(sheets, 'CellPhone S', todayLinksCPS);
+      if (missingCandidatesCPS.length > 0) {
+        console.log(`    🔍 ${missingCandidatesCPS.length} SP CPS mất khỏi listing hôm nay — đang kiểm tra...`);
+        const missingCheckedCPS = await checkMissingProducts(browser, 'CellPhone S', missingCandidatesCPS, specCache);
+        allProducts.push(...missingCheckedCPS);
+      }
     } else {
       console.log('\n═══ CellPhone S ═══ (skip — không trong SCRAPE_DEALERS)');
     }
