@@ -339,6 +339,95 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
   if (fetched > 0) console.log(`    → Fetched specs: ${fetched} SP mới`);
 }
 
+// ── FIX #2: SKU MBW rớt khỏi listing hôm nay — thay vì im lặng biến mất, ────
+// ghé thẳng trang chi tiết để xác nhận "Ngừng kinh doanh" hay chỉ là lỗi
+// scrape tạm thời, rồi ghi status rõ ràng vào sheet.
+const MBW_MISSING_CHECK_CAP = 20; // giới hạn số SP check/lần để không kéo dài job
+
+async function getMbwMissingCandidates(sheets, todayLinks) {
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!A2:S`,
+    });
+    const rows = res.data.values || [];
+    const parseVN = (d) => {
+      const [dd, mm, yyyy] = (d || '').split('/').map(Number);
+      return (dd && mm && yyyy) ? new Date(yyyy, mm - 1, dd) : null;
+    };
+    // SKU đã từng được xác nhận "Ngừng kinh doanh" ở bất kỳ ngày nào → bỏ qua,
+    // không check lại mỗi ngày nữa (đỡ tốn thời gian job)
+    const confirmedDiscontinued = new Set(
+      rows.filter(r => r[3] === 'MBW' && r[18] === 'Ngừng kinh doanh').map(r => r[17])
+    );
+    // Tìm ngày MBW gần nhất trước hôm nay
+    let latestDate = null, latestDt = null;
+    rows.forEach(r => {
+      if (r[3] !== 'MBW' || !r[0]) return;
+      const dt = parseVN(r[0]);
+      if (dt && (!latestDt || dt > latestDt)) { latestDt = dt; latestDate = r[0]; }
+    });
+    if (!latestDate) return [];
+    const candidates = [];
+    const seen = new Set();
+    rows.forEach(r => {
+      if (r[3] !== 'MBW' || r[0] !== latestDate) return;
+      const link = r[17];
+      if (!link || seen.has(link)) return;
+      seen.add(link);
+      if (todayLinks.has(link)) return;          // vẫn còn trong listing hôm nay
+      if (confirmedDiscontinued.has(link)) return; // đã xác nhận trước đó rồi
+      candidates.push({ link, name: r[4] || '', brand: r[5] || '' });
+    });
+    return candidates;
+  } catch (e) {
+    console.log(`⚠ getMbwMissingCandidates lỗi: ${e.message}`);
+    return [];
+  }
+}
+
+async function checkMissingMbwProducts(browser, candidates, specCache) {
+  if (candidates.length === 0) return [];
+  const toCheck = candidates.slice(0, MBW_MISSING_CHECK_CAP);
+  if (candidates.length > MBW_MISSING_CHECK_CAP) {
+    console.log(`    ℹ ${candidates.length} SP mất khỏi listing, chỉ check ${MBW_MISSING_CHECK_CAP} SP/lần (phần còn lại sẽ check ở lần chạy sau)`);
+  }
+  const out = [];
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 900 });
+  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+  await enableProxyInterception(page, MBW_REAL_HOST, 'mbw');
+
+  for (const c of toCheck) {
+    const url = PROXY_HOST ? c.link.replace(`https://${MBW_REAL_HOST}`, MBW_BASE) : c.link;
+    let status = 'Mất khỏi listing - cần kiểm tra thủ công';
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      await sleep(1200);
+      const bodyText = await page.evaluate(() => document.body.innerText || '').catch(() => '');
+      if (/ngừng\s*kinh\s*doanh/i.test(bodyText)) {
+        status = 'Ngừng kinh doanh';
+      } else if (bodyText.length < 300) {
+        status = 'Trang không tải đủ nội dung - cần kiểm tra thủ công';
+      }
+    } catch (e) {
+      status = 'Không tải được trang - cần kiểm tra thủ công';
+    }
+    const spec = specCache.get(c.link) || {};
+    out.push({
+      dealer: 'MBW', name: c.name, brand: c.brand,
+      cpu: spec.cpu || '', screen: spec.screen || '', gpu: spec.gpu || '', weight: spec.weight || '',
+      ram: spec.ram || '', storage: spec.storage || '',
+      origPrice: 0, salePrice: 0, discount: '', sold: '', rating: '',
+      link: c.link, stockStatus: status,
+    });
+    await sleep(600);
+  }
+  await page.close().catch(() => {});
+  console.log(`    → Đã kiểm tra ${toCheck.length} SP mất khỏi listing: ${out.filter(p=>p.stockStatus==='Ngừng kinh doanh').length} Ngừng kinh doanh, ${out.filter(p=>p.stockStatus!=='Ngừng kinh doanh').length} cần kiểm tra thêm`);
+  return out;
+}
+
 // ── SCRAPER 1 — MBW ──────────────────────────────────────
 async function scrapeMBW(page) {
   console.log('  [MBW] Trang tổng /laptop');
@@ -758,6 +847,38 @@ async function loadSpecCacheFromSheet(sheets) {
   return cache;
 }
 
+// ── FIX #1: cảnh báo khi số SP scrape được giảm bất thường so với ────────
+// ngày gần nhất (dấu hiệu vòng lặp "Xem thêm" dừng sớm / site load chậm)
+function buildScrapeHealthNotes(existingRows, newRows, scrapeDealerNames) {
+  const notes = [];
+  const parseVN = (d) => {
+    const [dd, mm, yyyy] = (d || '').split('/').map(Number);
+    return (dd && mm && yyyy) ? new Date(yyyy, mm - 1, dd) : null;
+  };
+  for (const dealerName of scrapeDealerNames) {
+    const countByDate = {};
+    existingRows.forEach(r => {
+      if (r[3] !== dealerName || !r[0]) return;
+      countByDate[r[0]] = (countByDate[r[0]] || 0) + 1;
+    });
+    const dates = Object.keys(countByDate)
+      .map(d => ({ d, dt: parseVN(d) }))
+      .filter(x => x.dt)
+      .sort((a, b) => a.dt - b.dt);
+    if (dates.length === 0) continue;
+    const latestDate  = dates[dates.length - 1].d;
+    const latestCount = countByDate[latestDate];
+    const todayCount  = newRows.filter(r => r[3] === dealerName).length;
+    // Chỉ cảnh báo khi baseline đủ lớn (tránh false-positive lúc mới có ít data)
+    // và giảm ≥15% — ngưỡng ước tính cho phép dao động tự nhiên (SP hết hàng lẻ tẻ)
+    if (latestCount >= 5 && todayCount < latestCount * 0.85) {
+      const pct = Math.round((1 - todayCount / latestCount) * 100);
+      notes.push(`⚠ ${dealerName}: ${todayCount} SP hôm nay vs ${latestCount} SP ngày ${latestDate} (giảm ${pct}%) — kiểm tra xem có bị dừng sớm khi load "Xem thêm" không`);
+    }
+  }
+  return notes;
+}
+
 // ── Google Sheets: ghi data ───────────────────────────────
 async function writeToSheet(sheets, allProducts) {
   const today   = new Date();
@@ -799,6 +920,16 @@ async function writeToSheet(sheets, allProducts) {
     return;
   }
 
+  // FIX #1: kiểm tra tụt số lượng SP bất thường trước khi ghi (vẫn ghi bình
+  // thường — chỉ cảnh báo để không bị bỏ sót âm thầm như trước đây)
+  const healthNotes = buildScrapeHealthNotes(existingRows, newRows, SCRAPE_DEALER_NAMES);
+  if (healthNotes.length > 0) {
+    console.log('\n🚨 CẢNH BÁO SỐ LƯỢNG SP GIẢM BẤT THƯỜNG:');
+    healthNotes.forEach(n => console.log('   ' + n));
+  } else {
+    console.log(`✅ Health check: số lượng SP mỗi dealer bình thường (${[...SCRAPE_DEALER_NAMES].join(', ')})`);
+  }
+
   await sheets.spreadsheets.values.clear({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A2:R`,
@@ -827,6 +958,18 @@ async function writeToSheet(sheets, allProducts) {
     range: `${SHEET_NAME}!T1`,  // T1: FPT mapping version
     valueInputOption: 'RAW',
     requestBody: { values: [[FPT_MAPPING_VERSION]] },
+  });
+
+  // FIX #1: ghi health note vào U1 — mở sheet lên là thấy ngay lần chạy gần nhất
+  // có bị tụt số lượng SP bất thường không, khỏi phải mò log GitHub Actions
+  const healthNote = healthNotes.length > 0
+    ? `[${dateStr} ${timeStr}] ${healthNotes.join(' | ')}`
+    : `[${dateStr} ${timeStr}] ✅ OK — số lượng SP bình thường`;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!U1`,  // U1: Scrape health note (lần chạy gần nhất)
+    valueInputOption: 'RAW',
+    requestBody: { values: [[healthNote]] },
   });
 
   const missingSpecs = newRows.filter(r => !r[6] && !r[7]).length;
@@ -879,6 +1022,16 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
         console.log(`    → ${mbwProducts.length} SP tổng MBW`);
         allProducts.push(...mbwProducts);
         await pageMBW.close();
+
+        // FIX #2: SP nào hôm qua có mà hôm nay không thấy trong listing nữa
+        // → ghé trang chi tiết xác nhận Ngừng kinh doanh thay vì để im lặng mất tích
+        const todayLinks = new Set(mbwProducts.map(p => p.link));
+        const missingCandidates = await getMbwMissingCandidates(sheets, todayLinks);
+        if (missingCandidates.length > 0) {
+          console.log(`    🔍 ${missingCandidates.length} SP MBW mất khỏi listing hôm nay — đang kiểm tra...`);
+          const missingChecked = await checkMissingMbwProducts(browser, missingCandidates, specCache);
+          allProducts.push(...missingChecked);
+        }
       } catch (e) {
         console.log(`    💥 MBW lỗi: ${e.message.substring(0,100)}`);
       }
