@@ -1,5 +1,14 @@
 /**
- * multi_dealer_scraper.js  — v3.4.1
+ * multi_dealer_scraper.js  — v3.4.2
+ *
+ * FIX v3.4.2:
+ *  [BUG12] Process crash hoàn toàn (exit code 1, mất sạch data lần chạy) do
+ *          Puppeteer's internal FrameManager.initialize() (#createIsolatedWorld)
+ *          ném ProtocolError "addScriptToEvaluateOnNewDocument timed out" khi 1
+ *          iframe con (ads/chat widget) trên trang CPS bị treo. Lỗi này là
+ *          unhandled rejection TÁCH BIỆT khỏi mọi await chain/try-catch của
+ *          code này → Node 15+ tự kill process. Fix: process.on('unhandledRejection'/
+ *          'uncaughtException') ở đầu file, log rồi tiếp tục thay vì crash.
  *
  * FIX v3.4.1:
  *  [BUG11] Process không exit sau khi xong — googleapis/puppeteer giữ event
@@ -35,6 +44,23 @@ const { google }   = require('googleapis');
 const fs           = require('fs');
 const path         = require('path');
 const os           = require('os');
+
+// ── FIX v3.4.2 [BUG12] ────────────────────────────────────
+// Puppeteer tự khởi tạo "isolated world" ngầm cho MỌI frame con mới xuất
+// hiện trên trang (iframe ads/chat widget/tracking...) qua FrameManager,
+// KHÔNG nằm trong bất kỳ await chain nào của code này. Khi 1 frame con bị
+// treo (VD trang CPS có nhiều iframe sau khi "Load thêm" 50+ lần), Puppeteer
+// ném ra 1 unhandled rejection HOÀN TOÀN TÁCH BIỆT khỏi try/catch của mình
+// (kể cả catch tổng ở cuối file) — Node 15+ mặc định CRASH TOÀN BỘ PROCESS
+// khi gặp unhandled rejection, xóa sạch data đã scrape được trong lần chạy.
+// Fix: chặn ở tầng process, log rồi bỏ qua thay vì để Node kill cả job.
+process.on('unhandledRejection', (reason) => {
+  const msg = (reason && reason.message) ? reason.message.substring(0, 150) : String(reason).substring(0, 150);
+  console.log(`⚠️ Unhandled rejection (bỏ qua, tiếp tục chạy): ${msg}`);
+});
+process.on('uncaughtException', (err) => {
+  console.log(`⚠️ Uncaught exception (bỏ qua, tiếp tục chạy): ${(err.message || String(err)).substring(0, 150)}`);
+});
 
 // ── Config ────────────────────────────────────────────────
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
@@ -1012,7 +1038,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.1');
+  console.log('🚀 Multi-Dealer Scraper v3.4.2');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
