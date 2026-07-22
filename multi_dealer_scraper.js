@@ -1,5 +1,19 @@
 /**
- * multi_dealer_scraper.js  — v3.4.2
+ * multi_dealer_scraper.js  — v3.4.3
+ *
+ * FIX v3.4.3:
+ *  [BUG13] CPS treo IM LẶNG (không throw, không reject, chỉ đứng im) ở
+ *          brand thứ 3-4 (thường là HP) sau nhiều vòng "Load thêm" liên tiếp
+ *          trên cùng 1 page — log dừng đột ngột ngay sau "→ N SP", không có
+ *          "Fetched specs" nào, job treo tới hết 60 phút kill-timer mới thoát
+ *          (2 lần liên tiếp trong ngày 22/07, luôn đúng lúc vào HP). Vì không
+ *          có exception nào được ném ra, cả fix v3.4.1 (rethrow fatal error)
+ *          và v3.4.2 (unhandledRejection guard) đều không cứu được trường hợp
+ *          này. Fix: bọc mỗi brand CPS trong Promise.race với timeout riêng
+ *          (10 phút/brand, giống pattern FPT_SCRAPE_TIMEOUT_MS đã có cho FPT)
+ *          — treo quá lâu thì bỏ ngang, đóng page cũ, tạo page mới, tiếp tục
+ *          brand sau. Thêm setDefaultTimeout/setDefaultNavigationTimeout cho
+ *          page CPS (trước đây chỉ FPT có).
  *
  * FIX v3.4.2:
  *  [BUG12] Process crash hoàn toàn (exit code 1, mất sạch data lần chạy) do
@@ -1038,7 +1052,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.2');
+  console.log('🚀 Multi-Dealer Scraper v3.4.3');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -1135,10 +1149,26 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
       let pageCPS = await browser.newPage();
       await pageCPS.setViewport({ width: 1280, height: 900 });
       await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+      pageCPS.setDefaultTimeout(20000);
+      pageCPS.setDefaultNavigationTimeout(30000);
       const todayLinksCPS = new Set();
+      // FIX v3.4.3 [BUG13]: CPS hay treo IM LẶNG (không throw, không timeout) ở
+      // brand thứ 3-4 sau nhiều vòng "Load thêm" liên tiếp trên cùng 1 page —
+      // page.goto()/evaluate() không bao giờ resolve/reject, chỉ có kill-timer
+      // 60 phút cuối cùng mới cứu được (log dừng đột ngột sau "→ N SP", không
+      // có "Fetched specs" nào). Fix: bọc mỗi brand trong Promise.race với
+      // timeout riêng — treo quá lâu thì bỏ ngang, đóng page cũ, tạo page mới,
+      // sang brand tiếp theo (giống pattern đã dùng cho FPT ở trên).
+      const CPS_BRAND_TIMEOUT_MS = 10 * 60 * 1000; // 10 phút/brand
       for (const brand of BRANDS) {
         try {
-          const products = await scrapeCPS(pageCPS, brand, specCache, startTime);
+          const cpsBrandTimeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`CPS ${brand.name} timeout sau ${CPS_BRAND_TIMEOUT_MS/60000} phút — page có thể đã treo`)), CPS_BRAND_TIMEOUT_MS)
+          );
+          const products = await Promise.race([
+            scrapeCPS(pageCPS, brand, specCache, startTime),
+            cpsBrandTimeout,
+          ]);
           allProducts.push(...products);
           products.forEach(p => todayLinksCPS.add(p.link));
         } catch (e) {
@@ -1147,6 +1177,8 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
           pageCPS = await browser.newPage();
           await pageCPS.setViewport({ width: 1280, height: 900 });
           await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+          pageCPS.setDefaultTimeout(20000);
+          pageCPS.setDefaultNavigationTimeout(30000);
         }
         await sleep(800);
       }
