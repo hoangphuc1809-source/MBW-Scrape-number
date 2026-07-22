@@ -1,5 +1,16 @@
 /**
- * multi_dealer_scraper.js  — v3.4.5
+ * multi_dealer_scraper.js  — v3.4.6
+ *
+ * FIX v3.4.6:
+ *  Route CPS (cellphones.com.vn) qua CÙNG Cloudflare Worker proxy đã dùng cho
+ *  MBW (đa-target, đã xác nhận worker deploy sẵn có route "cps" từ trước —
+ *  không cần đổi gì ở Cloudflare). Test giả thuyết BUG15 (v3.4.5): nghi
+ *  cellphones.com.vn rate-limit/soft-block IP datacenter của GitHub Actions
+ *  runner, khiến 4-5/6 brand CPS treo im lặng ngay lần goto đầu tới trang
+ *  chi tiết SP dù page hoàn toàn sạch (v3.4.4 đã loại được giả thuyết DOM/
+ *  memory tích lũy). Nếu route qua Worker (đổi IP nguồn sang Cloudflare edge)
+ *  giải quyết được hang → xác nhận đúng là site-side block. Nếu vẫn treo →
+ *  loại tiếp giả thuyết này, cần điều tra hướng khác.
  *
  * FIX v3.4.5:
  *  [BUG15] v3.4.4 (page mới mỗi brand) KHÔNG giải quyết được hang — thực tế
@@ -157,6 +168,15 @@ const MBW_REAL_HOST = 'www.thegioididong.com';
 const MBW_BASE = PROXY_HOST ? `${PROXY_HOST}/__proxy/mbw` : `https://${MBW_REAL_HOST}`;
 
 const MBW_URL = `${MBW_BASE}/laptop`;
+
+// FIX v3.4.6 [nghi vấn BUG15]: cellphones.com.vn nghi rate-limit/soft-block IP
+// runner GitHub Actions (xem lesson v3.4.5) — route CPS qua CÙNG Cloudflare
+// Worker proxy đã dùng cho MBW (đa-target, chỉ khác proxyKey), đổi IP nguồn
+// giống cách đã giải quyết MBW trước đó. Biến env vẫn tên MBW_PROXY_HOST vì
+// đây là 1 Worker chung cho nhiều dealer, không đổi tên để tránh phải sửa
+// GitHub Secret.
+const CPS_REAL_HOST = 'cellphones.com.vn';
+const CPS_BASE = PROXY_HOST ? `${PROXY_HOST}/__proxy/cps` : `https://${CPS_REAL_HOST}`;
 
 // Helper: gắn request interception lên 1 page để rewrite mọi request tới
 // `realHost` sang `proxyBase + /__proxy/<key>` + path gốc — cho phép các AJAX
@@ -332,7 +352,8 @@ function mapSpecsFPT(raw) {
 // ── CPS: fetch specs từ detail page ──────────────────────
 async function fetchSpecsCPS(page, url) {
   try {
-    const ok = await safeGoto(page, url);
+    const proxiedUrl = PROXY_HOST ? url.replace(`https://${CPS_REAL_HOST}`, CPS_BASE) : url;
+    const ok = await safeGoto(page, proxiedUrl);
     if (!ok) return {};
     await sleep(1200);
     // Detect stock status từ CPS detail page
@@ -500,10 +521,16 @@ async function checkMissingProducts(browser, dealerName, candidates, specCache) 
   await page.setViewport({ width: 1280, height: 900 });
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
   const isMBW = dealerName === 'MBW';
+  const isCPS = dealerName === 'CellPhone S';
   if (isMBW) await enableProxyInterception(page, MBW_REAL_HOST, 'mbw');
+  if (isCPS) await enableProxyInterception(page, CPS_REAL_HOST, 'cps');
 
   for (const c of toCheck) {
-    const url = isMBW && PROXY_HOST ? c.link.replace(`https://${MBW_REAL_HOST}`, MBW_BASE) : c.link;
+    let url = c.link;
+    if (PROXY_HOST) {
+      if (isMBW) url = c.link.replace(`https://${MBW_REAL_HOST}`, MBW_BASE);
+      if (isCPS) url = c.link.replace(`https://${CPS_REAL_HOST}`, CPS_BASE);
+    }
     let status = 'Trang không tải đủ nội dung - cần kiểm tra thủ công';
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
@@ -845,13 +872,17 @@ async function scrapeFPT(page, brand, specCache, startTime) {
 // ── SCRAPER 3 — CellPhone S ───────────────────────────────
 async function scrapeCPS(page, brand, specCache, startTime) {
   console.log(`  [CPS] ${brand.name}`);
-  // CPS không bị chặn IP datacenter → gọi trực tiếp, không cần proxy.
+  // FIX v3.4.6: route qua Cloudflare Worker proxy (xem comment CPS_BASE ở đầu
+  // file) để test giả thuyết cellphones.com.vn rate-limit/soft-block IP runner.
+  await enableProxyInterception(page, CPS_REAL_HOST, 'cps');
+  const listingUrl = PROXY_HOST ? brand.cpsUrl.replace(`https://${CPS_REAL_HOST}`, CPS_BASE) : brand.cpsUrl;
   try {
-    await page.goto(brand.cpsUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(listingUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
   } catch(e) {
     console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
     return [];
   }
+  if (PROXY_HOST) await sleep(3000); // qua proxy cần thêm thời gian render, giống MBW
   await sleep(2000);
 
   let clicks = 0;
@@ -1099,7 +1130,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.5');
+  console.log('🚀 Multi-Dealer Scraper v3.4.6');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
