@@ -1,5 +1,15 @@
 /**
- * multi_dealer_scraper.js  — v3.4.3
+ * multi_dealer_scraper.js  — v3.4.4
+ *
+ * FIX v3.4.4:
+ *  [BUG14] v3.4.3 (Promise.race timeout/brand) chỉ chữa TRIỆU CHỨNG: vẫn dùng
+ *          1 page CPS xuyên suốt cả 4 brand (Asus→Acer→Dell→HP) → DOM/memory
+ *          tích lũy dần qua hàng trăm lần "Load thêm" + điều hướng trang chi
+ *          tiết → tới brand thứ 3-4 trình duyệt bắt đầu treo. Thực tế đã thấy
+ *          Dell VÀ HP treo liên tiếp cùng 1 lần chạy (22/07) → 2×10 phút cộng
+ *          dồn với thời gian Asus/Acer, job vẫn chạm mốc kill-timer 60 phút
+ *          và fail. Fix gốc: mỗi brand CPS luôn dùng 1 page MỚI ngay từ đầu
+ *          (không đợi lỗi/timeout mới tạo lại) — mỗi brand bắt đầu "sạch".
  *
  * FIX v3.4.3:
  *  [BUG13] CPS treo IM LẶNG (không throw, không reject, chỉ đứng im) ở
@@ -1052,7 +1062,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.3');
+  console.log('🚀 Multi-Dealer Scraper v3.4.4');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -1146,21 +1156,25 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
     // ── CPS ──
     if (SCRAPE_DEALERS.has('CPS')) {
       console.log('\n═══ CellPhone S ═══');
-      let pageCPS = await browser.newPage();
-      await pageCPS.setViewport({ width: 1280, height: 900 });
-      await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-      pageCPS.setDefaultTimeout(20000);
-      pageCPS.setDefaultNavigationTimeout(30000);
       const todayLinksCPS = new Set();
-      // FIX v3.4.3 [BUG13]: CPS hay treo IM LẶNG (không throw, không timeout) ở
-      // brand thứ 3-4 sau nhiều vòng "Load thêm" liên tiếp trên cùng 1 page —
-      // page.goto()/evaluate() không bao giờ resolve/reject, chỉ có kill-timer
-      // 60 phút cuối cùng mới cứu được (log dừng đột ngột sau "→ N SP", không
-      // có "Fetched specs" nào). Fix: bọc mỗi brand trong Promise.race với
-      // timeout riêng — treo quá lâu thì bỏ ngang, đóng page cũ, tạo page mới,
-      // sang brand tiếp theo (giống pattern đã dùng cho FPT ở trên).
+      // FIX v3.4.3 [BUG13]: CPS hay treo IM LẶNG (không throw, không timeout) —
+      // log dừng đột ngột sau "→ N SP", không có "Fetched specs" nào, job treo
+      // tới hết kill-timer 60 phút. Fix ban đầu: Promise.race timeout 10 phút/brand.
+      // FIX v3.4.4 [BUG14]: v3.4.3 chỉ chữa TRIỆU CHỨNG — vẫn dùng 1 page CPS
+      // xuyên suốt cả 4 brand (Asus→Acer→Dell→HP), nên DOM/memory tích lũy dần
+      // qua hàng trăm lần "Load thêm" + điều hướng trang chi tiết → tới brand
+      // thứ 3-4 trình duyệt bắt đầu treo. Thực tế đã thấy Dell VÀ HP treo liên
+      // tiếp cùng 1 lần chạy → 2×10 phút cộng dồn với thời gian Asus/Acer suýt
+      // chạm luôn mốc kill-timer 60 phút, job vẫn fail. Fix gốc: mỗi brand luôn
+      // dùng 1 page MỚI từ đầu (không đợi lỗi mới tạo lại) — mỗi brand bắt đầu
+      // "sạch", giảm hẳn khả năng tích lũy dẫn đến treo.
       const CPS_BRAND_TIMEOUT_MS = 10 * 60 * 1000; // 10 phút/brand
       for (const brand of BRANDS) {
+        const pageCPS = await browser.newPage();
+        await pageCPS.setViewport({ width: 1280, height: 900 });
+        await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+        pageCPS.setDefaultTimeout(20000);
+        pageCPS.setDefaultNavigationTimeout(30000);
         try {
           const cpsBrandTimeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error(`CPS ${brand.name} timeout sau ${CPS_BRAND_TIMEOUT_MS/60000} phút — page có thể đã treo`)), CPS_BRAND_TIMEOUT_MS)
@@ -1173,16 +1187,11 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
           products.forEach(p => todayLinksCPS.add(p.link));
         } catch (e) {
           console.log(`    💥 ${brand.name} lỗi: ${e.message.substring(0,100)}`);
+        } finally {
           try { await pageCPS.close(); } catch(_) {}
-          pageCPS = await browser.newPage();
-          await pageCPS.setViewport({ width: 1280, height: 900 });
-          await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-          pageCPS.setDefaultTimeout(20000);
-          pageCPS.setDefaultNavigationTimeout(30000);
         }
         await sleep(800);
       }
-      await pageCPS.close();
 
       // FIX #2: SP CPS nào hôm qua có mà hôm nay không thấy trong listing
       const missingCandidatesCPS = await getMissingCandidates(sheets, 'CellPhone S', todayLinksCPS);
