@@ -166,12 +166,22 @@ async function scrollToBottom(page) {
   }
 }
 
+// Lỗi "fatal" nghĩa là page/frame/browser đã chết hẳn — retry thêm là vô ích,
+// phải ném lên để caller đóng page cũ + tạo page mới (xem main loop CPS/FPT).
+function isFatalPageError(e) {
+  return /detached Frame|Session closed|Target closed|Protocol error|Connection closed/i.test(e.message || '');
+}
+
 async function safeGoto(page, url) {
   for (let i = 0; i <= 2; i++) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
       return true;
     } catch (e) {
+      if (isFatalPageError(e)) {
+        console.log(`    💀 fatal page error, ngừng retry: ${e.message.substring(0,60)}`);
+        throw e; // propagate lên để scrapeCPS/scrapeFPT caller tạo page mới
+      }
       if (i === 2) { console.log(`    ⚠ goto failed: ${e.message.substring(0,60)}`); return false; }
       await sleep(2000);
     }
@@ -222,6 +232,7 @@ async function fetchSpecsFPT(page, url) {
     result.stockStatus = stockStatus;
     return result;
   } catch (e) {
+    if (isFatalPageError(e)) throw e; // page chết hẳn → propagate, không nuốt lỗi
     return {};
   }
 }
@@ -287,6 +298,7 @@ async function fetchSpecsCPS(page, url) {
     result.stockStatus = stockStatus;
     return result;
   } catch (e) {
+    if (isFatalPageError(e)) throw e; // page chết hẳn → propagate, không nuốt lỗi
     return {};
   }
 }
