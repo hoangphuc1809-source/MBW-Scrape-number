@@ -1,5 +1,20 @@
 /**
- * multi_dealer_scraper.js  — v3.4.4
+ * multi_dealer_scraper.js  — v3.4.5
+ *
+ * FIX v3.4.5:
+ *  [BUG15] v3.4.4 (page mới mỗi brand) KHÔNG giải quyết được hang — thực tế
+ *          22-23/07 thấy 4-5/6 brand CPS treo liên tiếp NGAY LẦN GOTO ĐẦU
+ *          TIÊN tới trang chi tiết SP dù page hoàn toàn mới, sạch. Loại được
+ *          giả thuyết "tích lũy DOM/memory". Nghi vấn hiện tại: cellphones.com.vn
+ *          rate-limit/soft-block IP runner GitHub Actions (kiểu WAF im lặng
+ *          không phản hồi, giống thegioididong.com/FPT đã gặp) — CẦN TEST
+ *          route CPS qua Cloudflare Worker proxy (đã có sẵn cho MBW) để xác
+ *          nhận. Trong lúc chờ: vấn đề cấp bách hơn là timeout CHỈ có ở CẤP
+ *          BRAND (10 phút) → 1 SP treo làm mất toàn bộ SP của cả brand (kể cả
+ *          listing data đã lấy xong) + tốn nguyên 10 phút mới cứu được.
+ *          Fix: thêm timeout CẤP TỪNG SẢN PHẨM (25s) trong enrichSpecs() —
+ *          treo thì bỏ qua đúng 1 SP đó (không cache), tiếp tục ngay SP kế
+ *          bằng cùng page, không cần đợi brand-level timeout.
  *
  * FIX v3.4.4:
  *  [BUG14] v3.4.3 (Promise.race timeout/brand) chỉ chữa TRIỆU CHỨNG: vẫn dùng
@@ -372,7 +387,18 @@ function mapSpecsCPS(raw) {
 // ── enrichSpecs: fetch specs cho SP chưa có, dừng khi hết deadline ──
 async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadlineMs) {
   const effectiveDeadline = deadlineMs || DEADLINE_MS;
+  // FIX v3.4.5 [BUG15]: v3.4.3/v3.4.4 chỉ có timeout ở CẤP BRAND (10 phút) —
+  // khi 1 SP treo câm (không lỗi, không phản hồi — nghi do site rate-limit/
+  // chặn IP runner, KHÔNG phải do browser/DOM vì đã test page hoàn toàn mới
+  // vẫn treo), phải đợi hết 10 phút mới "cứu" được VÀ MẤT LUÔN TOÀN BỘ SP
+  // của brand đó (kể cả data listing cơ bản đã lấy xong). Thực tế 22-23/07 đã
+  // thấy 4-5/6 brand CPS treo liên tiếp → gần cạn hết 60 phút kill-timer.
+  // Fix: timeout riêng ở CẤP TỪNG SẢN PHẨM (25s) — treo thì bỏ qua đúng 1 SP
+  // đó (không cache để mai thử lại), tiếp tục ngay SP kế tiếp bằng CÙNG page,
+  // không đợi tới brand-level timeout mới xử lý.
+  const PER_PRODUCT_TIMEOUT_MS = 25000;
   let fetched = 0;
+  let skipped = 0;
   for (const p of products) {
     if (specCache.has(p.link)) {
       // Copy specs từ cache NHƯNG KHÔNG override stockStatus:
@@ -386,7 +412,17 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
         console.log(`    ⏱ Deadline reached (${Math.round(effectiveDeadline/60000)}m) — dừng fetch specs`);
         break;
       }
-      const specs = await fetchFn(page, p.link);
+      const productTimeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('per-product timeout')), PER_PRODUCT_TIMEOUT_MS)
+      );
+      let specs;
+      try {
+        specs = await Promise.race([fetchFn(page, p.link), productTimeout]);
+      } catch (e) {
+        skipped++;
+        await sleep(600);
+        continue; // bỏ qua đúng 1 SP này, KHÔNG cache, KHÔNG mất cả brand
+      }
       // Khi fetch detail page: stockStatus từ detail page chính xác hơn listing
       // → dùng stockStatus từ detail page (override listing status)
       Object.assign(p, specs);
@@ -399,6 +435,7 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
     }
   }
   if (fetched > 0) console.log(`    → Fetched specs: ${fetched} SP mới`);
+  if (skipped > 0) console.log(`    ⏭ Bỏ qua ${skipped} SP (treo/timeout ${PER_PRODUCT_TIMEOUT_MS/1000}s mỗi SP, sẽ thử lại lần sau)`);
 }
 
 // ── FIX #2: SKU rớt khỏi listing hôm nay (mọi dealer) — thay vì im lặng ────
@@ -1062,7 +1099,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.4');
+  console.log('🚀 Multi-Dealer Scraper v3.4.5');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
