@@ -1,5 +1,26 @@
 /**
- * multi_dealer_scraper.js  — v3.4.8
+ * multi_dealer_scraper.js  — v3.4.9
+ *
+ * REVERT v3.4.9 [v3.4.6 was a regression]:
+ *  v3.4.6 routed CPS through the Cloudflare Worker proxy to test the "site
+ *  blocks runner IP" hypothesis. Result: not only did it fail to fix the
+ *  hangs, it made things worse — 6/6 brands failing — AND introduced a new,
+ *  distinct symptom: "Load thêm" click counts jumped to a suspiciously
+ *  uniform ~125-126 across different brands (Acer/HP/Lenovo/MSI), whereas
+ *  before v3.4.6 each brand had a reasonable, DIFFERENT count matching its
+ *  real catalog size (Asus 51, Acer 15, Dell 24, HP 24, Lenovo 34, MSI 16).
+ *  Identical counts across unrelated brands strongly suggests the proxy
+ *  broke CPS's cookie/session-based brand filtering (Worker rewrites Host/
+ *  Origin/Referer, strips cf-* headers, rewrites Set-Cookie domain) — likely
+ *  causing the origin to serve a generic/fallback view instead of the
+ *  correct brand-filtered page, or causing the "Load thêm" AJAX call to fail
+ *  silently while the button stays clickable, looping indefinitely.
+ *  MBW uses the identical proxy mechanism and remains fine — this is site-
+ *  specific behavior, not a flaw in the proxy code itself.
+ *  ACTION: CPS reverted to calling cellphones.com.vn directly, as before
+ *  15/06. PROXY_HOST / CPS_BASE kept in code but CPS_BASE is now hardcoded
+ *  to the direct URL and enableProxyInterception is no longer called for
+ *  CPS anywhere (scrapeCPS, fetchSpecsCPS, checkMissingProducts).
  *
  * FIX v3.4.8:
  *  [BUG17] Phát hiện quan trọng: writeToSheet() chỉ được gọi 1 LẦN Ở CUỐI
@@ -201,14 +222,23 @@ const MBW_BASE = PROXY_HOST ? `${PROXY_HOST}/__proxy/mbw` : `https://${MBW_REAL_
 
 const MBW_URL = `${MBW_BASE}/laptop`;
 
-// FIX v3.4.6 [nghi vấn BUG15]: cellphones.com.vn nghi rate-limit/soft-block IP
-// runner GitHub Actions (xem lesson v3.4.5) — route CPS qua CÙNG Cloudflare
-// Worker proxy đã dùng cho MBW (đa-target, chỉ khác proxyKey), đổi IP nguồn
-// giống cách đã giải quyết MBW trước đó. Biến env vẫn tên MBW_PROXY_HOST vì
-// đây là 1 Worker chung cho nhiều dealer, không đổi tên để tránh phải sửa
-// GitHub Secret.
+// FIX v3.4.9 [REVERT BUG15/v3.4.6]: v3.4.6 route CPS qua Cloudflare Worker
+// proxy để test giả thuyết "site chặn IP runner" — KẾT QUẢ: không chỉ không
+// fix được hang, mà số lần "Load thêm" mỗi brand tăng vọt lên ~125-126 lần
+// GIỐNG NHAU bất thường giữa các brand khác nhau (Acer/HP/Lenovo/MSI), trong
+// khi trước đó mỗi brand có số lần load hợp lý và KHÁC NHAU theo quy mô thật
+// (Asus 51, Acer 15, Dell 24, HP 24, Lenovo 34, MSI 16). Số liệu giống nhau
+// bất thường giữa nhiều brand là dấu hiệu proxy làm hỏng cookie/session lọc
+// theo brand của CPS (Worker rewrite Host/Origin/Referer + xóa cf-* headers,
+// rewrite Set-Cookie domain) → có thể khiến origin trả về 1 view fallback
+// chung (không lọc đúng brand) thay vì trang brand-cụ thể, hoặc khiến AJAX
+// "Load thêm" thất bại im lặng mà nút vẫn hiện ra để bấm tiếp vô hạn.
+// MBW dùng CÙNG cơ chế proxy vẫn ổn — khác site, khác cách site đó dùng
+// cookie/session, không có gì mâu thuẫn.
+// REVERT: CPS quay lại gọi trực tiếp cellphones.com.vn như trước 15/06.
+// KHÔNG dùng PROXY_HOST cho CPS nữa, dù env var vẫn set (chỉ áp dụng cho MBW).
 const CPS_REAL_HOST = 'cellphones.com.vn';
-const CPS_BASE = PROXY_HOST ? `${PROXY_HOST}/__proxy/cps` : `https://${CPS_REAL_HOST}`;
+const CPS_BASE = `https://${CPS_REAL_HOST}`; // luôn trực tiếp — không proxy
 
 // Helper: gắn request interception lên 1 page để rewrite mọi request tới
 // `realHost` sang `proxyBase + /__proxy/<key>` + path gốc — cho phép các AJAX
@@ -401,8 +431,8 @@ function mapSpecsFPT(raw) {
 // ── CPS: fetch specs từ detail page ──────────────────────
 async function fetchSpecsCPS(page, url) {
   try {
-    const proxiedUrl = PROXY_HOST ? url.replace(`https://${CPS_REAL_HOST}`, CPS_BASE) : url;
-    const ok = await safeGoto(page, proxiedUrl);
+    // v3.4.9: REVERT v3.4.6 — gọi trực tiếp, không qua proxy
+    const ok = await safeGoto(page, url);
     if (!ok) return {};
     await sleep(1200);
     // Detect stock status từ CPS detail page
@@ -570,16 +600,12 @@ async function checkMissingProducts(browser, dealerName, candidates, specCache) 
   await page.setViewport({ width: 1280, height: 900 });
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
   const isMBW = dealerName === 'MBW';
-  const isCPS = dealerName === 'CellPhone S';
   if (isMBW) await enableProxyInterception(page, MBW_REAL_HOST, 'mbw');
-  if (isCPS) await enableProxyInterception(page, CPS_REAL_HOST, 'cps');
+  // v3.4.9: CPS KHÔNG dùng proxy nữa (revert v3.4.6 — xem comment CPS_BASE)
 
   for (const c of toCheck) {
     let url = c.link;
-    if (PROXY_HOST) {
-      if (isMBW) url = c.link.replace(`https://${MBW_REAL_HOST}`, MBW_BASE);
-      if (isCPS) url = c.link.replace(`https://${CPS_REAL_HOST}`, CPS_BASE);
-    }
+    if (isMBW && PROXY_HOST) url = c.link.replace(`https://${MBW_REAL_HOST}`, MBW_BASE);
     let status = 'Trang không tải đủ nội dung - cần kiểm tra thủ công';
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
@@ -921,17 +947,16 @@ async function scrapeFPT(page, brand, specCache, startTime) {
 // ── SCRAPER 3 — CellPhone S ───────────────────────────────
 async function scrapeCPS(page, brand, specCache, startTime) {
   console.log(`  [CPS] ${brand.name}`);
-  // FIX v3.4.6: route qua Cloudflare Worker proxy (xem comment CPS_BASE ở đầu
-  // file) để test giả thuyết cellphones.com.vn rate-limit/soft-block IP runner.
-  await enableProxyInterception(page, CPS_REAL_HOST, 'cps');
-  const listingUrl = PROXY_HOST ? brand.cpsUrl.replace(`https://${CPS_REAL_HOST}`, CPS_BASE) : brand.cpsUrl;
+  // v3.4.9: REVERT v3.4.6 — CPS gọi trực tiếp cellphones.com.vn, KHÔNG qua
+  // proxy nữa (xem comment CPS_BASE ở đầu file: proxy làm "Load thêm" chạy
+  // loạn ~125-126 lần giống nhau ở mọi brand, nghi hỏng cookie/session lọc
+  // brand — regression, không phải fix).
   try {
-    await page.goto(listingUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(brand.cpsUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
   } catch(e) {
     console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
     return [];
   }
-  if (PROXY_HOST) await sleep(3000); // qua proxy cần thêm thời gian render, giống MBW
   await sleep(2000);
 
   let clicks = 0;
@@ -1208,7 +1233,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.8');
+  console.log('🚀 Multi-Dealer Scraper v3.4.9');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
