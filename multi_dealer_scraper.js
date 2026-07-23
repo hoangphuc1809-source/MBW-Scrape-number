@@ -1,7 +1,23 @@
 /**
- * multi_dealer_scraper.js  — v3.4.9
+ * multi_dealer_scraper.js  — v3.4.10
  *
- * REVERT v3.4.9 [v3.4.6 was a regression]:
+ * STOP-AND-STABILIZE v3.4.10 [23/07/2026 — theo yêu cầu Phuc, dừng điều tra]:
+ *  Bằng chứng cuối cùng loại bỏ MỌI giả thuyết hạ tầng: chuyển CPS sang
+ *  self-hosted (máy MSI, nhiều tài nguyên hơn hẳn ubuntu-latest) VẪN gặp
+ *  "detached Frame" giống hệt sau ~49 phút, và FPT (scraper ổn định từ lâu,
+ *  chạy sau CPS trên CÙNG máy) cũng dính lỗi tương tự ngay sau đó. Vậy lỗi
+ *  không phải do: cloud yếu, IP bị chặn, proxy, hay máy tự host yếu — mà là
+ *  vấn đề nội tại của việc điều hướng liên tục hàng trăm lần tới trang chi
+ *  tiết sản phẩm trong 1 session Puppeteer kéo dài (bất kể hạ tầng nào).
+ *  Quyết định: DỪNG vá thêm, ưu tiên phục hồi trạng thái ổn định.
+ *  enrichSpecs() giờ nhận thêm param skipNewFetch — khi true, KHÔNG điều
+ *  hướng sang trang chi tiết SP nữa, chỉ áp dụng specs đã có trong cache cho
+ *  SP đã biết. Áp dụng cho cả CPS và FPT (FPT cũng dính lỗi trong run này).
+ *  Đánh đổi: SP mới sẽ thiếu specs (cpu/ram/gpu/...) cho tới khi vấn đề gốc
+ *  được xử lý dứt điểm — nhưng listing (giá/tên/link/tình trạng) luôn lấy
+ *  được đầy đủ, ổn định, không còn treo/mất data toàn brand nữa.
+ *
+ * FIX v3.4.9:
  *  v3.4.6 routed CPS through the Cloudflare Worker proxy to test the "site
  *  blocks runner IP" hypothesis. Result: not only did it fail to fix the
  *  hangs, it made things worse — 6/6 brands failing — AND introduced a new,
@@ -485,7 +501,7 @@ function mapSpecsCPS(raw) {
 }
 
 // ── enrichSpecs: fetch specs cho SP chưa có, dừng khi hết deadline ──
-async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadlineMs) {
+async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadlineMs, skipNewFetch) {
   const effectiveDeadline = deadlineMs || DEADLINE_MS;
   // FIX v3.4.5 [BUG15]: v3.4.3/v3.4.4 chỉ có timeout ở CẤP BRAND (10 phút) —
   // khi 1 SP treo câm (không lỗi, không phản hồi — nghi do site rate-limit/
@@ -496,6 +512,19 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
   // Fix: timeout riêng ở CẤP TỪNG SẢN PHẨM (25s) — treo thì bỏ qua đúng 1 SP
   // đó (không cache để mai thử lại), tiếp tục ngay SP kế tiếp bằng CÙNG page,
   // không đợi tới brand-level timeout mới xử lý.
+  //
+  // FIX v3.4.10 [BUG16 — dừng điều tra, phục hồi ổn định, 23/07/2026]: đã xác
+  // nhận "detached Frame" xảy ra GIỐNG NHAU trên mọi hạ tầng (ubuntu-latest,
+  // proxy/không proxy, page mới/relaunch browser, VÀ CẢ self-hosted MSI —
+  // máy nhiều tài nguyên hơn hẳn vẫn treo sau ~50 phút, FPT chạy sau đó cũng
+  // dính lỗi giống hệt). Vậy đây KHÔNG phải do hạ tầng (cloud yếu, IP bị
+  // chặn, hay máy yếu) — nghi là vấn đề nội tại của việc điều hướng liên tục
+  // hàng trăm lần tới trang chi tiết SP trong 1 session Puppeteer kéo dài.
+  // Theo yêu cầu: dừng vá thêm, ưu tiên ỔN ĐỊNH — skipNewFetch=true sẽ tắt
+  // hẳn việc fetch specs MỚI (không điều hướng sang trang chi tiết nữa), chỉ
+  // áp dụng specs đã có trong cache cho SP đã biết. SP mới sẽ thiếu specs
+  // (cpu/ram/gpu/...) cho tới khi vấn đề gốc được xử lý dứt điểm, nhưng đổi
+  // lại: listing (giá/tên/link/tình trạng) luôn lấy được đầy đủ, ổn định.
   const PER_PRODUCT_TIMEOUT_MS = 25000;
   let fetched = 0;
   let skipped = 0;
@@ -506,6 +535,9 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
       // Cache chỉ lưu specs tĩnh (cpu/ram/...) — stockStatus thay đổi hàng ngày.
       const { stockStatus: _skip, ...cachedSpecs } = specCache.get(p.link);
       Object.assign(p, cachedSpecs);
+    } else if (skipNewFetch) {
+      skipped++;
+      continue; // v3.4.10: không điều hướng sang trang chi tiết — bỏ qua SP mới
     } else {
       // Kiểm tra deadline trước khi fetch
       if (Date.now() - startTime > effectiveDeadline) {
@@ -535,7 +567,10 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
     }
   }
   if (fetched > 0) console.log(`    → Fetched specs: ${fetched} SP mới`);
-  if (skipped > 0) console.log(`    ⏭ Bỏ qua ${skipped} SP (treo/timeout ${PER_PRODUCT_TIMEOUT_MS/1000}s mỗi SP, sẽ thử lại lần sau)`);
+  if (skipped > 0) {
+    if (skipNewFetch) console.log(`    ⏭ Bỏ qua ${skipped} SP mới (v3.4.10: tạm tắt fetch specs trang chi tiết CPS, chỉ dùng cache)`);
+    else console.log(`    ⏭ Bỏ qua ${skipped} SP (treo/timeout ${PER_PRODUCT_TIMEOUT_MS/1000}s mỗi SP, sẽ thử lại lần sau)`);
+  }
 }
 
 // ── FIX #2: SKU rớt khỏi listing hôm nay (mọi dealer) — thay vì im lặng ────
@@ -940,7 +975,10 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       console.log(`    🔍 body: ${diag.bodySnippet}`);
     }
   }
-  await enrichSpecs(products, specCache, fetchSpecsFPT, page, startTime, FPT_DEADLINE_MS);
+  // v3.4.10: FPT cũng gặp "detached Frame" ngay sau khi CPS chạy quá lâu trên
+  // cùng máy self-hosted (23/07/2026) — tạm tắt fetch specs mới, chỉ dùng
+  // cache, đồng bộ với CPS, ưu tiên ổn định trong lúc điều tra nguyên nhân gốc.
+  await enrichSpecs(products, specCache, fetchSpecsFPT, page, startTime, FPT_DEADLINE_MS, true);
   return products;
 }
 
@@ -1013,7 +1051,9 @@ async function scrapeCPS(page, brand, specCache, startTime) {
   }
 
   console.log(`    → ${products.length} SP`);
-  await enrichSpecs(products, specCache, fetchSpecsCPS, page, startTime);
+  // v3.4.10: tạm tắt fetch specs mới cho CPS (skipNewFetch=true) — xem comment
+  // dài trong enrichSpecs(). Chỉ áp dụng cache cho SP đã biết.
+  await enrichSpecs(products, specCache, fetchSpecsCPS, page, startTime, undefined, true);
   return products;
 }
 
@@ -1233,7 +1273,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.9');
+  console.log('🚀 Multi-Dealer Scraper v3.4.10');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
