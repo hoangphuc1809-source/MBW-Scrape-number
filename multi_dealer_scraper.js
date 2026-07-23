@@ -1,5 +1,17 @@
 /**
- * multi_dealer_scraper.js  — v3.4.7
+ * multi_dealer_scraper.js  — v3.4.8
+ *
+ * FIX v3.4.8:
+ *  [BUG17] Phát hiện quan trọng: writeToSheet() chỉ được gọi 1 LẦN Ở CUỐI
+ *          script, sau khi MBW+CPS đều xong. Mỗi lần CPS treo dẫn tới kill-
+ *          timer (process.exit trực tiếp, KHÔNG chạy finally/cleanup nào),
+ *          TOÀN BỘ data đã scrape — kể cả MBW đã xong thành công — bị mất,
+ *          KHÔNG ghi được gì vào sheet cả. Đây là lý do sheet không có data
+ *          mới suốt nhiều lần chạy gần đây dù MBW luôn chạy tốt.
+ *          Fix: killTimer giờ có quyền truy cập allProducts/sheets qua biến
+ *          global (globalAllProducts/globalSheets), cố ghi best-effort
+ *          (deadline riêng 30s) TRƯỚC KHI exit — dù CPS thất bại, data MBW/
+ *          CPS đã scrape được tới thời điểm đó vẫn được lưu vào sheet.
  *
  * FIX v3.4.7:
  *  [BUG16] v3.4.6 (proxy CPS) KHÔNG fix được — 6/6 brand CPS treo, LOẠI HẲN
@@ -1163,16 +1175,40 @@ async function writeToSheet(sheets, allProducts) {
 // ── MAIN ──────────────────────────────────────────────────
 // Safety net: nếu toàn bộ process treo quá 60 phút → force exit
 // Ngăn workflow GitHub Actions bị hang 90 phút rồi fail do timeout
+//
+// FIX v3.4.8 [BUG17]: TRƯỚC ĐÂY writeToSheet() chỉ gọi 1 LẦN Ở CUỐI script,
+// sau khi MBW+CPS đều xong. Khi CPS treo dẫn tới kill-timer force exit, quá
+// trình bị process.exit() giết NGAY LẬP TỨC (không chạy finally/cleanup nào
+// cả) → MẤT LUÔN CẢ DATA MBW đã scrape thành công trước đó, không ghi được
+// gì vào sheet cả — đây là lý do sheet không có data mới. Fix: killTimer giờ
+// có quyền truy cập allProducts/sheets qua biến global, cố ghi best-effort
+// (deadline riêng 30s) TRƯỚC KHI exit — dù CPS thất bại, MBW/data đã có vẫn
+// được lưu.
+let globalAllProducts = [];
+let globalSheets = null;
 const PROCESS_KILL_TIMEOUT_MS = 60 * 60 * 1000;
-const killTimer = setTimeout(() => {
-  console.error(`\n💀 Process kill-timer (${PROCESS_KILL_TIMEOUT_MS/60000} phút) — force exit để tránh workflow timeout`);
+const killTimer = setTimeout(async () => {
+  console.error(`\n💀 Process kill-timer (${PROCESS_KILL_TIMEOUT_MS/60000} phút) — thử ghi best-effort trước khi force exit`);
+  try {
+    if (globalSheets && globalAllProducts.length > 0) {
+      await Promise.race([
+        writeToSheet(globalSheets, globalAllProducts),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('write timeout 30s')), 30000)),
+      ]);
+      console.error(`   ✅ Đã ghi best-effort ${globalAllProducts.length} SP trước khi exit`);
+    } else {
+      console.error('   ⚠ Không có data để ghi (globalSheets/allProducts trống)');
+    }
+  } catch (e) {
+    console.error(`   ⚠ Ghi best-effort thất bại: ${(e.message||String(e)).substring(0,150)}`);
+  }
   process.exit(1);
 }, PROCESS_KILL_TIMEOUT_MS);
 killTimer.unref(); // Không giữ event loop nếu process kết thúc bình thường trước đó
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.7');
+  console.log('🚀 Multi-Dealer Scraper v3.4.8');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -1182,6 +1218,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
   const sheets = google.sheets({ version: 'v4', auth });
+  globalSheets = sheets; // cho killTimer truy cập để ghi best-effort
   const specCache = await loadSpecCacheFromSheet(sheets);
 
   const PUPPETEER_LAUNCH_OPTS = {
@@ -1200,7 +1237,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
     return await puppeteer.launch(PUPPETEER_LAUNCH_OPTS);
   }
 
-  const allProducts = [];
+  const allProducts = globalAllProducts; // CÙNG reference — killTimer thấy được data ngay khi push()
 
   try {
     // ── MBW ── scrape 1 lần từ trang tổng /laptop
