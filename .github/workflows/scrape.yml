@@ -4,9 +4,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  # MBW (qua Cloudflare Worker proxy) — chạy 100% tự động trên GitHub-hosted
-  # runner, không cần máy local. Nhẹ (~25 lần "Load thêm", vài phút), chạy ổn
-  # định trên ubuntu-latest từ trước tới giờ, không đổi.
+  # MBW (qua Cloudflare Worker proxy) + CellPhone S — chạy 100% tự động
+  # trên GitHub-hosted runner, không cần máy local.
+  #
+  # 23/07/2026: CPS gộp lại về job này (từng tách ra self-hosted để test giả
+  # thuyết "máy yếu" — đã LOẠI BỎ giả thuyết đó, xem v3.4.10 changelog trong
+  # multi_dealer_scraper.js). Từ v3.4.10, CPS KHÔNG còn điều hướng sang trang
+  # chi tiết sản phẩm nữa (skipNewFetch=true) — tải nhẹ hẳn, không cần máy
+  # tự host, chạy cloud lại được như MBW.
   scrape-cloud:
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -26,51 +31,20 @@ jobs:
       - name: Install Chrome for Puppeteer
         run: npx puppeteer browsers install chrome
 
-      - name: Run scraper (MBW)
+      - name: Run scraper (MBW + CPS)
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           MBW_PROXY_HOST: ${{ secrets.MBW_PROXY_HOST }}
-          SCRAPE_DEALERS: MBW
-        run: npm start
-
-  # CellPhone S — CHUYỂN SANG SELF-HOSTED (23/07/2026). Sau ~9 lần vá ở tầng
-  # code (proxy, page mới mỗi brand, relaunch browser, timeout mọi cấp độ)
-  # vẫn liên tục gặp "detached Frame"/treo trên ubuntu-latest — nghi do
-  # runner GitHub-hosted miễn phí (2-core/7GB, máy ảo dùng chung) không đủ
-  # ổn định cho khối lượng CPS (9 brand, hàng trăm-nghìn lượt evaluate/goto
-  # liên tục). Máy MSI/BARACK nhiều tài nguyên hơn hẳn, tránh hẳn giới hạn
-  # này. needs: scrape-cloud để tránh race condition khi ghi RAW DATA sheet
-  # (2 job cùng đọc-sửa-ghi sheet cùng lúc sẽ đè mất data của nhau).
-  scrape-cps:
-    needs: scrape-cloud
-    runs-on: self-hosted
-    timeout-minutes: 90
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run scraper (CPS)
-        env:
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          SCRAPE_DEALERS: CPS
+          SCRAPE_DEALERS: MBW,CPS
         run: npm start
 
   # FPT Retail — fptshop.com.vn chặn IP datacenter bằng Cloudflare bot-challenge
-  # nên vẫn cần self-hosted runner (máy local). needs: scrape-cps (không phải
-  # scrape-cloud nữa) để giữ đúng thứ tự tuần tự, tránh race condition ghi sheet.
+  # nên vẫn cần self-hosted runner (máy local). Từ v3.4.10, FPT cũng đã tắt
+  # fetch specs mới (skipNewFetch=true) để tránh lỗi "detached Frame" gặp
+  # ngày 23/07 khi chạy sau CPS trên máy self-hosted.
   scrape-fpt:
-    needs: scrape-cps
+    needs: scrape-cloud
     runs-on: self-hosted
     timeout-minutes: 90
 
