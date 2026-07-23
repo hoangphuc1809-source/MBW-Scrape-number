@@ -1,5 +1,25 @@
 /**
- * multi_dealer_scraper.js  — v3.4.6
+ * multi_dealer_scraper.js  — v3.4.7
+ *
+ * FIX v3.4.7:
+ *  [BUG16] v3.4.6 (proxy CPS) KHÔNG fix được — 6/6 brand CPS treo, LOẠI HẲN
+ *          giả thuyết "site chặn IP" (proxy đổi IP nguồn mà vẫn treo y hệt).
+ *          Nhìn kỹ log: 1 số brand treo TRƯỚC khi in được "Load thêm: N lần"
+ *          (treo trong vòng lặp bấm nút), 1 số brand in được "Load thêm" nhưng
+ *          KHÔNG BAO GIỜ in "→ N SP" (treo ở bước extract listing). → Chỗ
+ *          treo thật sự là các page.evaluate() dùng để đọc/thao tác DOM tại
+ *          chỗ (bấm nút, scroll, trích xuất listing) — CHƯA TỪNG có timeout
+ *          nào từ trước tới giờ, chỉ có .catch() bắt lỗi reject (không bắt
+ *          được hang vì evaluate treo thì không resolve lẫn reject). Vì CẢ
+ *          6 brand đều treo liên tiếp (không phải 1-2 brand ngẫu nhiên), nghi
+ *          cả CDP session/browser bị đơ toàn bộ từ 1 điểm, không phải lỗi
+ *          riêng của trang/brand nào.
+ *          Fix: (1) helper evalWithTimeout() bọc timeout cho MỌI evaluate()
+ *          trong scrollToBottom + vòng lặp "Load thêm" + extract listing của
+ *          CPS (8-15s/lệnh). (2) Theo dõi số brand thất bại LIÊN TIẾP — nếu
+ *          ≥2 brand liên tiếp trả về 0 SP/timeout, RELAUNCH TOÀN BỘ BROWSER
+ *          (không chỉ tạo page mới) trước khi thử brand kế, vì nghi browser
+ *          instance chứ không chỉ 1 tab bị đơ.
  *
  * FIX v3.4.6:
  *  Route CPS (cellphones.com.vn) qua CÙNG Cloudflare Worker proxy đã dùng cho
@@ -226,6 +246,23 @@ const HEADERS = [
 // ── Helpers ───────────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// FIX v3.4.7 [BUG16]: page.evaluate() dùng để đọc/thao tác DOM (bấm nút
+// "Load thêm", scroll, trích xuất listing) từ trước tới giờ CHỈ có .catch()
+// bắt lỗi REJECT — không bắt được HANG (evaluate treo không bao giờ resolve
+// lẫn reject nếu CDP session bị đơ). Thực tế 22-23/07 đã thấy TẤT CẢ brand
+// CPS treo ngay trong bước "Load thêm"/extract listing (không phải goto tới
+// trang chi tiết như nghi ban đầu) — kể cả sau khi đã route qua Cloudflare
+// proxy (loại được giả thuyết site chặn IP). Vì cả 6/6 brand treo liên tiếp,
+// nghi CDP session hoặc cả browser bị đơ toàn bộ từ 1 điểm nào đó, không chỉ
+// riêng 1 trang. Helper này bọc timeout cho MỌI page.evaluate() ở bước
+// listing-scrape, tương tự cách đã làm cho fetch specs (v3.4.5).
+function evalWithTimeout(promise, ms, fallback) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]).catch(() => fallback);
+}
+
 function formatDate(d) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
@@ -238,15 +275,15 @@ async function scrollToBottom(page) {
   // Fix: scroll nhiều bước nhỏ từ Node.js thay vì 1 evaluate async block lớn
   let lastHeight = 0;
   for (let i = 0; i < 40; i++) {
-    const height = await page.evaluate(() => document.body.scrollHeight).catch(() => 0);
+    const height = await evalWithTimeout(page.evaluate(() => document.body.scrollHeight), 8000, 0);
     if (height === lastHeight && i > 0) break;
     lastHeight = height;
     const steps = Math.ceil(height / 1500);
     for (let s = 0; s <= steps; s++) {
-      await page.evaluate((y) => window.scrollTo(0, y), s * 1500).catch(() => {});
+      await evalWithTimeout(page.evaluate((y) => window.scrollTo(0, y), s * 1500), 8000, null);
     }
     await sleep(400);
-    const newHeight = await page.evaluate(() => document.body.scrollHeight).catch(() => 0);
+    const newHeight = await evalWithTimeout(page.evaluate(() => document.body.scrollHeight), 8000, 0);
     if (newHeight === height) break;
   }
 }
@@ -889,7 +926,7 @@ async function scrapeCPS(page, brand, specCache, startTime) {
   while (true) {
     await scrollToBottom(page);
     await sleep(1800);
-    const clicked = await page.evaluate(() => {
+    const clicked = await evalWithTimeout(page.evaluate(() => {
       const sels = ['.btn-show-more','button.btn-show-more','.loadmore-btn',
                     'button[class*="loadmore"]','a[class*="loadmore"]','.load-more-button'];
       for (const sel of sels) {
@@ -897,14 +934,14 @@ async function scrapeCPS(page, brand, specCache, startTime) {
         if (el && el.offsetParent !== null) { el.click(); return true; }
       }
       return false;
-    }).catch(() => false);
+    }), 12000, false);
     if (!clicked) break;
     clicks++;
     await sleep(2500);
   }
   if (clicks) console.log(`    → Load thêm: ${clicks} lần`);
 
-  const products = await page.evaluate((brandName, BASE) => {
+  const products = await evalWithTimeout(page.evaluate((brandName, BASE) => {
     const out  = [];
     const seen = new Set();
     document.querySelectorAll('.product-item').forEach(card => {
@@ -931,7 +968,12 @@ async function scrapeCPS(page, brand, specCache, startTime) {
       });
     });
     return out;
-  }, brand.name, 'https://cellphones.com.vn');
+  }, brand.name, 'https://cellphones.com.vn'), 15000, []);
+
+  if (products.length === 0) {
+    console.log(`    ⚠ Extract listing timeout/lỗi (0 SP) — CDP session có thể đã đơ, bỏ ngang brand này`);
+    return [];
+  }
 
   console.log(`    → ${products.length} SP`);
   await enrichSpecs(products, specCache, fetchSpecsCPS, page, startTime);
@@ -1130,7 +1172,7 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
 
 (async () => {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.6');
+  console.log('🚀 Multi-Dealer Scraper v3.4.7');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -1142,12 +1184,21 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
   const sheets = google.sheets({ version: 'v4', auth });
   const specCache = await loadSpecCacheFromSheet(sheets);
 
-  const browser = await puppeteer.launch({
+  const PUPPETEER_LAUNCH_OPTS = {
     headless: true,
     protocolTimeout: 300000, // 300s — ubuntu-latest đôi khi CDP chậm bất thường (đã gặp Network.setCacheDisabled timeout ở 180s)
     args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage',
            '--disable-gpu','--window-size=1280,900'],
-  });
+  };
+  let browser = await puppeteer.launch(PUPPETEER_LAUNCH_OPTS);
+  // FIX v3.4.7 [BUG16]: khi CDP/browser bị đơ toàn bộ (không chỉ 1 tab — thấy
+  // rõ khi 6/6 brand CPS liên tiếp treo ngay ở page.evaluate(), kể cả page
+  // hoàn toàn mới), tạo page mới KHÔNG đủ — phải khởi động lại CẢ browser.
+  async function relaunchBrowser(oldBrowser) {
+    console.log('    🔄 Relaunch cả browser (nghi CDP session bị đơ toàn bộ)...');
+    try { await oldBrowser.close(); } catch(_) {}
+    return await puppeteer.launch(PUPPETEER_LAUNCH_OPTS);
+  }
 
   const allProducts = [];
 
@@ -1237,12 +1288,14 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
       // dùng 1 page MỚI từ đầu (không đợi lỗi mới tạo lại) — mỗi brand bắt đầu
       // "sạch", giảm hẳn khả năng tích lũy dẫn đến treo.
       const CPS_BRAND_TIMEOUT_MS = 10 * 60 * 1000; // 10 phút/brand
+      let consecutiveFails = 0;
       for (const brand of BRANDS) {
         const pageCPS = await browser.newPage();
         await pageCPS.setViewport({ width: 1280, height: 900 });
         await pageCPS.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
         pageCPS.setDefaultTimeout(20000);
         pageCPS.setDefaultNavigationTimeout(30000);
+        let brandFailed = false;
         try {
           const cpsBrandTimeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error(`CPS ${brand.name} timeout sau ${CPS_BRAND_TIMEOUT_MS/60000} phút — page có thể đã treo`)), CPS_BRAND_TIMEOUT_MS)
@@ -1253,10 +1306,23 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
           ]);
           allProducts.push(...products);
           products.forEach(p => todayLinksCPS.add(p.link));
+          brandFailed = products.length === 0;
         } catch (e) {
           console.log(`    💥 ${brand.name} lỗi: ${e.message.substring(0,100)}`);
+          brandFailed = true;
         } finally {
           try { await pageCPS.close(); } catch(_) {}
+        }
+        if (brandFailed) {
+          consecutiveFails++;
+          // 2 brand liên tiếp treo/0 SP → nghi cả browser bị đơ, không chỉ 1 page.
+          // Relaunch browser trước khi thử brand kế tiếp.
+          if (consecutiveFails >= 2) {
+            browser = await relaunchBrowser(browser);
+            consecutiveFails = 0;
+          }
+        } else {
+          consecutiveFails = 0;
         }
         await sleep(800);
       }
