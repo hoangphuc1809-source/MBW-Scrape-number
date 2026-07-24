@@ -1,0 +1,89 @@
+name: FPT Blocking Diagnostic
+
+# Chạy tay từ tab Actions. Không có schedule — đây là công cụ chẩn đoán,
+# không phải job production.
+on:
+  workflow_dispatch:
+    inputs:
+      fpt_url:
+        description: 'URL FPT cần test'
+        required: false
+        default: 'https://fptshop.com.vn/may-tinh-xach-tay'
+      control_url:
+        description: 'URL đối chứng (đã biết chạy được trên cloud)'
+        required: false
+        default: 'https://www.thegioididong.com/laptop'
+
+jobs:
+  diagnose-cloud:
+    name: Chẩn đoán từ ubuntu-latest (IP datacenter)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cài Puppeteer + Chrome
+        run: |
+          npm install puppeteer --no-save
+          npx puppeteer browsers install chrome
+
+      - name: Chạy chẩn đoán
+        # continue-on-error: script luôn exit 0, nhưng phòng trường hợp crash
+        continue-on-error: true
+        env:
+          FPT_URL: ${{ inputs.fpt_url }}
+          CONTROL_URL: ${{ inputs.control_url }}
+        run: node test_fpt_diagnostic.js
+
+      - name: Upload ảnh chụp + HTML + JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpt-diagnostic-cloud
+          path: artifacts/
+          retention-days: 14
+          if-no-files-found: warn
+
+  diagnose-selfhosted:
+    name: Đối chứng từ MSI (IP dân cư Việt Nam)
+    runs-on: [self-hosted, msi]
+    timeout-minutes: 15
+    # Chạy song song để so sánh trực tiếp cloud vs máy nhà trong cùng một run.
+    # Nếu MSI pass mà cloud fail => khác biệt nằm ở mạng, không phải ở code.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cài Puppeteer + Chrome
+        run: |
+          npm install puppeteer --no-save
+          npx puppeteer browsers install chrome
+
+      - name: Chạy chẩn đoán
+        continue-on-error: true
+        env:
+          FPT_URL: ${{ inputs.fpt_url }}
+          CONTROL_URL: ${{ inputs.control_url }}
+        run: node test_fpt_diagnostic.js
+
+      - name: Upload ảnh chụp + HTML + JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpt-diagnostic-msi
+          path: artifacts/
+          retention-days: 14
+          if-no-files-found: warn
