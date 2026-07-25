@@ -1,5 +1,15 @@
 /**
- * multi_dealer_scraper.js  — v3.4.10
+ * multi_dealer_scraper.js  — v3.4.11
+ *
+ * FIX v3.4.11 [25/07/2026 — học từ bản thử nghiệm MBW-Scrape-number-v2]:
+ *  So sánh với bản v2 (viết lại bằng Playwright, không dùng được trực tiếp vì
+ *  đổi engine + đổi Sheet ID + lệch schema cột + MBW quay lại pattern điều
+ *  hướng tuần tự hàng trăm trang chi tiết — đúng lỗi mà v3.4.10 vừa né).
+ *  Điểm hay duy nhất đáng lấy: fetchSpecsCPS() định vị bảng specs bằng
+ *  heading text "Thông số kỹ thuật" thay vì phụ thuộc 1 class CSS cụ thể →
+ *  bền hơn khi CellphoneS đổi giao diện. Đã thêm làm FALLBACK (chỉ chạy khi
+ *  selector `tr.technical-content-item` hiện tại trả về rỗng) — không đổi
+ *  hành vi khi site vẫn giữ nguyên cấu trúc như hiện tại.
  *
  * STOP-AND-STABILIZE v3.4.10 [23/07/2026 — theo yêu cầu Phuc, dừng điều tra]:
  *  Bằng chứng cuối cùng loại bỏ MỌI giả thuyết hạ tầng: chuyển CPS sang
@@ -473,6 +483,28 @@ async function fetchSpecsCPS(page, url) {
           if (label && value) specs[label] = value;
         }
       });
+      // FIX v3.4.11 [học từ bản v2 thử nghiệm]: nếu CPS đổi class CSS khiến
+      // selector trên trả về rỗng, fallback tìm khối chứa heading "Thông số
+      // kỹ thuật" rồi quét mọi <tr> có đúng 2 <td> bên trong — không phụ
+      // thuộc tên class cụ thể, chỉ chạy khi selector chính không ra gì nên
+      // không ảnh hưởng hành vi hiện tại.
+      if (Object.keys(specs).length === 0) {
+        const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
+        const container = Array.from(document.querySelectorAll('section,div')).find(el => {
+          const t = clean(el.innerText);
+          return t.startsWith('Thông số kỹ thuật') && t.length < 6000;
+        });
+        if (container) {
+          container.querySelectorAll('tr').forEach(row => {
+            const tds = row.querySelectorAll('td');
+            if (tds.length >= 2) {
+              const label = tds[0].innerText?.trim();
+              const value = tds[1].innerText?.trim().replace(/\n+/g, ' ');
+              if (label && value) specs[label] = value;
+            }
+          });
+        }
+      }
       return specs;
     }).catch(() => ({}));
     const result = mapSpecsCPS(raw);
