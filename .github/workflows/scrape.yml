@@ -31,10 +31,6 @@ jobs:
       - name: Install Chrome for Puppeteer
         run: npx puppeteer browsers install chrome
 
-      - name: Ghi moc thoi gian bat dau
-        shell: bash
-        run: echo "STARTED_AT=$(date +%s)" >> $GITHUB_ENV
-
       - name: Run scraper (MBW + CPS)
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
@@ -45,24 +41,24 @@ jobs:
 
       - name: Bao cao ve Telegram
         if: always()
+        continue-on-error: true
         shell: bash
         env:
           TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
           CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
           if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
             echo "Chua dat OPS_BOT_TOKEN/OPS_CHAT_ID - bo qua bao cao"
             exit 0
           fi
-          DUR=$(( $(date +%s) - ${STARTED_AT:-$(date +%s)} ))
-          MIN=$(( DUR / 60 ))
-          SEC=$(( DUR % 60 ))
-          if [ "${{ job.status }}" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
-          MSG="[$ICON] MBW + CPS%0Amay: cloud (ubuntu-latest)%0Athoi gian: ${MIN} phut ${SEC} giay%0Atrang thai: ${{ job.status }}%0Arun #${{ github.run_number }}"
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] MBW + CPS%0Amay: cloud (ubuntu-latest)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" \
             -d "text=${MSG}" \
-            -o /dev/null -w "telegram: %{http_code}\n"
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
   # FPT Retail - fptshop.com.vn chan bang Cloudflare bot-challenge (KHONG phai
   # chan IP), nen doi IP hay thue VPS deu vo ich. Bat buoc self-hosted.
@@ -85,10 +81,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Ghi moc thoi gian bat dau
-        shell: bash
-        run: echo "STARTED_AT=$(date +%s)" >> $GITHUB_ENV
-
       - name: Run scraper (FPT)
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
@@ -96,23 +88,26 @@ jobs:
           SCRAPE_DEALERS: FPT
         run: npm start
 
+      # Bao cao KHONG bao gio duoc lam chet scrape -> continue-on-error: true
+      # Tu chua, khong phu thuoc buoc ghi moc thoi gian rieng (tung gay loi tren Windows runner)
       - name: Bao cao ve Telegram
         if: always()
+        continue-on-error: true
         shell: bash
         env:
           TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
           CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUNNER_NAME: ${{ runner.name }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
           if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
             echo "Chua dat OPS_BOT_TOKEN/OPS_CHAT_ID - bo qua bao cao"
             exit 0
           fi
-          DUR=$(( $(date +%s) - ${STARTED_AT:-$(date +%s)} ))
-          MIN=$(( DUR / 60 ))
-          SEC=$(( DUR % 60 ))
-          if [ "${{ job.status }}" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
-          MSG="[$ICON] FPT%0Amay: ${{ runner.name }}%0Athoi gian: ${MIN} phut ${SEC} giay%0Atrang thai: ${{ job.status }}%0Arun #${{ github.run_number }}"
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] FPT%0Amay: ${RUNNER_NAME}%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" \
             -d "text=${MSG}" \
-            -o /dev/null -w "telegram: %{http_code}\n"
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
