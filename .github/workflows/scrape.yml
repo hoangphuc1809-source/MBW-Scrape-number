@@ -2,11 +2,18 @@ name: Multi-Dealer Laptop Scraper
 
 on:
   # Lich chay nam NGAY TRONG repo - khong phu thuoc Cloud Scheduler ben ngoai.
-  # 01:00 UTC = 08:00 gio Viet Nam.
   # Ly do doi: Cloud Scheduler dung PAT, PAT het han thi lich chet am tham
   # (da xay ra 07/2026). Cron cua GitHub khong bao gio het han.
+  #
+  # 27/07/2026: phat hien cron dung dung "0 1 * * *" (dung gio, top-of-hour)
+  # bi GitHub tuot mat 1 lan khong ro nguyen nhan (khong co event 'schedule'
+  # nao trong run history sang do). GitHub docs canh bao: lich dung dung gio
+  # (:00) la gio cao diem, de bi delay/drop hon lich lech gio. Fix: 2 lich
+  # lech gio, cach nhau ~15 phut, quanh 8h VN. writeToSheet() da idempotent
+  # (xoa+ghi lai rows hom nay) nen ca 2 cung fire cung an toan, khong trung data.
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '53 0 * * *' # 00:53 UTC = 07:53 gio VN
+    - cron: '7 1 * * *'  # 01:07 UTC = 08:07 gio VN (du phong neu lan tren bi tuot)
   workflow_dispatch:
 
 jobs:
