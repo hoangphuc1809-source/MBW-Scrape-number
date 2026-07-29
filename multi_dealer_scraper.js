@@ -210,6 +210,22 @@ const SCRAPE_DEALERS = new Set(SCRAPE_DEALERS_RAW);
 const SCRAPE_DEALER_NAMES = new Set(
   [...SCRAPE_DEALERS].map(k => DEALER_KEY_TO_NAME[k]).filter(Boolean)
 );
+
+// v3.5.0 [29/07/2026]: kien truc scrape song song + ghi Sheet 1 lan duy nhat.
+// WRITE_MODE='file'  -> job nay chi scrape roi luu allProducts ra JSON local,
+//                        KHONG dung tuc ghi Sheet. Dung khi 3 dealer (MBW/CPS/FPT)
+//                        chay 3 job GitHub Actions song song that su (khong con
+//                        needs: tuan tu) de tiet kiem thoi gian tong.
+// COMBINE_MODE=true  -> job rieng, khong scrape gi ca, chi doc cac file JSON
+//                        (tu artifact cua 3 job tren) roi goi writeToSheet() 1
+//                        LAN DUY NHAT sau khi ca 3 da xong. Day la buoc bat
+//                        buoc de tranh 2+ tien trinh cung ghi RAW DATA cung luc
+//                        (chinh nguyen nhan gay fail lien tuc 28-29/07/2026).
+const WRITE_MODE   = (process.env.WRITE_MODE || 'sheet').toLowerCase(); // 'sheet' | 'file'
+const COMBINE_MODE = process.env.COMBINE_MODE === 'true';
+const OUTPUT_DIR    = process.env.OUTPUT_DIR || './scrape-output';
+const COMBINE_INPUT_DIR = process.env.COMBINE_INPUT_DIR || './scrape-artifacts';
+
 const CREDS_PATH     = path.join(os.tmpdir(), 'scraper_gcp.json');
 // Deadline: dừng fetch specs sau 50 phút kể từ lúc start
 // Đảm bảo còn đủ thời gian ghi sheet trước khi GitHub Actions timeout (6h)
@@ -1303,9 +1319,9 @@ const killTimer = setTimeout(async () => {
 }, PROCESS_KILL_TIMEOUT_MS);
 killTimer.unref(); // Không giữ event loop nếu process kết thúc bình thường trước đó
 
-(async () => {
+async function runScrapeMode() {
   const startTime = Date.now();
-  console.log('🚀 Multi-Dealer Scraper v3.4.10');
+  console.log('🚀 Multi-Dealer Scraper v3.5.0');
   console.log(`📅 ${new Date().toLocaleString('vi-VN')}`);
   console.log(`⏱ Deadline fetch specs: ${DEADLINE_MS/60000} phút`);
 
@@ -1483,8 +1499,18 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
   console.log(`   TỔNG: ${allProducts.length} SP`);
   console.log(`   Thời gian đã dùng: ${Math.round((Date.now()-startTime)/60000)} phút`);
 
-  console.log('\n📝 Ghi Sheets...');
-  await writeToSheet(sheets, allProducts);
+  if (WRITE_MODE === 'file') {
+    // v3.5.0: che do scrape song song — luu ra file, KHONG ghi Sheet o day.
+    // 1 job "combine" rieng se doc file nay + 2 file con lai roi ghi 1 lan.
+    if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+    const tag = [...SCRAPE_DEALERS].join('-') || 'unknown';
+    const outPath = path.join(OUTPUT_DIR, `products-${tag}.json`);
+    fs.writeFileSync(outPath, JSON.stringify(allProducts));
+    console.log(`\n💾 Đã lưu ${allProducts.length} SP ra ${outPath} (WRITE_MODE=file — chưa ghi Sheet, chờ job combine)`);
+  } else {
+    console.log('\n📝 Ghi Sheets...');
+    await writeToSheet(sheets, allProducts);
+  }
 
   const elapsed = Math.round((Date.now()-startTime)/1000);
   console.log(`\n✅ Xong trong ${Math.floor(elapsed/60)}p${elapsed%60}s`);
@@ -1492,10 +1518,83 @@ killTimer.unref(); // Không giữ event loop nếu process kết thúc bình th
   // v3.4.1: force exit sau khi xong — googleapis/puppeteer giữ event loop
   // sống vô thời hạn qua HTTP keep-alive connections và Chrome subprocess.
   process.exit(0);
-})().catch(err => {
-  console.error('💥 Fatal:', err);
-  process.exit(1);
-});
+}
+
+/**
+ * v3.5.0 — COMBINE MODE (chay rieng, khong scrape):
+ * Doc tat ca file *.json trong COMBINE_INPUT_DIR (tai ve tu artifact cua 3
+ * job scrape-mbw / scrape-cps / scrape-fpt chay song song), gop lai, roi goi
+ * writeToSheet() DUY NHAT 1 LAN. Neu 1 dealer bi fail/thieu file, van ghi
+ * best-effort voi cac dealer con lai thay vi bo het (giu triet ly "listing
+ * luon on dinh" tu STOP-AND-STABILIZE v3.4.10).
+ */
+async function runCombineMode() {
+  console.log('🔗 COMBINE MODE — gộp kết quả từ các job scrape song song, ghi Sheet 1 lần duy nhất');
+  console.log(`📂 Đọc artifact từ: ${COMBINE_INPUT_DIR}`);
+
+  fs.writeFileSync(CREDS_PATH, process.env.GOOGLE_CREDENTIALS);
+  const auth = new google.auth.GoogleAuth({
+    keyFile: CREDS_PATH,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  function listJsonFilesRecursive(dir) {
+    let results = [];
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+    catch (e) { console.error(`💥 Không đọc được thư mục ${dir}: ${e.message}`); return results; }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) results = results.concat(listJsonFilesRecursive(full));
+      else if (entry.name.endsWith('.json')) results.push(full);
+    }
+    return results;
+  }
+
+  const files = listJsonFilesRecursive(COMBINE_INPUT_DIR);
+  let allProducts = [];
+  for (const f of files) {
+    try {
+      const arr = JSON.parse(fs.readFileSync(f, 'utf8'));
+      console.log(`   📄 ${f}: ${arr.length} SP`);
+      allProducts = allProducts.concat(arr);
+    } catch (e) {
+      console.error(`   ⚠ Lỗi đọc ${f}: ${e.message}`);
+    }
+  }
+
+  if (allProducts.length === 0) {
+    console.error('💥 Không có dữ liệu nào để ghi (0 file hợp lệ) — DỪNG, không ghi Sheet để tránh xóa nhầm data cũ.');
+    fs.unlinkSync(CREDS_PATH);
+    process.exit(1);
+  }
+
+  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0 };
+  allProducts.forEach(p => { if (p.dealer in byDealer) byDealer[p.dealer]++; });
+  console.log(`\n📊 Tổng hợp từ ${files.length} file:`);
+  Object.entries(byDealer).forEach(([d,c]) => console.log(`   ${d}: ${c} SP`));
+  console.log(`   TỔNG: ${allProducts.length} SP`);
+
+  console.log('\n📝 Ghi Sheets...');
+  await writeToSheet(sheets, allProducts);
+
+  fs.unlinkSync(CREDS_PATH);
+  console.log('\n✅ Combine + ghi Sheet xong.');
+  process.exit(0);
+}
+
+if (COMBINE_MODE) {
+  runCombineMode().catch(err => {
+    console.error('💥 Fatal (combine mode):', err);
+    process.exit(1);
+  });
+} else {
+  runScrapeMode().catch(err => {
+    console.error('💥 Fatal:', err);
+    process.exit(1);
+  });
+}
 
 
 
