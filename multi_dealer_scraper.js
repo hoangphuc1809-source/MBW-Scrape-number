@@ -1,5 +1,13 @@
 /**
- * multi_dealer_scraper.js  — v3.4.12
+ * multi_dealer_scraper.js  — v3.4.13
+ *
+ * FIX v3.4.13 [29/07/2026 — revert filter "Sẵn hàng", giữ card-text detection]:
+ *  v3.4.12 filter "Sẵn hàng" quá hung dữ — lọc theo "có hàng tại cửa hàng gần"
+ *  thay vì "còn bán online", chỉ còn 143/590 SP (~25%). REVERT lớp (a).
+ *  Giữ nguyên lớp (b) card-text detection + lớp (c) post-filter: nếu card
+ *  listing chứa text "tạm hết hàng"/"hết hàng"/"ngừng kinh doanh" sẽ lọc ra.
+ *  Nếu card KHÔNG có text OOS (chỉ detail page mới có), cần hướng xử lý khác
+ *  → xem log lần chạy này để quyết định bước tiếp.
  *
  * FIX v3.4.12 [29/07/2026 — yêu cầu Phuc, lọc mã "Tạm hết hàng" CPS]:
  *  CPS listing page hiển thị cả SP đã EOL/hết hàng — card vẫn có giá nhưng
@@ -1058,41 +1066,9 @@ async function scrapeCPS(page, brand, specCache, startTime) {
   }
   await sleep(2000);
 
-  // v3.4.12: Click filter "Sẵn hàng" để chỉ lấy SP còn hàng thật
-  // (CPS listing mặc định hiển thị cả SP "Tạm hết hàng" / EOL — có giá nhưng
-  //  detail page ghi "TẠM HẾT HÀNG", gây nhiều mã rác trong sheet)
-  const clickedSanHang = await evalWithTimeout(page.evaluate(() => {
-    // CPS filter: tìm element text đúng "Sẵn hàng" — thường là checkbox/label
-    // trong sidebar filter hoặc quick-filter bar
-    const candidates = [...document.querySelectorAll(
-      'a, button, label, span, div, li, p, input[type="checkbox"]'
-    )];
-    for (const el of candidates) {
-      const txt = (el.innerText || el.textContent || '').trim();
-      // Exact match hoặc bắt đầu bằng "Sẵn hàng" (tránh match "Sẵn hàng mới về")
-      if (/^sẵn hàng$/i.test(txt) && el.offsetParent !== null) {
-        el.click();
-        return 'clicked';
-      }
-    }
-    // Fallback: tìm checkbox input có label "Sẵn hàng" kế bên
-    const labels = [...document.querySelectorAll('label')];
-    for (const lbl of labels) {
-      if (/sẵn hàng/i.test(lbl.innerText || '')) {
-        const inp = lbl.querySelector('input') || document.getElementById(lbl.getAttribute('for'));
-        if (inp) { inp.click(); return 'clicked-input'; }
-        lbl.click();
-        return 'clicked-label';
-      }
-    }
-    return false;
-  }), 8000, false);
-  if (clickedSanHang) {
-    await sleep(2500); // Chờ filter apply + re-render danh sách SP
-    console.log(`    ✅ Đã bật filter "Sẵn hàng" (${clickedSanHang}) — chỉ scrape SP còn hàng`);
-  } else {
-    console.log(`    ⚠ Không tìm thấy filter "Sẵn hàng" — dùng card-text detection thay thế`);
-  }
+  // v3.4.13: REVERT v3.4.12 filter "Sẵn hàng" — quá hung dữ, lọc theo "có hàng
+  // tại cửa hàng gần" thay vì "còn bán online", làm mất ~75% SP hợp lệ (143/590).
+  // Chỉ giữ lớp (b) card-text detection + lớp (c) post-filter.
 
   let clicks = 0;
   while (true) {
