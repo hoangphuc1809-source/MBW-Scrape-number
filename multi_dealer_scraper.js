@@ -1,5 +1,18 @@
 /**
- * multi_dealer_scraper.js  — v3.4.11
+ * multi_dealer_scraper.js  — v3.4.12
+ *
+ * FIX v3.4.12 [29/07/2026 — yêu cầu Phuc, lọc mã "Tạm hết hàng" CPS]:
+ *  CPS listing page hiển thị cả SP đã EOL/hết hàng — card vẫn có giá nhưng
+ *  detail page ghi "TẠM HẾT HÀNG". Vì v3.4.10 tắt detail-page navigation,
+ *  stockStatus "Tạm hết hàng" không bao giờ được detect → SP rác vào sheet.
+ *  Fix 3 lớp (KHÔNG cần navigate detail page — giữ nguyên tính ổn định v3.4.10):
+ *   (a) Click filter "Sẵn hàng" trên trang listing CPS trước khi bấm "Load
+ *       thêm" — lọc tại nguồn, CPS chỉ render SP còn hàng thật. Zero cost.
+ *   (b) Safety net: trong page.evaluate trích xuất listing, kiểm tra card
+ *       text chứa "tạm hết hàng"/"hết hàng"/"ngừng kinh doanh" → đánh dấu
+ *       stockStatus chính xác thay vì mặc định "Còn hàng".
+ *   (c) Post-filter: sau extract, lọc bỏ SP có stockStatus khác "Còn hàng"
+ *       khỏi kết quả, log số lượng đã lọc.
  *
  * FIX v3.4.11 [25/07/2026 — học từ bản thử nghiệm MBW-Scrape-number-v2]:
  *  So sánh với bản v2 (viết lại bằng Playwright, không dùng được trực tiếp vì
@@ -1045,6 +1058,42 @@ async function scrapeCPS(page, brand, specCache, startTime) {
   }
   await sleep(2000);
 
+  // v3.4.12: Click filter "Sẵn hàng" để chỉ lấy SP còn hàng thật
+  // (CPS listing mặc định hiển thị cả SP "Tạm hết hàng" / EOL — có giá nhưng
+  //  detail page ghi "TẠM HẾT HÀNG", gây nhiều mã rác trong sheet)
+  const clickedSanHang = await evalWithTimeout(page.evaluate(() => {
+    // CPS filter: tìm element text đúng "Sẵn hàng" — thường là checkbox/label
+    // trong sidebar filter hoặc quick-filter bar
+    const candidates = [...document.querySelectorAll(
+      'a, button, label, span, div, li, p, input[type="checkbox"]'
+    )];
+    for (const el of candidates) {
+      const txt = (el.innerText || el.textContent || '').trim();
+      // Exact match hoặc bắt đầu bằng "Sẵn hàng" (tránh match "Sẵn hàng mới về")
+      if (/^sẵn hàng$/i.test(txt) && el.offsetParent !== null) {
+        el.click();
+        return 'clicked';
+      }
+    }
+    // Fallback: tìm checkbox input có label "Sẵn hàng" kế bên
+    const labels = [...document.querySelectorAll('label')];
+    for (const lbl of labels) {
+      if (/sẵn hàng/i.test(lbl.innerText || '')) {
+        const inp = lbl.querySelector('input') || document.getElementById(lbl.getAttribute('for'));
+        if (inp) { inp.click(); return 'clicked-input'; }
+        lbl.click();
+        return 'clicked-label';
+      }
+    }
+    return false;
+  }), 8000, false);
+  if (clickedSanHang) {
+    await sleep(2500); // Chờ filter apply + re-render danh sách SP
+    console.log(`    ✅ Đã bật filter "Sẵn hàng" (${clickedSanHang}) — chỉ scrape SP còn hàng`);
+  } else {
+    console.log(`    ⚠ Không tìm thấy filter "Sẵn hàng" — dùng card-text detection thay thế`);
+  }
+
   let clicks = 0;
   while (true) {
     await scrollToBottom(page);
@@ -1082,7 +1131,13 @@ async function scrapeCPS(page, brand, specCache, startTime) {
       const soldEl    = [...card.querySelectorAll('span,p')].find(el => /[Đđ]ã bán/.test(el.innerText));
       const sold      = soldEl?.innerText?.replace(/[Đđ]ã bán\s*/i,'')?.trim() || '';
       if (!name || name.length < 5) return;
-      const cpsStatus = (!salePrice && !origPrice) ? 'Chưa rõ' : 'Còn hàng';
+      // v3.4.12: Detect out-of-stock từ card text (safety net bổ sung filter "Sẵn hàng")
+      const cardText = card.innerText || '';
+      let cpsStatus;
+      if (/tạm hết hàng|hết hàng|out of stock/i.test(cardText)) cpsStatus = 'Tạm hết hàng';
+      else if (/ngừng kinh doanh|ngừng bán/i.test(cardText)) cpsStatus = 'Ngừng KD';
+      else if (!salePrice && !origPrice) cpsStatus = 'Chưa rõ';
+      else cpsStatus = 'Còn hàng';
       out.push({
         dealer:'CellPhone S', name, brand:brandName,
         cpu:'', ram:'', storage:'', screen:'', gpu:'', weight:'',
@@ -1098,11 +1153,22 @@ async function scrapeCPS(page, brand, specCache, startTime) {
     return [];
   }
 
-  console.log(`    → ${products.length} SP`);
+  // v3.4.12: Lọc bỏ SP hết hàng/ngừng KD khỏi kết quả
+  const oosProducts = products.filter(p => p.stockStatus !== 'Còn hàng' && p.stockStatus !== 'Chưa rõ');
+  const inStock     = products.filter(p => p.stockStatus === 'Còn hàng' || p.stockStatus === 'Chưa rõ');
+  if (oosProducts.length > 0) {
+    console.log(`    🚫 Lọc bỏ ${oosProducts.length}/${products.length} SP hết hàng/ngừng KD (card text: "Tạm hết hàng"/"Ngừng KD")`);
+    // Log 5 SP đầu tiên bị lọc để debug
+    oosProducts.slice(0, 5).forEach(p =>
+      console.log(`       ↳ [${p.stockStatus}] ${p.name.substring(0,60)}`)
+    );
+    if (oosProducts.length > 5) console.log(`       ↳ ... và ${oosProducts.length - 5} SP khác`);
+  }
+  console.log(`    → ${inStock.length} SP (còn hàng)`);
   // v3.4.10: tạm tắt fetch specs mới cho CPS (skipNewFetch=true) — xem comment
   // dài trong enrichSpecs(). Chỉ áp dụng cache cho SP đã biết.
-  await enrichSpecs(products, specCache, fetchSpecsCPS, page, startTime, undefined, true);
-  return products;
+  await enrichSpecs(inStock, specCache, fetchSpecsCPS, page, startTime, undefined, true);
+  return inStock;
 }
 
 // ── Google Sheets: load spec cache ───────────────────────
