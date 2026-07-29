@@ -1,37 +1,40 @@
 name: Multi-Dealer Laptop Scraper
 
 on:
-  # 29/07/2026: Phuc yeu cau 3 slot/ngay co dinh (8h/11h/15h VN), TAT toan bo
-  # cron du phong/lech gio truoc do. Moi slot chi 1 dong cron (khong con 2
-  # dong gan nhau nhu ban cu) vi da co concurrency guard ben duoi de chan
-  # 2 run chay chong nhau (day chinh la nguyen nhan gay fail lien tuc 28-29/07).
-  # Le tinh UTC (khong doi theo DST vi VN khong co DST): 8h/11h/15h VN = UTC+7
-  # -> 01:00 / 04:00 / 08:00 UTC. Dat phut le :05 (khong dung dinh :00) vi
-  # GitHub docs canh bao dung gio la cao diem, de bi delay/drop hon le gio.
+  # 29/07/2026: 3 slot co dinh 8h/11h/15h VN. Le tinh UTC (VN khong DST):
+  # 8h/11h/15h VN = 01:00/04:00/08:00 UTC. Dat phut le :05 (khong dung dinh
+  # :00) vi GitHub docs canh bao dung gio la cao diem, de bi delay/drop hon.
   schedule:
     - cron: '5 1 * * *' # 01:05 UTC = 08:05 gio VN
     - cron: '5 4 * * *' # 04:05 UTC = 11:05 gio VN
     - cron: '5 8 * * *' # 08:05 UTC = 15:05 gio VN
   workflow_dispatch:
 
-# 29/07/2026: Chan 2 lan chay chong nhau (nguyen nhan gay fail lien tuc
-# 28-29/07: scrape-cloud/scrape-fpt cung ghi "RAW DATA" sheet cung luc khi
-# 2 run trung gio, vi writeToSheet() la doc-roi-ghi, khong co lock). Neu 1
-# run dang chay ma co trigger moi (schedule trung gio hiem gap hoac Phuc bam
-# Run workflow thu cong) -> run moi XEP HANG cho run truoc xong, khong chay
-# song song. cancel-in-progress: false vi KHONG duoc huy run dang scrape do
-# (se mat data + treo Chrome giua chung).
+# Chan 2 LAN CHAY (workflow run) chong nhau — van giu nguyen tu ban fix
+# truoc, vi neu 2 lan trigger trung gio thi van co the co 2 bo "3 job song
+# song + 1 job ghi" chay chong len nhau, gay dung 1 loai race condition da
+# fix hom qua nhung o cap do khac.
 concurrency:
   group: scrape-pipeline
   cancel-in-progress: false
 
 jobs:
-  # MBW (qua Cloudflare Worker proxy) + CellPhone S - chay 100% tu dong
-  # tren GitHub-hosted runner, khong can may local.
-  scrape-cloud:
+  # 30/07/2026 [v3.5.0]: tach MBW/CPS/FPT thanh 3 job scrape SONG SONG THAT
+  # SU (khong con needs: tuan tu giua chung) de tiet kiem thoi gian tong —
+  # truoc day scrape-fpt phai doi scrape-cloud xong moi chay, tong thoi gian
+  # = MBW+CPS + FPT cong don. Gio 3 job chay cung luc, tong thoi gian chi con
+  # = max(MBW+CPS, FPT).
+  #
+  # DIEM MAU CHOT: ca 3 job nay CHI scrape roi luu ra file JSON (WRITE_MODE=
+  # file), TUYET DOI KHONG dung tuc ghi vao Google Sheet. Neu de 3 job cung
+  # ghi Sheet cung luc se tai tao dung bug da mat cong tim ra va fix hom qua
+  # (28-29/07/2026): nhieu tien trinh doc-sua-ghi RAW DATA cung luc gay mat
+  # data/loi. Buoc ghi Sheet duy nhat nam o job write-sheet ben duoi, chi
+  # chay SAU KHI ca 3 job scrape da xong (needs), dam bao chi co 1 tien trinh
+  # dung tuc dung vao Google Sheet tai bat ky thoi diem nao.
+  scrape-mbw:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,13 +50,23 @@ jobs:
       - name: Install Chrome for Puppeteer
         run: npx puppeteer browsers install chrome
 
-      - name: Run scraper (MBW + CPS)
+      - name: Scrape MBW (chi luu file, chua ghi Sheet)
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           MBW_PROXY_HOST: ${{ secrets.MBW_PROXY_HOST }}
-          SCRAPE_DEALERS: MBW,CPS
+          SCRAPE_DEALERS: MBW
+          WRITE_MODE: file
         run: npm start
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-mbw-output
+          path: scrape-output/*.json
+          if-no-files-found: ignore
+          retention-days: 1
 
       - name: Bao cao ve Telegram
         if: always()
@@ -70,21 +83,15 @@ jobs:
             exit 0
           fi
           if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
-          MSG="[$ICON] MBW + CPS%0Amay: cloud (ubuntu-latest)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          MSG="[$ICON] MBW (scrape)%0Amay: cloud (ubuntu-latest)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" \
             -d "text=${MSG}" \
             -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
-  # FPT Retail - fptshop.com.vn chan bang Cloudflare bot-challenge (KHONG phai
-  # chan IP), nen doi IP hay thue VPS deu vo ich. Bat buoc self-hosted.
-  # Giu label chung 'self-hosted' de MSI va BARACK deu nhan duoc - day la
-  # co che du phong co chu dich, DUNG ghim vao mot may cu the.
-  scrape-fpt:
-    needs: scrape-cloud
-    runs-on: self-hosted
+  scrape-cps:
+    runs-on: ubuntu-latest
     timeout-minutes: 90
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -97,15 +104,82 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run scraper (FPT)
+      - name: Install Chrome for Puppeteer
+        run: npx puppeteer browsers install chrome
+
+      - name: Scrape CPS (chi luu file, chua ghi Sheet)
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SCRAPE_DEALERS: CPS
+          WRITE_MODE: file
+        run: npm start
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-cps-output
+          path: scrape-output/*.json
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Bao cao ve Telegram
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            echo "Chua dat OPS_BOT_TOKEN/OPS_CHAT_ID - bo qua bao cao"
+            exit 0
+          fi
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] CPS (scrape)%0Amay: cloud (ubuntu-latest)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "text=${MSG}" \
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
+
+  # FPT Retail - fptshop.com.vn chan bang Cloudflare bot-challenge (KHONG phai
+  # chan IP), bat buoc self-hosted. Giu label chung 'self-hosted' de MSI va
+  # BARACK deu nhan duoc - co che du phong co chu dich, DUNG ghim may cu the.
+  scrape-fpt:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Scrape FPT (chi luu file, chua ghi Sheet)
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           SCRAPE_DEALERS: FPT
+          WRITE_MODE: file
         run: npm start
 
-      # Bao cao KHONG bao gio duoc lam chet scrape -> continue-on-error: true
-      # Tu chua, khong phu thuoc buoc ghi moc thoi gian rieng (tung gay loi tren Windows runner)
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-fpt-output
+          path: scrape-output/*.json
+          if-no-files-found: ignore
+          retention-days: 1
+
       - name: Bao cao ve Telegram
         if: always()
         continue-on-error: true
@@ -122,7 +196,64 @@ jobs:
             exit 0
           fi
           if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
-          MSG="[$ICON] FPT%0Amay: ${RUNNER_NAME}%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          MSG="[$ICON] FPT (scrape)%0Amay: ${RUNNER_NAME}%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "text=${MSG}" \
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
+
+  # Job DUY NHAT duoc ghi vao Google Sheet. Chi chay SAU KHI ca 3 job scrape
+  # da xong (needs), va van chay du 1/2 job scrape bi fail (if: always()) —
+  # ghi best-effort voi du lieu cua nhung dealer thanh cong, con hon khong
+  # ghi gi (giu triet ly STOP-AND-STABILIZE tu v3.4.10: listing on dinh uu
+  # tien hon la doi cho hoan hao).
+  write-sheet:
+    needs: [scrape-mbw, scrape-cps, scrape-fpt]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download tat ca artifact tu 3 job scrape
+        uses: actions/download-artifact@v4
+        with:
+          path: scrape-artifacts
+
+      - name: Combine + ghi Sheet (1 lan duy nhat)
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SCRAPE_DEALERS: MBW,FPT,CPS
+          COMBINE_MODE: 'true'
+          COMBINE_INPUT_DIR: scrape-artifacts
+        run: npm start
+
+      - name: Bao cao ve Telegram
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            echo "Chua dat OPS_BOT_TOKEN/OPS_CHAT_ID - bo qua bao cao"
+            exit 0
+          fi
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] GHI SHEET (combine MBW+CPS+FPT)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" \
             -d "text=${MSG}" \
