@@ -1,5 +1,15 @@
 /**
- * multi_dealer_scraper.js  — v3.4.13
+ * multi_dealer_scraper.js  — v3.4.14
+ *
+ * FIX v3.4.14 [29/07/2026 — HTTP stock check cho SP mới CPS]:
+ *  v3.4.12 card-text detection bắt 0 SP vì CPS listing card KHÔNG chứa text
+ *  "Tạm hết hàng" — text đó chỉ có trên detail page. v3.4.12 filter "Sẵn hàng"
+ *  quá hung dữ (143/590 SP).
+ *  Fix mới: sau khi extract listing, cho SP KHÔNG CÓ TRONG SPEC CACHE (SP mới/
+ *  chưa biết), dùng Node.js native fetch() GET detail page HTML rồi regex tìm
+ *  "TẠM HẾT HÀNG" / "ngừng kinh doanh". KHÔNG dùng Puppeteer → zero impact
+ *  lên tính ổn định. Concurrency=5, timeout=6s/SP, cap=80 SP/brand.
+ *  Card-text detection vẫn giữ làm lớp 1 (free, dù hiện tại bắt 0).
  *
  * FIX v3.4.13 [29/07/2026 — revert filter "Sẵn hàng", giữ card-text detection]:
  *  v3.4.12 filter "Sẵn hàng" quá hung dữ — lọc theo "có hàng tại cửa hàng gần"
@@ -397,6 +407,61 @@ async function scrollToBottom(page) {
 // phải ném lên để caller đóng page cũ + tạo page mới (xem main loop CPS/FPT).
 function isFatalPageError(e) {
   return /detached Frame|Session closed|Target closed|Protocol error|Connection closed/i.test(e.message || '');
+}
+
+// v3.4.14: Lightweight HTTP stock check — KHÔNG dùng Puppeteer, chỉ fetch HTML
+// rồi regex tìm "TẠM HẾT HÀNG" trên detail page. Dùng cho SP không có trong
+// spec cache (SP mới, chưa biết tình trạng) để lọc EOL/OOS mà không cần điều
+// hướng Puppeteer (giữ nguyên tính ổn định v3.4.10).
+const HTTP_STOCK_CHECK_TIMEOUT = 6000;
+const HTTP_STOCK_CHECK_CONCURRENCY = 5;
+const HTTP_STOCK_CHECK_CAP = 80; // tối đa SP check/brand để không kéo dài job
+
+async function checkStockHTTP(url) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), HTTP_STOCK_CHECK_TIMEOUT);
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+        'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
+      },
+      signal: controller.signal,
+      redirect: 'follow',
+    });
+    clearTimeout(timer);
+    const html = await res.text();
+    if (/tạm\s*hết\s*hàng/i.test(html)) return 'Tạm hết hàng';
+    if (/ngừng\s*kinh\s*doanh|sản phẩm không tồn tại|không tìm thấy/i.test(html)) return 'Ngừng KD';
+    return 'Còn hàng';
+  } catch {
+    return 'Còn hàng'; // lỗi mạng → assume còn hàng, an toàn hơn
+  }
+}
+
+async function batchCheckStockHTTP(products, specCache) {
+  // Chỉ check SP không có trong spec cache
+  const uncached = products.filter(p => !specCache.has(p.link));
+  if (uncached.length === 0) return { filtered: 0, checked: 0 };
+
+  const toCheck = uncached.slice(0, HTTP_STOCK_CHECK_CAP);
+  if (uncached.length > HTTP_STOCK_CHECK_CAP) {
+    console.log(`    ℹ ${uncached.length} SP mới, chỉ HTTP check ${HTTP_STOCK_CHECK_CAP} SP/brand`);
+  }
+
+  let filtered = 0;
+  for (let i = 0; i < toCheck.length; i += HTTP_STOCK_CHECK_CONCURRENCY) {
+    const batch = toCheck.slice(i, i + HTTP_STOCK_CHECK_CONCURRENCY);
+    const results = await Promise.all(batch.map(p => checkStockHTTP(p.link)));
+    results.forEach((status, idx) => {
+      if (status !== 'Còn hàng') {
+        batch[idx].stockStatus = status;
+        filtered++;
+      }
+    });
+    if (i + HTTP_STOCK_CHECK_CONCURRENCY < toCheck.length) await sleep(300);
+  }
+  return { filtered, checked: toCheck.length };
 }
 
 async function safeGoto(page, url) {
@@ -1129,18 +1194,32 @@ async function scrapeCPS(page, brand, specCache, startTime) {
     return [];
   }
 
-  // v3.4.12: Lọc bỏ SP hết hàng/ngừng KD khỏi kết quả
-  const oosProducts = products.filter(p => p.stockStatus !== 'Còn hàng' && p.stockStatus !== 'Chưa rõ');
-  const inStock     = products.filter(p => p.stockStatus === 'Còn hàng' || p.stockStatus === 'Chưa rõ');
-  if (oosProducts.length > 0) {
-    console.log(`    🚫 Lọc bỏ ${oosProducts.length}/${products.length} SP hết hàng/ngừng KD (card text: "Tạm hết hàng"/"Ngừng KD")`);
-    // Log 5 SP đầu tiên bị lọc để debug
-    oosProducts.slice(0, 5).forEach(p =>
+  // v3.4.12: Lọc bỏ SP hết hàng/ngừng KD khỏi kết quả (card-text detection)
+  const oosCardText = products.filter(p => p.stockStatus !== 'Còn hàng' && p.stockStatus !== 'Chưa rõ');
+  let inStock       = products.filter(p => p.stockStatus === 'Còn hàng' || p.stockStatus === 'Chưa rõ');
+  if (oosCardText.length > 0) {
+    console.log(`    🚫 Card-text lọc ${oosCardText.length}/${products.length} SP hết hàng/ngừng KD`);
+    oosCardText.slice(0, 3).forEach(p =>
       console.log(`       ↳ [${p.stockStatus}] ${p.name.substring(0,60)}`)
     );
-    if (oosProducts.length > 5) console.log(`       ↳ ... và ${oosProducts.length - 5} SP khác`);
   }
-  console.log(`    → ${inStock.length} SP (còn hàng)`);
+
+  // v3.4.14: HTTP stock check — cho SP KHÔNG có trong cache, fetch detail page
+  // HTML rồi regex tìm "TẠM HẾT HÀNG". Không dùng Puppeteer → giữ ổn định.
+  const { filtered: httpFiltered, checked: httpChecked } = await batchCheckStockHTTP(inStock, specCache);
+  if (httpFiltered > 0) {
+    const httpOos = inStock.filter(p => p.stockStatus !== 'Còn hàng' && p.stockStatus !== 'Chưa rõ');
+    console.log(`    🚫 HTTP check lọc thêm ${httpFiltered}/${httpChecked} SP (detail page "Tạm hết hàng")`);
+    httpOos.slice(0, 5).forEach(p =>
+      console.log(`       ↳ [${p.stockStatus}] ${p.name.substring(0,60)}`)
+    );
+    if (httpOos.length > 5) console.log(`       ↳ ... và ${httpOos.length - 5} SP khác`);
+    inStock = inStock.filter(p => p.stockStatus === 'Còn hàng' || p.stockStatus === 'Chưa rõ');
+  } else if (httpChecked > 0) {
+    console.log(`    ✅ HTTP check ${httpChecked} SP mới → tất cả còn hàng`);
+  }
+
+  console.log(`    → ${inStock.length} SP (còn hàng, sau lọc)`);
   // v3.4.10: tạm tắt fetch specs mới cho CPS (skipNewFetch=true) — xem comment
   // dài trong enrichSpecs(). Chỉ áp dụng cache cho SP đã biết.
   await enrichSpecs(inStock, specCache, fetchSpecsCPS, page, startTime, undefined, true);
