@@ -1188,6 +1188,31 @@ function buildScrapeHealthNotes(existingRows, newRows, scrapeDealerNames) {
 }
 
 // ── Google Sheets: ghi data ───────────────────────────────
+// v3.5.1 [29/07/2026]: run #354 — write-sheet job fail sau ~6.5 phut (bat
+// thuong, cac lenh Sheets API thuong tra ve trong vai giay). Chua biet chac
+// nguyen nhan (nghi ngo: quota Sheets API bi dung do test lien tuc trong
+// ngay, hoac RAW DATA qua lon do chua chay archive). Them retry-with-backoff
+// cho MOI request Sheets API + log day du err.stack de lan sau biet chinh
+// xac loi gi thay vi chi thay "failure".
+async function withRetry(fn, { retries = 3, baseDelayMs = 2000, label = '' } = {}) {
+  let lastErr;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastErr = e;
+      const code = e.code || e.response?.status || '?';
+      console.log(`   ⚠ [${label}] lỗi lần ${attempt}/${retries} (code ${code}): ${e.message}`);
+      if (attempt < retries) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1);
+        console.log(`   ⏳ Chờ ${delay/1000}s rồi thử lại...`);
+        await sleep(delay);
+      }
+    }
+  }
+  throw lastErr;
+}
+
 async function writeToSheet(sheets, allProducts) {
   const today   = new Date();
   const dateStr = formatDate(today);
@@ -1195,10 +1220,10 @@ async function writeToSheet(sheets, allProducts) {
 
   let existingRows = [];
   try {
-    const res = await sheets.spreadsheets.values.get({
+    const res = await withRetry(() => sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A2:R`,
-    });
+    }), { label: 'read existing rows' });
     // Chỉ loại bỏ rows hôm nay thuộc dealer mà JOB NÀY phụ trách.
     // Rows hôm nay của dealer khác (do job song song ghi) được giữ lại,
     // tránh race condition khi 2 job cùng đọc-sửa-ghi RAW DATA.
@@ -1238,47 +1263,54 @@ async function writeToSheet(sheets, allProducts) {
     console.log(`✅ Health check: số lượng SP mỗi dealer bình thường (${[...SCRAPE_DEALER_NAMES].join(', ')})`);
   }
 
-  await sheets.spreadsheets.values.clear({
+  await withRetry(() => sheets.spreadsheets.values.clear({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A2:R`,
-  });
+  }), { label: 'clear A2:R' });
 
   const allRows = [...existingRows, ...newRows];
-  if (allRows.length > 0) {
-    await sheets.spreadsheets.values.update({
+  // v3.5.1: chia nho thanh tung lo ~5000 dong/lan thay vi 1 request khong lo —
+  // giam rui ro request qua lon/qua lau khi RAW DATA da tich luy hang chuc
+  // nghin dong lich su (chua chay archive). Moi lo van co retry rieng.
+  const CHUNK_SIZE = 5000;
+  for (let i = 0; i < allRows.length; i += CHUNK_SIZE) {
+    const chunk = allRows.slice(i, i + CHUNK_SIZE);
+    const startRow = 2 + i; // A2 là dòng bắt đầu
+    await withRetry(() => sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A2`,
+      range: `${SHEET_NAME}!A${startRow}`,
       valueInputOption: 'RAW',
-      requestBody: { values: allRows },
-    });
+      requestBody: { values: chunk },
+    }), { label: `update rows ${startRow}-${startRow+chunk.length-1}` });
+    console.log(`   📤 Đã ghi lô ${i/CHUNK_SIZE + 1}: dòng ${startRow}–${startRow+chunk.length-1} (${chunk.length} dòng)`);
   }
 
-  await sheets.spreadsheets.values.update({
+  await withRetry(() => sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A1:S1`,
     valueInputOption: 'RAW',
     requestBody: { values: [HEADERS] },
-  });
+  }), { label: 'update header row' });
 
   // Lưu FPT_MAPPING_VERSION vào T1 để track khi nào cần re-fetch
-  await sheets.spreadsheets.values.update({
+  await withRetry(() => sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!T1`,  // T1: FPT mapping version
     valueInputOption: 'RAW',
     requestBody: { values: [[FPT_MAPPING_VERSION]] },
-  });
+  }), { label: 'update T1 mapping version' });
 
   // FIX #1: ghi health note vào U1 — mở sheet lên là thấy ngay lần chạy gần nhất
   // có bị tụt số lượng SP bất thường không, khỏi phải mò log GitHub Actions
   const healthNote = healthNotes.length > 0
     ? `[${dateStr} ${timeStr}] ${healthNotes.join(' | ')}`
     : `[${dateStr} ${timeStr}] ✅ OK — số lượng SP bình thường`;
-  await sheets.spreadsheets.values.update({
+  await withRetry(() => sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!U1`,  // U1: Scrape health note (lần chạy gần nhất)
     valueInputOption: 'RAW',
     requestBody: { values: [[healthNote]] },
-  });
+  }), { label: 'update U1 health note' });
 
   const missingSpecs = newRows.filter(r => !r[6] && !r[7]).length;
   console.log(`✅ Ghi ${newRows.length} dòng mới | Giữ ${existingRows.length} dòng cũ`);
@@ -1586,12 +1618,15 @@ async function runCombineMode() {
 
 if (COMBINE_MODE) {
   runCombineMode().catch(err => {
-    console.error('💥 Fatal (combine mode):', err);
+    console.error('💥 Fatal (combine mode):', err && err.stack ? err.stack : err);
+    if (err && err.response && err.response.data) {
+      console.error('   API response data:', JSON.stringify(err.response.data).substring(0, 2000));
+    }
     process.exit(1);
   });
 } else {
   runScrapeMode().catch(err => {
-    console.error('💥 Fatal:', err);
+    console.error('💥 Fatal:', err && err.stack ? err.stack : err);
     process.exit(1);
   });
 }
