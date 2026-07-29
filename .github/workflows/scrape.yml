@@ -1,20 +1,29 @@
 name: Multi-Dealer Laptop Scraper
 
 on:
-  # Lich chay nam NGAY TRONG repo - khong phu thuoc Cloud Scheduler ben ngoai.
-  # Ly do doi: Cloud Scheduler dung PAT, PAT het han thi lich chet am tham
-  # (da xay ra 07/2026). Cron cua GitHub khong bao gio het han.
-  #
-  # 27/07/2026: phat hien cron dung dung "0 1 * * *" (dung gio, top-of-hour)
-  # bi GitHub tuot mat 1 lan khong ro nguyen nhan (khong co event 'schedule'
-  # nao trong run history sang do). GitHub docs canh bao: lich dung dung gio
-  # (:00) la gio cao diem, de bi delay/drop hon lich lech gio. Fix: 2 lich
-  # lech gio, cach nhau ~15 phut, quanh 8h VN. writeToSheet() da idempotent
-  # (xoa+ghi lai rows hom nay) nen ca 2 cung fire cung an toan, khong trung data.
+  # 29/07/2026: Phuc yeu cau 3 slot/ngay co dinh (8h/11h/15h VN), TAT toan bo
+  # cron du phong/lech gio truoc do. Moi slot chi 1 dong cron (khong con 2
+  # dong gan nhau nhu ban cu) vi da co concurrency guard ben duoi de chan
+  # 2 run chay chong nhau (day chinh la nguyen nhan gay fail lien tuc 28-29/07).
+  # Le tinh UTC (khong doi theo DST vi VN khong co DST): 8h/11h/15h VN = UTC+7
+  # -> 01:00 / 04:00 / 08:00 UTC. Dat phut le :05 (khong dung dinh :00) vi
+  # GitHub docs canh bao dung gio la cao diem, de bi delay/drop hon le gio.
   schedule:
-    - cron: '53 0 * * *' # 00:53 UTC = 07:53 gio VN
-    - cron: '7 1 * * *'  # 01:07 UTC = 08:07 gio VN (du phong neu lan tren bi tuot)
+    - cron: '5 1 * * *' # 01:05 UTC = 08:05 gio VN
+    - cron: '5 4 * * *' # 04:05 UTC = 11:05 gio VN
+    - cron: '5 8 * * *' # 08:05 UTC = 15:05 gio VN
   workflow_dispatch:
+
+# 29/07/2026: Chan 2 lan chay chong nhau (nguyen nhan gay fail lien tuc
+# 28-29/07: scrape-cloud/scrape-fpt cung ghi "RAW DATA" sheet cung luc khi
+# 2 run trung gio, vi writeToSheet() la doc-roi-ghi, khong co lock). Neu 1
+# run dang chay ma co trigger moi (schedule trung gio hiem gap hoac Phuc bam
+# Run workflow thu cong) -> run moi XEP HANG cho run truoc xong, khong chay
+# song song. cancel-in-progress: false vi KHONG duoc huy run dang scrape do
+# (se mat data + treo Chrome giua chung).
+concurrency:
+  group: scrape-pipeline
+  cancel-in-progress: false
 
 jobs:
   # MBW (qua Cloudflare Worker proxy) + CellPhone S - chay 100% tu dong
