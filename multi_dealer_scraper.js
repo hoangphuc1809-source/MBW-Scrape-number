@@ -1,5 +1,12 @@
 /**
- * multi_dealer_scraper.js  — v3.4.15
+ * multi_dealer_scraper.js  — v3.4.16
+ *
+ * FIX v3.4.16 [30/07/2026]:
+ *  (a) GHI SHEET FAIL Run #362/#363: "exceeds grid limits. Max rows: 45001"
+ *      — RAW DATA tích lũy 43k+ rows vượt grid limit. Fix: auto-expand sheet
+ *      grid trước khi ghi (check metadata → batchUpdate nếu cần).
+ *  (b) CPS vẫn 1523 SP với cap=15: giảm CPS_MAX_CLICKS 15→8. Brand lớn nhất
+ *      ~100 SP (~5 clicks). Cap 8 = max ~180 SP/brand, tổng ~700 — gần ~590.
  *
  * FIX v3.4.15 [29/07/2026 — ROOT CAUSE: CPS "Load thêm" loop vô tận]:
  *  Run #359 trả 2316 CPS SP (bình thường ~590). CPS MSI page chỉ có 52 SP,
@@ -1142,11 +1149,10 @@ async function scrapeCPS(page, brand, specCache, startTime) {
   // tại cửa hàng gần" thay vì "còn bán online", làm mất ~75% SP hợp lệ (143/590).
   // Chỉ giữ lớp (b) card-text detection + lớp (c) post-filter.
 
-  // v3.4.15: MAX_LOAD_MORE_CLICKS per brand — CPS "Load thêm" chạy vô tận khi
-  // button không biến mất, tiếp tục load SP từ category/brand khác → 2316 SP thay
-  // vì ~590 (Run #359). Brand lớn nhất ~150 SP (~8 clicks). Cap 15 = tối đa ~320
-  // SP/brand, dư sức mà ngăn loop vô tận.
-  const CPS_MAX_CLICKS = 15;
+  // v3.4.15→v3.4.16: giảm cap từ 15 → 8. Run #363 vẫn 1523 SP CPS (cap 15
+  // quá rộng). MSI page = 52 SP (~3 clicks), brand lớn nhất ~100 SP (~5 clicks).
+  // Cap 8 = tối đa ~180 SP/brand, 9 brands × 100 ≈ ~700 SP max — gần ~590.
+  const CPS_MAX_CLICKS = 8;
   let clicks = 0;
   while (clicks < CPS_MAX_CLICKS) {
     await scrollToBottom(page);
@@ -1403,6 +1409,42 @@ async function writeToSheet(sheets, allProducts) {
   }), { label: 'clear A2:R' });
 
   const allRows = [...existingRows, ...newRows];
+
+  // v3.4.16: Auto-expand sheet nếu tổng rows vượt grid limit.
+  // Lỗi Run #362/#363: "Range ('RAW DATA'!A45002) exceeds grid limits. Max rows: 45001"
+  // do data tích lũy quá 45k rows. Fix: kiểm tra + mở rộng grid trước khi ghi.
+  const totalRowsNeeded = allRows.length + 1; // +1 for header
+  try {
+    const sheetMeta = await withRetry(() => sheets.spreadsheets.get({
+      spreadsheetId: SPREADSHEET_ID,
+      fields: 'sheets(properties(sheetId,title,gridProperties))',
+    }), { label: 'get sheet metadata' });
+    const rawSheet = sheetMeta.data.sheets.find(s => s.properties.title === SHEET_NAME);
+    if (rawSheet) {
+      const currentMaxRows = rawSheet.properties.gridProperties.rowCount;
+      if (totalRowsNeeded > currentMaxRows) {
+        const newMaxRows = totalRowsNeeded + 5000; // buffer 5k rows cho lần sau
+        console.log(`   📐 Mở rộng sheet từ ${currentMaxRows} → ${newMaxRows} rows (cần ${totalRowsNeeded})`);
+        await withRetry(() => sheets.spreadsheets.batchUpdate({
+          spreadsheetId: SPREADSHEET_ID,
+          requestBody: {
+            requests: [{
+              updateSheetProperties: {
+                properties: {
+                  sheetId: rawSheet.properties.sheetId,
+                  gridProperties: { rowCount: newMaxRows },
+                },
+                fields: 'gridProperties.rowCount',
+              },
+            }],
+          },
+        }), { label: 'expand grid rows' });
+      }
+    }
+  } catch (e) {
+    console.log(`   ⚠ Auto-expand check failed: ${e.message} — tiếp tục ghi, có thể lỗi nếu vượt grid limit`);
+  }
+
   // v3.5.1: chia nho thanh tung lo ~5000 dong/lan thay vi 1 request khong lo —
   // giam rui ro request qua lon/qua lau khi RAW DATA da tich luy hang chuc
   // nghin dong lich su (chua chay archive). Moi lo van co retry rieng.
