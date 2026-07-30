@@ -1,13 +1,13 @@
 name: Multi-Dealer Laptop Scraper
 
 on:
-  # 29/07/2026: 3 slot co dinh 8h/11h/15h VN. Le tinh UTC (VN khong DST):
-  # 8h/11h/15h VN = 01:00/04:00/08:00 UTC. Dat phut le :05 (khong dung dinh
-  # :00) vi GitHub docs canh bao dung gio la cao diem, de bi delay/drop hon.
-  schedule:
-    - cron: '5 1 * * *' # 01:05 UTC = 08:05 gio VN
-    - cron: '5 4 * * *' # 04:05 UTC = 11:05 gio VN
-    - cron: '5 8 * * *' # 08:05 UTC = 15:05 gio VN
+  # 30/07/2026: Bo han GitHub schedule: cron cua GitHub KHONG dam bao dung
+  # gio (GitHub tu nhan trong docs: "delayed during periods of high loads"),
+  # thuc te da thay tre 8 phut den gan 3 tieng cung ngay. Phuc chuyen sang
+  # dung 1 cron ben ngoai (may Phuc / cloud scheduler) goi thang API
+  # workflow_dispatch dung gio thay the. CHI DUNG 1 TRONG 2 CO CHE (schedule
+  # cua GitHub HOAC cron ben ngoai) — khong dung ca 2 cung luc de tranh trung
+  # gio gay 2 lan chay chong nhau (dung loai race condition da fix 28-29/07).
   workflow_dispatch:
 
 # Chan 2 LAN CHAY (workflow run) chong nhau — van giu nguyen tu ban fix
