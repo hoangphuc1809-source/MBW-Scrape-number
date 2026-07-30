@@ -1,5 +1,12 @@
 /**
- * multi_dealer_scraper.js  — v3.4.14
+ * multi_dealer_scraper.js  — v3.4.15
+ *
+ * FIX v3.4.15 [29/07/2026 — ROOT CAUSE: CPS "Load thêm" loop vô tận]:
+ *  Run #359 trả 2316 CPS SP (bình thường ~590). CPS MSI page chỉ có 52 SP,
+ *  9 brands × ~60 = ~540 SP. Root cause: "Load thêm" button không biến mất
+ *  khi hết SP của brand → tiếp tục load SP từ category/brand khác vô tận.
+ *  Fix: cap MAX_LOAD_MORE_CLICKS = 15 per brand (đủ cho ~320 SP/brand).
+ *  Kết hợp với v3.4.14 HTTP stock check để lọc OOS/EOL product.
  *
  * FIX v3.4.14 [29/07/2026 — HTTP stock check cho SP mới CPS]:
  *  v3.4.12 card-text detection bắt 0 SP vì CPS listing card KHÔNG chứa text
@@ -1135,8 +1142,13 @@ async function scrapeCPS(page, brand, specCache, startTime) {
   // tại cửa hàng gần" thay vì "còn bán online", làm mất ~75% SP hợp lệ (143/590).
   // Chỉ giữ lớp (b) card-text detection + lớp (c) post-filter.
 
+  // v3.4.15: MAX_LOAD_MORE_CLICKS per brand — CPS "Load thêm" chạy vô tận khi
+  // button không biến mất, tiếp tục load SP từ category/brand khác → 2316 SP thay
+  // vì ~590 (Run #359). Brand lớn nhất ~150 SP (~8 clicks). Cap 15 = tối đa ~320
+  // SP/brand, dư sức mà ngăn loop vô tận.
+  const CPS_MAX_CLICKS = 15;
   let clicks = 0;
-  while (true) {
+  while (clicks < CPS_MAX_CLICKS) {
     await scrollToBottom(page);
     await sleep(1800);
     const clicked = await evalWithTimeout(page.evaluate(() => {
@@ -1152,6 +1164,7 @@ async function scrapeCPS(page, brand, specCache, startTime) {
     clicks++;
     await sleep(2500);
   }
+  if (clicks >= CPS_MAX_CLICKS) console.log(`    ⚠ Đạt giới hạn ${CPS_MAX_CLICKS} lần Load thêm — dừng để tránh load SP ngoài brand`);
   if (clicks) console.log(`    → Load thêm: ${clicks} lần`);
 
   const products = await evalWithTimeout(page.evaluate((brandName, BASE) => {
