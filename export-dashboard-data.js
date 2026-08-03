@@ -45,6 +45,7 @@ function csvEscape(v) {
 }
 
 async function main() {
+  try { fs.writeFileSync(DEBUG_LOG_PATH, ''); } catch (_) {} // reset log mỗi lần chạy, tránh phình vô hạn
   debugLog('--- Bắt đầu export-dashboard-data.js ---');
   debugLog(`SPREADSHEET_ID set: ${!!SPREADSHEET_ID}, GOOGLE_CREDENTIALS set: ${!!process.env.GOOGLE_CREDENTIALS}`);
 

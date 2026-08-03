@@ -252,16 +252,24 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          if [ -n "$(git status --porcelain dashboard/data.csv dashboard/.export-debug.log 2>/dev/null)" ]; then
-            git config user.name "msi-data-bot"
-            git config user.email "actions@users.noreply.github.com"
-            git add dashboard/data.csv dashboard/.export-debug.log 2>/dev/null || true
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          ADDED=0
+          if [ -f dashboard/data.csv ] && [ -n "$(git status --porcelain dashboard/data.csv)" ]; then
+            git add dashboard/data.csv
+            ADDED=1
+          fi
+          if [ -f dashboard/.export-debug.log ] && [ -n "$(git status --porcelain dashboard/.export-debug.log)" ]; then
+            git add dashboard/.export-debug.log
+            ADDED=1
+          fi
+          if [ "$ADDED" = "1" ]; then
             git commit -m "chore(dashboard): cap nhat data snapshot [skip ci]"
             git pull --rebase origin main
             git push origin HEAD:main
             echo "Da push"
           else
-            echo "Khong co thay doi, bo qua commit"
+            echo "Khong co file nao thay doi, bo qua commit"
           fi
 
       - name: Bao cao ve Telegram
