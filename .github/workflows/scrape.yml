@@ -240,13 +240,14 @@ jobs:
           COMBINE_INPUT_DIR: scrape-artifacts
         run: npm start
 
-      - name: Export snapshot dashboard/data.csv (fix dashboard hay lỗi không load data)
+      - name: Export snapshot dashboard/data.csv (tinh enrichment bang code, khong doc Dailly SRP Tracking)
         if: always()
         continue-on-error: true
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-        run: node export-dashboard-data.js
+          COMBINE_INPUT_DIR: scrape-artifacts
+        run: node enrich-and-export.js
 
       - name: Commit + push data.csv / debug log nếu có thay đổi
         if: always()
@@ -259,8 +260,8 @@ jobs:
             git add dashboard/data.csv
             ADDED=1
           fi
-          if [ -f dashboard/.export-debug.log ] && [ -n "$(git status --porcelain dashboard/.export-debug.log)" ]; then
-            git add dashboard/.export-debug.log
+          if [ -f dashboard/.enrich-debug.log ] && [ -n "$(git status --porcelain dashboard/.enrich-debug.log)" ]; then
+            git add dashboard/.enrich-debug.log
             ADDED=1
           fi
           if [ "$ADDED" = "1" ]; then
