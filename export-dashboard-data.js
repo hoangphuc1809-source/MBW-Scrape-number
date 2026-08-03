@@ -31,11 +31,30 @@ const DEBUG_LOG_PATH = path.join(__dirname, 'dashboard', '.export-debug.log');
 // gid của tab "Dailly SRP Tracking" — lấy đúng bằng gid thay vì tên, để
 // không vỡ nếu ai đó đổi tên tab sau này.
 const TARGET_GID = 221053035;
+// Dashboard chỉ cần tối đa 30 ngày lịch sử (xem dayBtns=[7,14,30] trong
+// dashboard/index.html). Tab "Dailly SRP Tracking" đang rất lớn (đọc 1 lần
+// A:Z bị Sheets API trả 503 sau ~6 phút — xác nhận 03/08/2026), nên chỉ lấy
+// ~40k dòng cuối (dư ra so với 30 ngày thực tế) thay vì đọc toàn bộ.
+const MAX_DATA_ROWS = 40000;
+const CHUNK_SIZE = 5000; // đọc theo lô nhỏ, tránh 1 request bị timeout
 
 function debugLog(msg) {
   const line = `[${new Date().toISOString()}] ${msg}\n`;
   try { fs.appendFileSync(DEBUG_LOG_PATH, line); } catch (_) {}
   console.log(msg);
+}
+
+async function withRetry(fn, label, tries = 3) {
+  let lastErr;
+  for (let i = 1; i <= tries; i++) {
+    try { return await fn(); }
+    catch (err) {
+      lastErr = err;
+      debugLog(`   ⚠ ${label} lần ${i}/${tries} lỗi: ${err.message}`);
+      if (i < tries) await new Promise(r => setTimeout(r, i * 3000));
+    }
+  }
+  throw lastErr;
 }
 
 function csvEscape(v) {
@@ -69,17 +88,46 @@ async function main() {
   const sheetMeta = (meta.data.sheets || []).find(s => s.properties.sheetId === TARGET_GID);
   if (!sheetMeta) throw new Error(`Không tìm thấy tab với gid=${TARGET_GID} trong spreadsheet. Các tab hiện có: ${allTabs.join(', ')}`);
   const tabName = sheetMeta.properties.title;
-  debugLog(`📋 Đọc tab "${tabName}" (gid ${TARGET_GID})...`);
+  const totalRows = sheetMeta.properties.gridProperties.rowCount;
+  debugLog(`📋 Tab "${tabName}" (gid ${TARGET_GID}) — tổng ${totalRows} dòng (theo metadata, gồm cả dòng trống chưa dùng)`);
 
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `'${tabName}'!A:Z`,
-    valueRenderOption: 'UNFORMATTED_VALUE',
-    dateTimeRenderOption: 'FORMATTED_STRING',
-  });
+  // Header luôn ở dòng 1
+  const headerRes = await withRetry(
+    () => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${tabName}'!A1:Z1`,
+      valueRenderOption: 'UNFORMATTED_VALUE',
+      dateTimeRenderOption: 'FORMATTED_STRING',
+    }),
+    'Đọc header'
+  );
+  const header = (headerRes.data.values || [[]])[0];
 
-  const rows = res.data.values || [];
-  debugLog(`   ${rows.length} dòng (kể cả header)`);
+  // Chỉ lấy MAX_DATA_ROWS dòng dữ liệu cuối (mới nhất) — dư so với 30 ngày
+  // dashboard cần, nhưng tránh đọc hết tab đang bị phình (gây 503/timeout).
+  const dataStartRow = Math.max(2, totalRows - MAX_DATA_ROWS + 1);
+  debugLog(`   Sẽ đọc dòng ${dataStartRow} → ${totalRows} theo lô ${CHUNK_SIZE} dòng/lần...`);
+
+  const dataRows = [];
+  for (let start = dataStartRow; start <= totalRows; start += CHUNK_SIZE) {
+    const end = Math.min(start + CHUNK_SIZE - 1, totalRows);
+    const chunkRes = await withRetry(
+      () => sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${tabName}'!A${start}:Z${end}`,
+        valueRenderOption: 'UNFORMATTED_VALUE',
+        dateTimeRenderOption: 'FORMATTED_STRING',
+      }),
+      `Đọc lô ${start}-${end}`
+    );
+    const chunkRows = chunkRes.data.values || [];
+    // Bỏ các dòng hoàn toàn trống (vùng cuối sheet thường có nhiều dòng trống chưa dùng)
+    for (const r of chunkRows) if (r.some(c => c !== '' && c !== undefined && c !== null)) dataRows.push(r);
+    debugLog(`   ✓ Lô ${start}-${end}: ${chunkRows.length} dòng thô`);
+  }
+
+  const rows = [header, ...dataRows];
+  debugLog(`   Tổng ${rows.length} dòng (kể cả header) sau khi lọc dòng trống`);
   if (rows.length < 10) {
     throw new Error(`Chỉ đọc được ${rows.length} dòng — nghi ngờ lỗi, không ghi đè data.csv cũ`);
   }
