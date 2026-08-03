@@ -248,20 +248,20 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         run: node export-dashboard-data.js
 
-      - name: Commit + push data.csv nếu có thay đổi
+      - name: Commit + push data.csv / debug log nếu có thay đổi
         if: always()
         continue-on-error: true
         run: |
-          if [ -n "$(git status --porcelain dashboard/data.csv)" ]; then
+          if [ -n "$(git status --porcelain dashboard/data.csv dashboard/.export-debug.log 2>/dev/null)" ]; then
             git config user.name "msi-data-bot"
             git config user.email "actions@users.noreply.github.com"
-            git add dashboard/data.csv
+            git add dashboard/data.csv dashboard/.export-debug.log 2>/dev/null || true
             git commit -m "chore(dashboard): cap nhat data snapshot [skip ci]"
             git pull --rebase origin main
             git push origin HEAD:main
-            echo "Da push data.csv moi"
+            echo "Da push"
           else
-            echo "data.csv khong doi, bo qua commit"
+            echo "Khong co thay doi, bo qua commit"
           fi
 
       - name: Bao cao ve Telegram

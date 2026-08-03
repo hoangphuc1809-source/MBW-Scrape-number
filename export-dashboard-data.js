@@ -27,9 +27,16 @@ const os = require('os');
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = path.join(os.tmpdir(), 'export-gcreds.json');
+const DEBUG_LOG_PATH = path.join(__dirname, 'dashboard', '.export-debug.log');
 // gid của tab "Dailly SRP Tracking" — lấy đúng bằng gid thay vì tên, để
 // không vỡ nếu ai đó đổi tên tab sau này.
 const TARGET_GID = 221053035;
+
+function debugLog(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  try { fs.appendFileSync(DEBUG_LOG_PATH, line); } catch (_) {}
+  console.log(msg);
+}
 
 function csvEscape(v) {
   const s = (v === null || v === undefined) ? '' : String(v);
@@ -38,8 +45,11 @@ function csvEscape(v) {
 }
 
 async function main() {
+  debugLog('--- Bắt đầu export-dashboard-data.js ---');
+  debugLog(`SPREADSHEET_ID set: ${!!SPREADSHEET_ID}, GOOGLE_CREDENTIALS set: ${!!process.env.GOOGLE_CREDENTIALS}`);
+
   if (!SPREADSHEET_ID || !process.env.GOOGLE_CREDENTIALS) {
-    console.log('⚠ Thiếu SPREADSHEET_ID hoặc GOOGLE_CREDENTIALS — bỏ qua export dashboard data.');
+    debugLog('⚠ Thiếu SPREADSHEET_ID hoặc GOOGLE_CREDENTIALS — bỏ qua export dashboard data.');
     return;
   }
 
@@ -50,11 +60,15 @@ async function main() {
   });
   const sheets = google.sheets({ version: 'v4', auth });
 
+  debugLog('Gọi spreadsheets.get() để lấy metadata...');
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const allTabs = (meta.data.sheets || []).map(s => `${s.properties.title} (gid=${s.properties.sheetId})`);
+  debugLog(`Danh sách tab tìm thấy: ${allTabs.join(' | ')}`);
+
   const sheetMeta = (meta.data.sheets || []).find(s => s.properties.sheetId === TARGET_GID);
-  if (!sheetMeta) throw new Error(`Không tìm thấy tab với gid=${TARGET_GID} trong spreadsheet`);
+  if (!sheetMeta) throw new Error(`Không tìm thấy tab với gid=${TARGET_GID} trong spreadsheet. Các tab hiện có: ${allTabs.join(', ')}`);
   const tabName = sheetMeta.properties.title;
-  console.log(`📋 Đọc tab "${tabName}" (gid ${TARGET_GID})...`);
+  debugLog(`📋 Đọc tab "${tabName}" (gid ${TARGET_GID})...`);
 
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
@@ -64,7 +78,7 @@ async function main() {
   });
 
   const rows = res.data.values || [];
-  console.log(`   ${rows.length} dòng (kể cả header)`);
+  debugLog(`   ${rows.length} dòng (kể cả header)`);
   if (rows.length < 10) {
     throw new Error(`Chỉ đọc được ${rows.length} dòng — nghi ngờ lỗi, không ghi đè data.csv cũ`);
   }
@@ -72,12 +86,16 @@ async function main() {
   const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n') + '\n';
   const outPath = path.join(__dirname, 'dashboard', 'data.csv');
   fs.writeFileSync(outPath, csv, 'utf8');
-  console.log(`✅ Đã ghi ${outPath} (${(csv.length / 1024).toFixed(0)} KB)`);
+  debugLog(`✅ Đã ghi ${outPath} (${(csv.length / 1024).toFixed(0)} KB)`);
 
   fs.unlinkSync(CREDS_PATH);
+  debugLog('--- Kết thúc export-dashboard-data.js: THÀNH CÔNG ---');
 }
 
 main().catch(err => {
-  console.error('💥 Export dashboard data thất bại (không làm fail job chính):', err && err.stack ? err.stack : err);
+  debugLog(`💥 Export dashboard data thất bại: ${err && err.stack ? err.stack : String(err)}`);
+  if (err && err.response && err.response.data) {
+    debugLog(`   API response data: ${JSON.stringify(err.response.data).substring(0, 3000)}`);
+  }
   process.exitCode = 0;
 });
