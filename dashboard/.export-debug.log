@@ -1,11 +1,18 @@
-[2026-08-03T07:04:43.964Z] --- Bắt đầu export-dashboard-data.js ---
-[2026-08-03T07:04:43.965Z] SPREADSHEET_ID set: true, GOOGLE_CREDENTIALS set: true
-[2026-08-03T07:04:43.966Z] Gọi spreadsheets.get() để lấy metadata...
-[2026-08-03T07:04:44.294Z] Danh sách tab tìm thấy: Key Focus model (gid=1652349882) | SRP checking (gid=1241321671) | Dailly SRP Tracking (gid=221053035) | RAW DATA (gid=889472306) | RAW DATA ARCHIVE (gid=463742773) | Part # (gid=1652208865) | Check (gid=899133970) | Segment (gid=1545218913) | Introduce (gid=1355004314) | Fix (gid=279452386)
-[2026-08-03T07:04:44.294Z] 📋 Đọc tab "Dailly SRP Tracking" (gid 221053035)...
-[2026-08-03T07:10:56.687Z] 💥 Export dashboard data thất bại: Error: The service is currently unavailable.
-    at Gaxios._request (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/gaxios/build/src/gaxios.js:142:23)
+[2026-08-03T08:52:33.150Z] --- Bắt đầu export-dashboard-data.js ---
+[2026-08-03T08:52:33.151Z] SPREADSHEET_ID set: true, GOOGLE_CREDENTIALS set: true
+[2026-08-03T08:52:33.152Z] Gọi spreadsheets.get() để lấy metadata...
+[2026-08-03T08:52:33.640Z] Danh sách tab tìm thấy: Key Focus model (gid=1652349882) | Dailly SRP Tracking (gid=221053035) | RAW DATA (gid=889472306) | Part # (gid=1652208865) | Check (gid=899133970) | Segment (gid=1545218913) | Introduce (gid=1355004314) | Fix (gid=279452386)
+[2026-08-03T08:52:33.640Z] 📋 Tab "Dailly SRP Tracking" (gid 221053035) — tổng 82479 dòng (theo metadata, gồm cả dòng trống chưa dùng)
+[2026-08-03T08:54:29.588Z]    Sẽ đọc dòng 42480 → 82479 theo lô 5000 dòng/lần...
+[2026-08-03T08:54:30.321Z]    ✓ Lô 42480-47479: 0 dòng thô
+[2026-08-03T08:54:30.537Z]    ✓ Lô 47480-52479: 0 dòng thô
+[2026-08-03T08:54:30.695Z]    ✓ Lô 52480-57479: 0 dòng thô
+[2026-08-03T08:54:30.884Z]    ✓ Lô 57480-62479: 0 dòng thô
+[2026-08-03T08:54:31.045Z]    ✓ Lô 62480-67479: 0 dòng thô
+[2026-08-03T08:54:31.235Z]    ✓ Lô 67480-72479: 0 dòng thô
+[2026-08-03T08:54:31.398Z]    ✓ Lô 72480-77479: 0 dòng thô
+[2026-08-03T08:54:31.581Z]    ✓ Lô 77480-82479: 0 dòng thô
+[2026-08-03T08:54:31.581Z]    Tổng 1 dòng (kể cả header) sau khi lọc dòng trống
+[2026-08-03T08:54:31.582Z] 💥 Export dashboard data thất bại: Error: Chỉ đọc được 1 dòng — nghi ngờ lỗi, không ghi đè data.csv cũ
+    at main (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/export-dashboard-data.js:132:11)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at async JWT.requestAsync (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
-    at async main (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/export-dashboard-data.js:74:15)
-[2026-08-03T07:10:56.687Z]    API response data: {"error":{"code":503,"message":"The service is currently unavailable.","errors":[{"message":"The service is currently unavailable.","domain":"global","reason":"backendError"}],"status":"UNAVAILABLE"}}
