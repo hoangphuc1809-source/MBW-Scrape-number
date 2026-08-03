@@ -12,7 +12,7 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = path.join(os.tmpdir(), 'inspect-gcreds.json');
 const REPORT_PATH = path.join(__dirname, 'structure-report.txt');
 const REQ_TIMEOUT_MS = 25000;
-const TABS = ['RAW DATA', 'Part #', 'Segment', 'Key Focus model', 'Check', 'Dailly SRP Tracking'];
+const TABS = ['RAW DATA', 'Part #', 'Segment', 'Key Focus model'];
 
 const lines = [];
 function log(msg) { lines.push(msg); console.log(msg); }
@@ -30,9 +30,8 @@ async function main() {
     try {
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `'${tab}'!A1:AA6`,
-        valueRenderOption: 'UNFORMATTED_VALUE',
-        dateTimeRenderOption: 'FORMATTED_STRING',
+        range: `'${tab}'!A1:AC15`,
+        valueRenderOption: 'FORMULA',
       }, { timeout: REQ_TIMEOUT_MS });
       const rows = res.data.values || [];
       const header = rows[0] || [];
