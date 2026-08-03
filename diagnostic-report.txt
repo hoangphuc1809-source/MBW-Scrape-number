@@ -1,23 +1,48 @@
---- Chẩn đoán spreadsheet 1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w — 2026-08-03T08:50:10.977Z ---
+--- Chẩn đoán spreadsheet 1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w — 2026-08-03T09:31:18.696Z ---
 
-Tổng 10 tab:
+Tổng 8 tab:
 
   • "Key Focus model" (gid=1652349882) — 99 dòng x 14 cột — 0 rule conditional formatting
-  • "SRP checking" (gid=1241321671) — 999 dòng x 16 cột — 4 rule conditional formatting
   • "Dailly SRP Tracking" (gid=221053035) — 82479 dòng x 24 cột — 2 rule conditional formatting
   • "RAW DATA" (gid=889472306) — 70150 dòng x 22 cột — 1 rule conditional formatting
-  • "RAW DATA ARCHIVE" (gid=463742773) — 14853 dòng x 26 cột — 1 rule conditional formatting
   • "Part #" (gid=1652208865) — 10283 dòng x 27 cột — 3 rule conditional formatting
   • "Check" (gid=899133970) — 1832 dòng x 20 cột — 1 rule conditional formatting
-  • "Segment" (gid=1545218913) — 1000 dòng x 13 cột — 2 rule conditional formatting
+  • "Segment" (gid=1545218913) — 1000 dòng x 5 cột — 2 rule conditional formatting
   • "Introduce" (gid=1355004314) — 99 dòng x 26 cột — 0 rule conditional formatting
   • "Fix" (gid=279452386) — 99 dòng x 26 cột — 0 rule conditional formatting
 
   [Key Focus model] — không có formula ở 5 dòng đầu (có thể là data thuần)
-  [SRP checking] — không có formula ở 5 dòng đầu (có thể là data thuần)
+  [Dailly SRP Tracking] A2: =QUERY('RAW DATA'!A2:V, "SELECT A, B, D, E, M, N, O, P, Q,F WHERE A IS NOT NULL and N is not null  and R is not null and V<>'EOL' ", 0)  ⚠️ NGHI VẤN NẶNG
   [Dailly SRP Tracking] K2: =MAP($D$2:$D,LAMBDA(SKU,
 IF(sku="",,
 IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(K$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] L2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(L$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] M2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(M$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] N2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(N$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] O2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(O$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] P2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(P$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] Q2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(Q$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] R2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(R$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] S2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(S$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] T2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(T$1,'Part #'!$A$1:$Q$1,0)),))))
   [Dailly SRP Tracking] U2: =MAP($D$2:$D,LAMBDA(SKU,
 IF(sku="",,
 IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(U$1,'Part #'!$A$1:$Q$1,0)),))))
@@ -33,7 +58,6 @@ INDEX('RAW DATA'!$A:$S,MATCH(date&dealers&sku,'RAW DATA'!$A:$A&'RAW DATA'!$D:$D&
   [RAW DATA] V2: =MAP($E$2:$E,LAMBDA(sku,
 IF(sku="",,
 IFERROR(INDEX('Part #'!$A:$S,MATCH(sku,'Part #'!$A:$A,0),MATCH(V$1,'Part #'!$A$1:$S$1,0)),))))
-  [RAW DATA ARCHIVE] — không có formula ở 5 dòng đầu (có thể là data thuần)
   [Part #] L2: =MAP($M$2:$M,LAMBDA(Segment,
 IF(segment="",,
 INDEX(Segment!$B:$D,MATCH(segment,Segment!$C:$C,0),MATCH(L$1,Segment!$B$1:$D$1,0)))))
@@ -135,6 +159,5 @@ IFERROR(INDEX('RAW DATA'!$A:$S,MATCH(sku,'RAW DATA'!$E:$E,0),MATCH("Giá gốc (
 IF(sku="",,
 IFERROR(INDEX('RAW DATA'!$A:$S,MATCH(sku,'RAW DATA'!$E:$E,0),MATCH("Giá KM (₫)",'RAW DATA'!$A$1:$S$1,0)),))))
   [Segment] E1: =ARRAYFORMULA(IF(D1:D="",,0))  ⚠️ NGHI VẤN NẶNG
-  [Segment] M1: =ARRAYFORMULA(IF($L$1:$L="",""," "))  ⚠️ NGHI VẤN NẶNG
   [Introduce] — không có formula ở 5 dòng đầu (có thể là data thuần)
   [Fix] — không có formula ở 5 dòng đầu (có thể là data thuần)
