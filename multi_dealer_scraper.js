@@ -734,6 +734,7 @@ async function getMissingCandidates(sheets, dealerName, todayLinks) {
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A2:S`,
+      valueRenderOption: 'FORMULA', // A:S toàn data thô, tránh kích hoạt tính toán
     });
     const rows = res.data.values || [];
     const parseVN = (d) => {
@@ -1252,9 +1253,8 @@ async function loadSpecCacheFromSheet(sheets) {
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A2:S`,
+      valueRenderOption: 'FORMULA', // A:S toàn data thô, tránh kích hoạt tính toán
     });
-
-    // Đọc version đã lưu trong sheet (cell T1 — ngoài range data chính)
     let savedVersion = 0;
     try {
       const vRes = await sheets.spreadsheets.values.get({
@@ -1359,10 +1359,17 @@ async function writeToSheet(sheets, allProducts) {
   const timeStr = formatTime(today);
 
   let existingRows = [];
+  let existingReadFailed = false;
   try {
     const res = await withRetry(() => sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A2:R`,
+      // FIX 03/08/2026: cột A:R toàn data thô do scraper ghi (không có
+      // formula nào — formula duy nhất là cột V, ngoài phạm vi A:R), nên
+      // FORMULA render trả đúng giá trị mà KHÔNG kích hoạt tính toán như
+      // FORMATTED_VALUE (default) — tránh timeout do spreadsheet quá tải,
+      // là nguyên nhân gốc khiến lần đọc này lỗi và gây mất data trước đó.
+      valueRenderOption: 'FORMULA',
     }), { label: 'read existing rows' });
     // Chỉ loại bỏ rows hôm nay thuộc dealer mà JOB NÀY phụ trách.
     // Rows hôm nay của dealer khác (do job song song ghi) được giữ lại,
@@ -1375,7 +1382,26 @@ async function writeToSheet(sheets, allProducts) {
     });
   } catch(e) {
     console.log('⚠ Read existing rows failed:', e.message);
+    existingReadFailed = true;
   }
+
+  // FIX KHẨN 03/08/2026: BUG NGHIÊM TRỌNG vừa gây mất ~68k dòng lịch sử —
+  // khi đọc existingRows lỗi (sheet quá tải/timeout), code CŨ vẫn tiếp tục
+  // clear() + ghi allRows=[...existingRows(rỗng),...newRows] → xóa mất hết
+  // data cũ chỉ còn lại data hôm nay. GIỜ: đọc lỗi → DỪNG NGAY, không đụng
+  // gì tới sheet, để lần chạy sau tự retry thay vì ghi đè mất data.
+  if (existingReadFailed) {
+    console.log('💥 DỪNG: đọc existing rows lỗi — KHÔNG clear/ghi sheet để tránh mất data cũ. Sẽ tự thử lại ở lần chạy kế tiếp.');
+    return;
+  }
+  // Safety guard bổ sung: existingRows đọc "thành công" nhưng trả về 0 dòng
+  // là bất thường (RAW DATA luôn có lịch sử tích lũy) — cũng dừng để tránh
+  // xóa nhầm nếu API trả rỗng bất thường mà không throw lỗi.
+  if (existingRows.length === 0 && process.env.ALLOW_EMPTY_EXISTING !== 'true') {
+    console.log('💥 DỪNG: existingRows đọc được nhưng = 0 dòng — bất thường (RAW DATA luôn có lịch sử). KHÔNG clear/ghi để tránh mất data, cần kiểm tra thủ công. (Nếu đây là reset có chủ đích, set env ALLOW_EMPTY_EXISTING=true để bỏ qua guard này.)');
+    return;
+  }
+
 
   const newRows = allProducts.map((p, i) => [
     dateStr, timeStr, i+1,
