@@ -1,0 +1,18 @@
+
+=== RAW DATA ===
+  ⚠ Lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27RAW%20DATA%27%21A1%3AAA6?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
+
+=== Part # ===
+  ⚠ Lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Part%20%23%27%21A1%3AAA6?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
+
+=== Segment ===
+  ⚠ Lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Segment%27%21A1%3AAA6?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
+
+=== Key Focus model ===
+  ⚠ Lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Key%20Focus%20model%27%21A1%3AAA6?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
+
+=== Check ===
+  ⚠ Lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Check%27%21A1%3AAA6?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
+
+=== Dailly SRP Tracking ===
+  ⚠ Lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Dailly%20SRP%20Tracking%27%21A1%3AAA6?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
