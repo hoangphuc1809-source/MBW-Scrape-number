@@ -1,0 +1,140 @@
+--- Chẩn đoán spreadsheet 1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w — 2026-08-03T08:50:10.977Z ---
+
+Tổng 10 tab:
+
+  • "Key Focus model" (gid=1652349882) — 99 dòng x 14 cột — 0 rule conditional formatting
+  • "SRP checking" (gid=1241321671) — 999 dòng x 16 cột — 4 rule conditional formatting
+  • "Dailly SRP Tracking" (gid=221053035) — 82479 dòng x 24 cột — 2 rule conditional formatting
+  • "RAW DATA" (gid=889472306) — 70150 dòng x 22 cột — 1 rule conditional formatting
+  • "RAW DATA ARCHIVE" (gid=463742773) — 14853 dòng x 26 cột — 1 rule conditional formatting
+  • "Part #" (gid=1652208865) — 10283 dòng x 27 cột — 3 rule conditional formatting
+  • "Check" (gid=899133970) — 1832 dòng x 20 cột — 1 rule conditional formatting
+  • "Segment" (gid=1545218913) — 1000 dòng x 13 cột — 2 rule conditional formatting
+  • "Introduce" (gid=1355004314) — 99 dòng x 26 cột — 0 rule conditional formatting
+  • "Fix" (gid=279452386) — 99 dòng x 26 cột — 0 rule conditional formatting
+
+  [Key Focus model] — không có formula ở 5 dòng đầu (có thể là data thuần)
+  [SRP checking] — không có formula ở 5 dòng đầu (có thể là data thuần)
+  [Dailly SRP Tracking] K2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(K$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] U2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(U$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] V2: =MAP($D$2:$D,LAMBDA(SKU,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$Q,MATCH(SKU,'Part #'!$A:$A,0),MATCH(V$1,'Part #'!$A$1:$Q$1,0)),))))
+  [Dailly SRP Tracking] W2: =MAP($V$2:$V,LAMBDA(Part,
+IF(part="",,
+IFERROR(INDEX('Key Focus model'!$C:$D,MATCH(part,'Key Focus model'!$B:$B,0),MATCH("Focus Model",'Key Focus model'!$C$1:$D$1,0)),"No"))))
+  [Dailly SRP Tracking] X2: =MAP($A$2:$A,$C$2:$C,$D$2:$D,LAMBDA(date,dealers,sku,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$S,MATCH(date&dealers&sku,'RAW DATA'!$A:$A&'RAW DATA'!$D:$D&'RAW DATA'!$E:$E,0),MATCH("Tình trạng",'RAW DATA'!$A$1:$S$1,0)))))
+  [RAW DATA] V2: =MAP($E$2:$E,LAMBDA(sku,
+IF(sku="",,
+IFERROR(INDEX('Part #'!$A:$S,MATCH(sku,'Part #'!$A:$A,0),MATCH(V$1,'Part #'!$A$1:$S$1,0)),))))
+  [RAW DATA ARCHIVE] — không có formula ở 5 dòng đầu (có thể là data thuần)
+  [Part #] L2: =MAP($M$2:$M,LAMBDA(Segment,
+IF(segment="",,
+INDEX(Segment!$B:$D,MATCH(segment,Segment!$C:$C,0),MATCH(L$1,Segment!$B$1:$D$1,0)))))
+  [Part #] M2: =BYROW(A2:A, LAMBDA(dong, IF(dong="", "", IFERROR(INDEX(SORT(FILTER(Segment!C$2:C, REGEXMATCH(LOWER(dong), LOWER(Segment!C$2:C))), LEN(FILTER(Segment!C$2:C, REGEXMATCH(LOWER(dong), LOWER(Segment!C$2:C)))), FALSE), 1), "undefined"))))  ⚠️ NGHI VẤN NẶNG
+  [Part #] N2: =MAP($A$2:$A, LAMBDA(SKU,
+  IF(SKU="",,
+    LET(
+      col_CPU, INDEX('RAW DATA'!$A:$R, 0, MATCH("CPU", 'RAW DATA'!$A$1:$R$1, 0)),
+      IFERROR(INDEX(col_CPU, MATCH(1, ('RAW DATA'!$E:$E=SKU) * (col_CPU<>""), 0)),"")
+    )
+  )
+))
+  [Part #] O2: =MAP($A$2:$A, LAMBDA(SKU,
+  IF(SKU="",,
+    LET(
+      col_CPU, INDEX('RAW DATA'!$A:$R, 0, MATCH("Card đồ họa", 'RAW DATA'!$A$1:$R$1, 0)),
+      IFERROR(INDEX(col_CPU, MATCH(1, ('RAW DATA'!$E:$E=SKU) * (col_CPU<>""), 0)),"")
+    )
+  )
+))
+  [Part #] P2: =MAP($A$2:$A, LAMBDA(SKU,
+  IF(SKU="",,
+    LET(
+      col_CPU, INDEX('RAW DATA'!$A:$R, 0, MATCH("Trọng lượng", 'RAW DATA'!$A$1:$R$1, 0)),
+      IFERROR(INDEX(col_CPU, MATCH(1, ('RAW DATA'!$E:$E=SKU) * (col_CPU<>""), 0)),"")
+    )
+  )
+))
+  [Part #] Q2: =MAP($A$2:$A, LAMBDA(SKU,
+  IF(SKU="",,
+    LET(
+      col_CPU, INDEX('RAW DATA'!$A:$R, 0, MATCH("Link sản phẩm", 'RAW DATA'!$A$1:$R$1, 0)),
+      IFERROR(INDEX(col_CPU, MATCH(1, ('RAW DATA'!$E:$E=SKU) * (col_CPU<>""), 0)),)
+    )
+  )
+))
+  [Part #] R2: =MAP($A$2:$A,LAMBDA(sku,
+IF(sku="",,
+IFERROR(INDEX('RAW DATA'!$A:$S,MATCH(sku,'RAW DATA'!$E:$E,0),MATCH("Giá gốc (₫)",'RAW DATA'!$A$1:$S$1,0)),0))))
+  [Part #] S2: =MAP($A$2:$A,LAMBDA(sku,
+IF(sku="",,
+IFERROR(INDEX('RAW DATA'!$A:$S,MATCH(sku,'RAW DATA'!$E:$E,0),MATCH("Giá KM (₫)",'RAW DATA'!$A$1:$S$1,0)),0))))
+  [Check] A2: =UNIQUE(FILTER('RAW DATA'!E2:E, ISNA(MATCH('RAW DATA'!E2:E, 'Part #'!A2:A, 0)), 'RAW DATA'!E2:E <> ""))  ⚠️ NGHI VẤN NẶNG
+  [Check] B2: =ARRAYFORMULA(IF(A2:A="", "", PROPER(REGEXEXTRACT(A2:A, "^\S+\s+(\S+)"))))  ⚠️ NGHI VẤN NẶNG
+  [Check] C2: =MAP($A$2:$A, $B$2:$B, LAMBDA(sku, brand, IF(sku="", "", 
+  SWITCH(UPPER(brand),
+    "ACER", IFERROR(REGEXEXTRACT(sku, "\b([A-Z]{2,5}\d{2}[A-Z]{0,2}[-\s][A-Z0-9]{2,4}[-\s][A-Z0-9]{4})\b"), ""),
+    "ASUS", IFERROR(REGEXEXTRACT(sku, "(?:Go\s+|\d{2}\s+)?([A-Z0-9]{5,}[A-Z]\s*-\s*[A-Z0-9]+|[A-Z0-9]{5,}[
+  [Check] D2: =MAP($E$2:$E, LAMBDA(cpu_name, IF(cpu_name="", "", IFERROR(
+  IF(REGEXMATCH(cpu_name, "(?i)Ryzen\s+AI\s+\d"), 
+    REGEXEXTRACT(cpu_name, "^(?i)Ryzen\s+AI\s+\d"), 
+    IF(REGEXMATCH(cpu_name, "(?i)Core\s+Ultra\s+[3579]"),
+      REGEXEXTRACT(cpu_name, "^(?i)Core\s+Ultra\s+[3579]"),
+      REGEXEXTRACT
+  [Check] E2: =MAP($N$2:$N, LAMBDA(cpu_name, IF(cpu_name="", "", IFERROR(
+  REGEXEXTRACT(
+    cpu_name, 
+    "(?i)(Core\s+Ultra\s+\d+\s+\w+|Core\s+\d+\s+\w+|Core\s+i\d+-\w+|Ryzen\s+\d+\s+\w+|Ryzen\s+\d+-\w+)"
+  ), 
+  ""
+))))
+  [Check] F2: =MAP($A$2:$A,LAMBDA(SKU,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$R,MATCH(SKU,'RAW DATA'!$E:$E,0),MATCH("RAM",'RAW DATA'!$1:$1,0)))))
+  [Check] G2: =MAP($A$2:$A,LAMBDA(SKU,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$R,MATCH(SKU,'RAW DATA'!$E:$E,0),MATCH("Ổ cứng",'RAW DATA'!$1:$1,0)))))
+  [Check] H2: =MAP($A$2:$A,LAMBDA(SKU,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$R,MATCH(SKU,'RAW DATA'!$E:$E,0),MATCH("Màn Hình",'RAW DATA'!$1:$1,0)))))
+  [Check] I2: =MAP($O$2:$O, LAMBDA(vga, IF(vga="", "", IFERROR(
+  REGEXEXTRACT(vga, "\b(RTX\s+(?:3050|4050|4060|5050|5070\s+Ti|5070))\b"),
+  ""
+))))
+  [Check] J2: =MAP($O$2:$O, LAMBDA(vga, IF(vga="", "", IFERROR(
+  REGEXEXTRACT(vga, "\bRTX\s+(?:3050|4050|4060|5050|5070)(?:\s+Ti)?\s+(\d+G)B?\b"),
+  ""
+))))
+  [Check] L2: =MAP($M$2:$M,LAMBDA(Segment,
+IF(segment="",,
+INDEX(Segment!$B:$D,MATCH(segment,Segment!$C:$C,0),MATCH(L$1,Segment!$B$1:$D$1,0)))))
+  [Check] M2: =BYROW(A2:A, LAMBDA(dong, IF(dong="", "", IFERROR(INDEX(FILTER(Segment!C$2:C, REGEXMATCH(LOWER(dong), "\b" & LOWER(Segment!C$2:C) & "\b")), 1), ""))))  ⚠️ NGHI VẤN NẶNG
+  [Check] N2: =MAP($A$2:$A,LAMBDA(SKU,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$R,MATCH(SKU,'RAW DATA'!$E:$E,0),MATCH("CPU",'RAW DATA'!$1:$1,0)))))
+  [Check] O2: =MAP($A$2:$A,LAMBDA(SKU,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$R,MATCH(SKU,'RAW DATA'!$E:$E,0),MATCH("Card đồ họa",'RAW DATA'!$1:$1,0)))))
+  [Check] P2: =MAP($A$2:$A,LAMBDA(SKU,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$R,MATCH(SKU,'RAW DATA'!$E:$E,0),MATCH("Trọng lượng",'RAW DATA'!$1:$1,0)))))
+  [Check] Q2: =MAP($A$2:$A,LAMBDA(SKU,
+IF(SKU="",,
+INDEX('RAW DATA'!$A:$R,MATCH(SKU,'RAW DATA'!$E:$E,0),MATCH("Link sản phẩm",'RAW DATA'!$1:$1,0)))))
+  [Check] S2: =MAP($A$2:$A,LAMBDA(sku,
+IF(sku="",,
+IFERROR(INDEX('RAW DATA'!$A:$S,MATCH(sku,'RAW DATA'!$E:$E,0),MATCH("Giá gốc (₫)",'RAW DATA'!$A$1:$S$1,0)),))))
+  [Check] T2: =MAP($A$2:$A,LAMBDA(sku,
+IF(sku="",,
+IFERROR(INDEX('RAW DATA'!$A:$S,MATCH(sku,'RAW DATA'!$E:$E,0),MATCH("Giá KM (₫)",'RAW DATA'!$A$1:$S$1,0)),))))
+  [Segment] E1: =ARRAYFORMULA(IF(D1:D="",,0))  ⚠️ NGHI VẤN NẶNG
+  [Segment] M1: =ARRAYFORMULA(IF($L$1:$L="",""," "))  ⚠️ NGHI VẤN NẶNG
+  [Introduce] — không có formula ở 5 dòng đầu (có thể là data thuần)
+  [Fix] — không có formula ở 5 dòng đầu (có thể là data thuần)
