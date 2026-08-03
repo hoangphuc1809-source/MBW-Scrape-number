@@ -44,14 +44,14 @@ function debugLog(msg) {
   console.log(msg);
 }
 
-async function withRetry(fn, label, tries = 3) {
+async function withRetry(fn, label, tries = 2) {
   let lastErr;
   for (let i = 1; i <= tries; i++) {
     try { return await fn(); }
     catch (err) {
       lastErr = err;
       debugLog(`   ⚠ ${label} lần ${i}/${tries} lỗi: ${err.message}`);
-      if (i < tries) await new Promise(r => setTimeout(r, i * 3000));
+      if (i < tries) await new Promise(r => setTimeout(r, 2000));
     }
   }
   throw lastErr;
@@ -79,9 +79,10 @@ async function main() {
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   });
   const sheets = google.sheets({ version: 'v4', auth });
+  const REQ_TIMEOUT_MS = 20000; // fail nhanh — tab "Dailly SRP Tracking" đang treo lâu do formula nặng, không cần đợi lâu
 
   debugLog('Gọi spreadsheets.get() để lấy metadata...');
-  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID }, { timeout: REQ_TIMEOUT_MS });
   const allTabs = (meta.data.sheets || []).map(s => `${s.properties.title} (gid=${s.properties.sheetId})`);
   debugLog(`Danh sách tab tìm thấy: ${allTabs.join(' | ')}`);
 
@@ -98,7 +99,7 @@ async function main() {
       range: `'${tabName}'!A1:Z1`,
       valueRenderOption: 'UNFORMATTED_VALUE',
       dateTimeRenderOption: 'FORMATTED_STRING',
-    }),
+    }, { timeout: REQ_TIMEOUT_MS }),
     'Đọc header'
   );
   const header = (headerRes.data.values || [[]])[0];
@@ -117,7 +118,7 @@ async function main() {
         range: `'${tabName}'!A${start}:Z${end}`,
         valueRenderOption: 'UNFORMATTED_VALUE',
         dateTimeRenderOption: 'FORMATTED_STRING',
-      }),
+      }, { timeout: REQ_TIMEOUT_MS }),
       `Đọc lô ${start}-${end}`
     );
     const chunkRows = chunkRes.data.values || [];
