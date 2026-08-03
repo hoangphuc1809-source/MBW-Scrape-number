@@ -1,0 +1,13 @@
+Dòng 2: ["03/08/2026","10:15",1,"CellPhone S","Laptop ASUS VivoBook 14 X1407CA-LY008W"]
+Dòng 100: ["03/08/2026","10:15",99,"CellPhone S","Laptop ASUS VivoBook S 16 OLED S5606MA-MX051W"]
+Dòng 500: ["03/08/2026","10:15",499,"CellPhone S","Laptop HP 14-EP0112TU 8C5L1PA"]
+Dòng 1000: ["03/08/2026","10:15",999,"FPT Retail","Laptop Asus Vivobook 15 X1504VA-BQ165W Core 5 120U"]
+Dòng 1700: (TRỐNG)
+Dòng 2000: (TRỐNG)
+Dòng 5000: (TRỐNG)
+Dòng 10000: (TRỐNG)
+Dòng 30000: (TRỐNG)
+Dòng 50000: (TRỐNG)
+Dòng 70000: (TRỐNG)
+
+Trong A2:A3000 — 1698 dòng có date, 1 ngày khác nhau: 03/08/2026
