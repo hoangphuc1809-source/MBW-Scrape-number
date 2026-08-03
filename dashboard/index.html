@@ -2147,9 +2147,13 @@ async function fetchSheetData(manual=false) {
   if (btn)    btn.disabled = true;
   if (status) status.textContent = 'Fetching…';
 
-  // Two endpoint variants — if one fails (CORS/cache), the other often works.
+  // 03/08/2026: data.csv same-origin do GitHub Actions xuất tự động sau mỗi
+  // lần scrape thành công (3 lần/ngày) — ưu tiên đọc trước vì nhanh, không
+  // CORS, không phụ thuộc Google. 2 URL Google Sheets cũ giữ lại làm
+  // fallback cuối cùng phòng khi file local vì lý do gì đó chưa kịp cập nhật.
   const stamp = () => Date.now();
   const urlVariants = () => [
+    `./data.csv?t=${stamp()}`,
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&t=${stamp()}`,
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${SHEET_GID}&t=${stamp()}`
   ];
