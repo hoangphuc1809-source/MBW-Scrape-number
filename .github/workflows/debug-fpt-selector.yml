@@ -1,0 +1,39 @@
+name: Debug FPT spec selector (1 session Browser API)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-selector:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+      - name: Debug selector
+        env:
+          BRIGHTDATA_BROWSER_WS: ${{ secrets.BRIGHTDATA_BROWSER_WS }}
+        run: node debug_selector.js
+      - name: Commit ket qua
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          mkdir -p diagnostics
+          cp scrape-output/selector_debug* diagnostics/ 2>/dev/null || true
+          if [ -n "$(git status --porcelain diagnostics)" ]; then
+            git add diagnostics
+            git commit -m "diag(fpt): debug selector thong so sau khi click [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
