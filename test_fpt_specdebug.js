@@ -72,12 +72,33 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     });
     record(`Cau truc DOM quanh label "CPU": ${JSON.stringify(cpuRowInfo, null, 1)}`);
 
-    // 6. Test selector moi: .flex.items-start.gap-2 - dump outerHTML that xem cau truc
-    const rowsHtml = await page.evaluate(() => {
-      const rows = [...document.querySelectorAll('.flex.items-start.gap-2')];
-      return rows.slice(0, 4).map(r => r.outerHTML.slice(0, 500));
+    // 6. Tim rieng label "Loại CPU" (ten field chi tiet, khac voi "CPU" o phan noi bat)
+    // sau khi da click mo modal/bang day du
+    await sleep(1000);
+    const detailFieldInfo = await page.evaluate(() => {
+      const target = [...document.querySelectorAll('*')].find(el =>
+        el.children.length === 0 && (el.textContent || '').trim() === 'Loại CPU'
+      );
+      if (!target) return { found: false };
+      // Leo len 5 cap cha, ghi lai class + so luong con o moi cap
+      let el = target;
+      const chain = [];
+      for (let i = 0; i < 5 && el; i++) {
+        chain.push({ tag: el.tagName, cls: el.className, childCount: el.children.length });
+        el = el.parentElement;
+      }
+      // Lay outerHTML cua ong/ba (cap thu 2) de xem cau truc day du 1 row
+      let row = target.parentElement?.parentElement;
+      return { found: true, chain, rowHtml: row ? row.outerHTML.slice(0, 600) : null };
     });
-    record(`outerHTML cua 4 row dau (.flex.items-start.gap-2):\n${rowsHtml.join('\n---\n')}`);
+    record(`Tim "Loại CPU": ${JSON.stringify(detailFieldInfo, null, 1)}`);
+
+    // 7. Neu khong thay, kiem tra co modal/dialog nao dang mo khong
+    const modalInfo = await page.evaluate(() => {
+      const candidates = [...document.querySelectorAll('[role="dialog"], [class*="modal" i], [class*="drawer" i], [class*="Modal" i]')];
+      return candidates.slice(0, 5).map(el => ({ tag: el.tagName, cls: el.className, textSnippet: (el.textContent||'').slice(0,150) }));
+    });
+    record(`Modal/dialog candidates: ${JSON.stringify(modalInfo, null, 1)}`);
 
   } catch (e) {
     record(`LOI: ${e.message}`);
