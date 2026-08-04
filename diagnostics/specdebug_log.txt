@@ -1,1 +1,147 @@
-LOI: Navigation timeout of 25000 ms exceeded
+Cac phan tu co text lien quan "thong so": [
+ {
+  "tag": "DIV",
+  "text": "Trang chủ/Laptop/Laptop Asus/Asus VivoBook{\"@context\":\"https",
+  "cls": "container"
+ },
+ {
+  "tag": "DIV",
+  "text": "+1Video+1+1+1+1+1+1Mở hộpThực tếHàng chính hãng - Bảo hành 2",
+  "cls": "flex w-[661px] flex-col gap-y-5"
+ },
+ {
+  "tag": "DIV",
+  "text": "Thông số nổi bật Xem tất cả thông số \n\nCPUCore 7\n\n\n\n\n\nCard đ",
+  "cls": ""
+ },
+ {
+  "tag": "DIV",
+  "text": "Thông số nổi bật Xem tất cả thông số \n\nCPUCore 7\n\n\n\n\n\nCard đ",
+  "cls": "flex flex-col gap-3 pc:w-[661px]"
+ },
+ {
+  "tag": "DIV",
+  "text": "Thông số nổi bật Xem tất cả thông số",
+  "cls": "flex items-center justify-between"
+ },
+ {
+  "tag": "BUTTON",
+  "text": "Xem tất cả thông số",
+  "cls": "flex items-center justify-center text-base transition-all duration-300 ease-out relative rounded-3xl px-3 py-2 font-medium border border-iconStrokeOnGrayDefault bg-bgWhiteDefault text-textOnWhitePrimary hover:bg-bgWhiteHover h-8 w-[182px]"
+ },
+ {
+  "tag": "SPAN",
+  "text": "Xem tất cả thông số",
+  "cls": "text-textOnWhitePrimary b2-medium"
+ },
+ {
+  "tag": "SPAN",
+  "text": "Thông số",
+  "cls": "flex cursor-pointer items-center gap-1 text-textOnWhiteHyperLink f1-medium pc:b2-medium"
+ },
+ {
+  "tag": "DIV",
+  "text": "Thông tin vận chuyểnGiao hàng tận nơiNhận tại cửa hàngNhập đ",
+  "cls": "flex flex-col overflow-hidden bg-white mb:container-full pc:rounded-[0.5rem] pc:border pc:border-neutral-gray-2"
+ },
+ {
+  "tag": "DIV",
+  "text": "Giao hàng tận nơiNhận tại cửa hàngNhập địa chỉ để xem thông ",
+  "cls": "flex flex-col gap-3 px-4 pb-4 pt-3 pc:py-3"
+ },
+ {
+  "tag": "SPAN",
+  "text": "Xem tất cả cửa hàng có hàng",
+  "cls": "flex-1 text-left f1-medium pc:b2-medium"
+ },
+ {
+  "tag": "DIV",
+  "text": "Mua kèm với giá ưu đãiXem tất cảCombo Gaming + Bảo hành2.049",
+  "cls": "flex flex-col gap-3 border border-iconDividerOnWhite bg-white px-4 py-3 mb:container-full mb:border-none pc:rounded-[12px] pc:p-4"
+ },
+ {
+  "tag": "BUTTON",
+  "text": "Mua kèm với giá ưu đãiXem tất cả",
+  "cls": "flex items-center justify-between"
+ },
+ {
+  "tag": "DIV",
+  "text": "Xem tất cả",
+  "cls": "shrink-0 text-textOnWhiteHyperLink"
+ },
+ {
+  "tag": "SPAN",
+  "text": "Xem tất cả",
+  "cls": "hidden b2-medium pc:inline"
+ }
+]
+
+Click nut "Xem tất cả thông số" (exact match): true
+
+So phan tu khop selector cu .flex.gap-2.border-b: 0
+
+Doan text quanh tu khoa CPU/RAM: nh nghiệp
+
+Thông số nổi bật
+
+Xem tất cả thông số
+
+CPU
+
+Core 7
+
+Card đồ hoạ
+
+Intel Graphics
+
+Kích thước màn hình
+
+14 inch
+
+Tấm nền
+
+IPS
+
+Laptop Asus Vivobook X1404VA-EB355W Core 7 150U/16GB/512GB/14" FHD/Win11
+No.00924298
+4.9
+(23 đánh giá)
+Thông số
+So sánh
+21.490.000đ
+25.990.000đ
+17%
+Hoặc
+Trả góp
+825.257đ/tháng
+
+Thu cũ - Giảm thêm đến 2.500.000đ
+
+Định giá ngay
+Màu sắc
+Bạc
+
+Giảm thêm đến 10%
+
+2.599.000đ
+
+Ưu đãi được hưởng:
+
+25.990.000đ
+21.490.000đ
+
+
+Cau truc DOM quanh label "CPU": [
+ {
+  "selfClass": "text-[14px] leading-5 text-textOnWhiteSecondary",
+  "parentClass": "flex flex-col",
+  "parentTag": "DIV",
+  "grandparentClass": "flex items-start gap-2"
+ },
+ {
+  "selfClass": "",
+  "parentClass": "",
+  "parentTag": "P",
+  "grandparentClass": "overflow-hidden transition-all duration-500 [&_blockquote]:m-[revert] [&_dl]:m-[revert] [&_dd]:m-[revert] [&_h1]:m-[revert] [&_h2]:m-[revert] [&_h3]:m-[revert] [&_h4]:m-[revert] [&_h5]:m-[revert] [&_h6]:m-[revert] [&_hr]:m-[revert] [&_p]:m-[revert] [&_pre]:m-[revert] [&_h2]:h6-semibold [&_h3]:b2-semibold [&_h3]:pc:b1-semibold [&_img]:![width:100%] [&_img]:![height:100%] [&_table]:![border-width:thin] [&_tbody]:![border-width:thin] [&_thead]:![border-width:thin] [&_tr]:![border-width:thin] [&_td]:![border-width:thin] [&_th]:![border-width:thin] [&_table_tr_td]:px-2 [&_table_tr_td]:py-1 [&_ol]:m-[revert] [&_ol]:list-[revert] [&_ol]:p-[revert] [&_ul]:m-[revert] [&_ul]:list-[revert] [&_ul]:p-[revert] [&_a]:text-blue-blue-7 [&_a]:hover:text-blue-blue-6 [&_figure]:![width:100%] [&_figure]:overflow-x-auto [&_figure]:![display:block] [&_iframe]:![width:100%] [&_iframe]:![height:300px] pc:[&_iframe]:![height:600px]"
+ }
+]
