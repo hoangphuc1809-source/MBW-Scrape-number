@@ -1,2 +1,0 @@
-API_KEY length=36, first4=92a6, last4=6365, zone=fpt_scrape
-HTTP status=200, elapsed=13.4s, textLen=2390606
