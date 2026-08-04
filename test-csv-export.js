@@ -15,7 +15,7 @@ function httpsGetWithAuth(url, token, maxRedirects = 5) {
     function doGet(u, redirectsLeft) {
       const req = https.get(u, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 120000,
+        timeout: 270000,
       }, (res) => {
         if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirectsLeft > 0) {
           res.resume();
