@@ -26,17 +26,36 @@ function parseVNDate(s) {
   return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
 }
 
-async function readAllRows(sheets, tabName, totalRows, cols = 'A:V') {
-  const CHUNK = 5000;
+async function withRetry(fn, label, tries = 3) {
+  let lastErr;
+  for (let i = 1; i <= tries; i++) {
+    try { return await fn(); }
+    catch (err) {
+      lastErr = err;
+      console.log(`   ⚠ ${label} lần ${i}/${tries} lỗi: ${err.message}`);
+      if (i < tries) await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+  throw lastErr;
+}
+
+async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
+  // Chi doc toi cot S (data thuan tu scraper) — bo qua T/U/V la cac cot
+  // note/formula rieng (T=version, U=health note, V=MAP formula nang) de
+  // tranh timeout. Du lieu can cho archive la A (ngay) + cac cot data goc.
+  const CHUNK = 2000;
   const out = [];
   for (let start = 2; start <= totalRows; start += CHUNK) {
     const end = Math.min(start + CHUNK - 1, totalRows);
-    const res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${tabName}'!A${start}:${cols.split(':')[1]}${end}`,
-      valueRenderOption: 'UNFORMATTED_VALUE',
-      dateTimeRenderOption: 'FORMATTED_STRING',
-    }, { timeout: 30000 });
+    const res = await withRetry(
+      () => sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${tabName}'!A${start}:${lastCol}${end}`,
+        valueRenderOption: 'UNFORMATTED_VALUE',
+        dateTimeRenderOption: 'FORMATTED_STRING',
+      }, { timeout: 60000 }),
+      `Đọc ${tabName} ${start}-${end}`
+    );
     const rows = res.data.values || [];
     for (const r of rows) if (r.some((c) => c !== '' && c !== undefined && c !== null)) out.push(r);
     console.log(`   đọc ${tabName} ${start}-${end}: ${rows.length} dòng thô`);
@@ -59,7 +78,7 @@ async function readAllRows(sheets, tabName, totalRows, cols = 'A:V') {
   const totalRows = rawSheet.properties.gridProperties.rowCount;
   console.log(`Tab "${RAW_DATA_TAB}": grid rowCount=${totalRows}`);
 
-  const header = (await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A1:V1` })).data.values[0];
+  const header = (await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A1:S1` })).data.values[0];
   console.log('Header:', JSON.stringify(header));
 
   console.log('Đang đọc toàn bộ RAW DATA...');
@@ -130,8 +149,8 @@ async function readAllRows(sheets, tabName, totalRows, cols = 'A:V') {
   console.log('✅ Xác nhận archive thành công.');
 
   // BƯỚC 3: Chỉ bây giờ mới trim RAW DATA — giữ header + toKeep
-  console.log(`\nĐang ghi lại ${RAW_DATA_TAB} chỉ với ${toKeep.length} dòng gần đây...`);
-  await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A2:V` });
+  console.log(`\nĐang ghi lại ${RAW_DATA_TAB} chỉ với ${toKeep.length} dòng gần đây (chỉ cột A:S — không đụng cột T/U/V là note/formula)...`);
+  await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A2:S` });
   for (let i = 0; i < toKeep.length; i += CHUNK) {
     const chunk = toKeep.slice(i, i + CHUNK);
     await sheets.spreadsheets.values.update({
