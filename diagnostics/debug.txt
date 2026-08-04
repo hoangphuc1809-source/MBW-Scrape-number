@@ -1,2 +1,2 @@
-API_KEY length=36, first4=f235, last4=3a8f, zone=fpt_scrape
-HTTP status=401, elapsed=0.3s, textLen=13
+API_KEY length=36, first4=92a6, last4=6365, zone=fpt_scrape
+HTTP status=200, elapsed=13.4s, textLen=2390606
