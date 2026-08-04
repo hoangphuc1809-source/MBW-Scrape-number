@@ -2,6 +2,13 @@ name: FPT_TEST - Bright Data Browser API (khong dung production)
 
 on:
   workflow_dispatch:
+  schedule:
+    # 3 lan/ngay, giong nhip production (01:05/04:05/08:05 UTC = 8:05/11:05/15:05 VN)
+    # Luu y: GitHub schedule co the tre (da ghi nhan o production), chap nhan
+    # duoc trong giai doan theo doi/pilot nay (khong critical ve gio giac).
+    - cron: '5 1 * * *'
+    - cron: '5 4 * * *'
+    - cron: '5 8 * * *'
 
 jobs:
   fpt-test:
