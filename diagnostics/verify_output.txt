@@ -1,0 +1,123 @@
+Cac tab hien co: ["Key Focus model","SRP checking","Dailly SRP Tracking","RAW DATA","RAW DATA ARCHIVE","Part #","Check","Segment","Introduce","Fix","FPT_TEST"]
+10 dong dau FPT_TEST: [
+ [
+  "Ngày",
+  "Giờ",
+  "STT",
+  "Hãng",
+  "Tên Model",
+  "Giá (đã hiển thị)",
+  "Tình trạng",
+  "Link sản phẩm",
+  "Giảm (%)",
+  "Lần chạy gần nhất: 4/8/2026 12:39:22 — 358 SP (qua Bright Data Browser API)"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "1",
+  "Acer",
+  "Laptop Acer Aspire Go 14 AG14-72P-563L Core 5 120U",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/acer-aspire-go-14-ag14-72p-563l-core-5-120u",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "2",
+  "HP",
+  "Laptop HP 250R G9 Core 5 120U (C40LKAT)",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/hp-250r-g9-core-5-120u-c40lkat",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "3",
+  "Asus",
+  "Laptop Asus Vivobook X1404VA-EB355W Core 7 150U",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/asus-vivobook-x1404va-eb355w-core-7-150u",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "4",
+  "Dell",
+  "Laptop Dell 15 DC15250 i5-1334U (71092479)",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/dell-15-dc15250-i5-1334u-71092479",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "5",
+  "Apple",
+  "MacBook Neo 13 8GB/256GB/20W",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/macbook-neo-13-inch-8gb-256gb",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "6",
+  "Lenovo",
+  "Laptop Lenovo IdeaPad Slim 3 14ARP10 R5-7535HS (83K600E6VN)",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/lenovo-ideapad-slim-3-14arp10-r5-7535hs-83k600e6vn",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "7",
+  "Acer",
+  "Laptop Acer Aspire Lite 14 AL14-52M-52UU i5-1335U",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/acer-aspire-lite-14-al14-52m-52uu-i5-1335u",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "8",
+  "Khác",
+  "Laptop Colorful Rimbook L1 i5- 12450H/A10205500048",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/colorful-rimbook-l1-i5-12450h-a10205500048",
+  "",
+  "Còn hàng"
+ ],
+ [
+  "4/8/2026",
+  "12:39:22",
+  "9",
+  "Apple",
+  "MacBook Air 13 M5 2026 10CPU/8GPU/16GB/512GB/30W",
+  "",
+  "Còn hàng",
+  "https://fptshop.com.vn/may-tinh-xach-tay/macbook-air-13-m5-2026-10cpu-8gpu-16gb-512gb",
+  "",
+  "Còn hàng"
+ ]
+]
