@@ -1,0 +1,36 @@
+name: Debug FPT detail page spec structure (Web Unlocker, re)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-detail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Debug detail page
+        env:
+          BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
+          BRIGHTDATA_ZONE: fpt_scrape
+        run: node debug_spec_page.js
+      - name: Commit ket qua
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          mkdir -p diagnostics
+          cp scrape-output/detail_* diagnostics/ 2>/dev/null || true
+          if [ -n "$(git status --porcelain diagnostics)" ]; then
+            git add diagnostics
+            git commit -m "diag(fpt): debug cau truc trang chi tiet [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
