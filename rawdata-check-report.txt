@@ -1,13 +1,13 @@
-Dòng 2: ["03/08/2026","10:15",1,"CellPhone S","Laptop ASUS VivoBook 14 X1407CA-LY008W"]
-Dòng 100: ["03/08/2026","10:15",99,"CellPhone S","Laptop ASUS VivoBook S 16 OLED S5606MA-MX051W"]
-Dòng 500: ["03/08/2026","10:15",499,"CellPhone S","Laptop HP 14-EP0112TU 8C5L1PA"]
-Dòng 1000: ["03/08/2026","10:15",999,"FPT Retail","Laptop Asus Vivobook 15 X1504VA-BQ165W Core 5 120U"]
-Dòng 1700: (TRỐNG)
-Dòng 2000: (TRỐNG)
-Dòng 5000: (TRỐNG)
-Dòng 10000: (TRỐNG)
-Dòng 30000: (TRỐNG)
-Dòng 50000: (TRỐNG)
+Dòng 2: ["11/07/2026","10:15","1","MBW","Laptop HP 15 fc0023AU - D0BH1PA (R5 7520U, 16GB, 512GB, Full HD, Win11)"]
+Dòng 100: ["11/07/2026","10:15","99","MBW","Laptop Dell 15 DC15250 - DC5I7952W1 (i7 1355U, 16GB, 512GB, Full HD+ 120Hz, OfficeH24+365, Win11)"]
+Dòng 500: ["11/07/2026","10:15","499","CellPhone S","Laptop ASUS Vivobook 15 X1504VA-BQ2076W"]
+Dòng 1000: ["11/07/2026","10:15","999","CellPhone S","Laptop ASUS VivoBook 15 A512DA-EJ1448T"]
+Dòng 1700: ["11/07/2026","17:24","222","FPT Retail","MacBook Air 15 M5 2026 10CPU/10GPU/32GB/1TB/70W (Z1M2)"]
+Dòng 2000: ["12/07/2026","10:14","138","MBW","Laptop Lenovo Gaming LOQ 15ARP9 - 83JC00LVVN (R5 7235HS, 16GB, 512GB, RTX 3050 6GB, Full HD 144Hz, Win11)"]
+Dòng 5000: ["13/07/2026","10:15","1355","CellPhone S","Laptop Lenovo ThinkPad E16 Gen 3 21SR002RVN"]
+Dòng 10000: ["16/07/2026","10:15","807","CellPhone S","Laptop ASUS VivoBook X415EA-EK675W"]
+Dòng 30000: ["25/07/2026","13:48","2737","CellPhone S","Laptop MSI Gaming GF63 THIN 9SCSR-846VN"]
+Dòng 50000: ["02/08/2026","04:18","1384","MBW","Laptop Dell Inspiron 14 5441 - N4O10441W1 (X1P 64 100, 16GB, 1TB, Full HD+, OfficeH24+365, Win11)"]
 Dòng 70000: (TRỐNG)
 
-Trong A2:A3000 — 1698 dòng có date, 1 ngày khác nhau: 03/08/2026
+Trong A2:A3000 — 2999 dòng có date, 2 ngày khác nhau: 11/07/2026, 12/07/2026
