@@ -19,6 +19,18 @@ on:
         description: 'Export dashboard data — doc lai tab Dailly SRP Tracking, ghi dashboard/data.csv (dung sau khi restore/sua tab thu cong)'
         type: boolean
         default: false
+      run_archive_rawdata_dryrun:
+        description: 'Archive RAW DATA - XEM TRUOC (dry run, khong sua gi ca, an toan)'
+        type: boolean
+        default: false
+      run_archive_rawdata_EXECUTE:
+        description: '‼️ Archive RAW DATA - THUC THI THAT (ghi archive + rut gon RAW DATA). Chi bam sau khi da xem dry-run va thay so lieu on.'
+        type: boolean
+        default: false
+      archive_days_to_keep:
+        description: 'So ngay gan nhat giu lai trong RAW DATA khi archive (mac dinh 45)'
+        required: false
+        default: '45'
       run_check_rawdata:
         description: 'Check RAW DATA — kiem tra tab RAW DATA production'
         type: boolean
@@ -112,6 +124,42 @@ jobs:
           else
             echo "Khong co thay doi"
           fi
+
+  archive-rawdata-dryrun:
+    name: Archive RAW DATA - DRY RUN (chi xem, khong sua)
+    if: ${{ inputs.run_archive_rawdata_dryrun }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          ARCHIVE_DAYS_TO_KEEP: ${{ inputs.archive_days_to_keep }}
+          EXECUTE: 'false'
+        run: node archive-rawdata.js
+
+  archive-rawdata-execute:
+    name: '‼️ Archive RAW DATA - THUC THI THAT'
+    if: ${{ inputs.run_archive_rawdata_EXECUTE }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          ARCHIVE_DAYS_TO_KEEP: ${{ inputs.archive_days_to_keep }}
+          EXECUTE: 'true'
+        run: node archive-rawdata.js
 
   check-rawdata:
     name: Check RAW DATA
