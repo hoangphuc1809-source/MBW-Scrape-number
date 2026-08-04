@@ -15,6 +15,10 @@ on:
         description: 'FPT_TEST — scrape FPT qua Bright Data Browser API, ghi tab FPT_TEST'
         type: boolean
         default: false
+      run_export_dashboard:
+        description: 'Export dashboard data — doc lai tab Dailly SRP Tracking, ghi dashboard/data.csv (dung sau khi restore/sua tab thu cong)'
+        type: boolean
+        default: false
       run_check_rawdata:
         description: 'Check RAW DATA — kiem tra tab RAW DATA production'
         type: boolean
@@ -79,6 +83,35 @@ jobs:
           INFO=$(cat scrape-output/fpttest_summary.json 2>/dev/null || echo '{}')
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" --data-urlencode "text=[FPT_TEST] ${INFO}" -o /dev/null -w "telegram: %{http_code}\n" || true
+
+  export-dashboard:
+    name: Export dashboard data (Dailly SRP Tracking -> data.csv)
+    if: ${{ inputs.run_all || inputs.run_export_dashboard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node export-dashboard-data.js
+      - run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if [ -n "$(git status --porcelain dashboard/data.csv dashboard/.export-debug.log)" ]; then
+            git add dashboard/data.csv dashboard/.export-debug.log
+            git commit -m "chore: refresh dashboard data.csv (chay tay tu Ops Tools) [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo "Khong co thay doi"
+          fi
 
   check-rawdata:
     name: Check RAW DATA
