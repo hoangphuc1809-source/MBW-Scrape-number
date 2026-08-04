@@ -1,0 +1,32 @@
+name: Chan doan FPT qua Bright Data (khong dung production)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-brightdata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Goi Bright Data Web Unlocker, chan doan trang FPT
+        env:
+          BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
+          BRIGHTDATA_ZONE: fpt_scrape
+        run: node test_fpt_brightdata.js
+
+      - name: Upload ket qua chan doan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpt-brightdata-diagnostic
+          path: scrape-output/*
+          if-no-files-found: warn
+          retention-days: 3
