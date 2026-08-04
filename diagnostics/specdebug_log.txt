@@ -114,22 +114,16 @@ So sánh
 Hoặc
 Trả góp
 825.257đ/tháng
-
-Thu cũ - Giảm thêm đến 2.500.000đ
-
-Định giá ngay
 Màu sắc
 Bạc
-
-Giảm thêm đến 10%
-
-2.599.000đ
 
 Ưu đãi được hưởng:
 
 25.990.000đ
 21.490.000đ
-
+Giảm ngay 4,500,000đ áp dụng đến 06/08
+Trả góp 0%
+Trả góp 0% lãi suất, MIỄN PHÍ c
 
 Cau truc DOM quanh label "CPU": [
  {
@@ -146,15 +140,8 @@ Cau truc DOM quanh label "CPU": [
  }
 ]
 
-outerHTML cua 4 row dau (.flex.items-start.gap-2):
-<div class="flex items-start gap-2"><div class="size-8 shrink-0"><div><svg xmlns="http://www.w3.org/2000/svg" width="32" height="33" viewBox="0 0 32 33" fill="none" class="injected-svg size-8 shrink-0" data-src="https://cdn2.fptshop.com.vn/svg/Level_High_5599e942c3.svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M23.5351 8.91517H8.47093V23.9794H23.5351V8.91517ZM30 11.5976C30 11.9215 29.8062 12.1476 29.4833 12.1476H27.8666V14.281H29.483
----
-<div class="flex items-start gap-2"><div class="size-8 shrink-0"><div><svg xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none" class="injected-svg size-8 shrink-0" data-src="https://cdn2.fptshop.com.vn/svg/tsnb_gpu_72e765333a.svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img">
-<path d="M10.2764 15.3154C10.6663 15.3154 10.9773 15.6267 10.9775 16.0215C10.9775 16.4116 10.6665 16.7236 10.2764 16.7236C9.88142 16.7235 9.57031 16.4115 9.57031 16.0215C9.5705
----
-<div class="flex items-start gap-2"><div class="size-8 shrink-0"><div><svg xmlns="http://www.w3.org/2000/svg" width="32" height="33" viewBox="0 0 32 33" fill="none" class="injected-svg size-8 shrink-0" data-src="https://cdn2.fptshop.com.vn/svg/Property_1_Mid_998c6d23d5.svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img">
-<path d="M24.9132 21.2366H24.4095C24.6604 20.8896 24.8105 21.0507 24.8105 20.5818V11.2241C24.8105 10.0443 23.8644 9.08398 22.7015 9.08398H9.3225C8.15955 9.08398 7.21345 1
----
-<div class="flex items-start gap-2"><div class="size-8 shrink-0"><div><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" class="injected-svg size-8 shrink-0" data-src="https://cdn2.fptshop.com.vn/svg/ic_material_fd48f5d421.svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img">
-<path d="M13.8351 5.23468L8.23102 1.07685C8.0925 0.974385 7.90753 0.974385 7.76898 1.07685L2.16492 5.23468C1.94319 5.39929 1.94586 5.74124 2.16801 5.90326L7.77207 9.97902C7.
+Tim "Loại CPU": {
+ "found": false
+}
+
+Modal/dialog candidates: []
