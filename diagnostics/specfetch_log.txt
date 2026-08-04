@@ -1,6 +1,0 @@
-Dang ket noi Bright Data Browser API...
-https://fptshop.com.vn/may-tinh-xach-tay/acer-aspire-go-14-ag14-72p-563l-core-5-120u → 16.1s, stockStatus=Còn hàng, specFields=0
-https://fptshop.com.vn/may-tinh-xach-tay/hp-250r-g9-core-5-120u-c40lkat → 4.5s, stockStatus=Còn hàng, specFields=0
-https://fptshop.com.vn/may-tinh-xach-tay/asus-vivobook-x1404va-eb355w-core-7-150u → 4.1s, stockStatus=Còn hàng, specFields=0
-https://fptshop.com.vn/may-tinh-xach-tay/dell-15-dc15250-i5-1334u-71092479 → 4.4s, stockStatus=Còn hàng, specFields=0
-https://fptshop.com.vn/may-tinh-xach-tay/macbook-neo-13-inch-8gb-256gb → 4.1s, stockStatus=Còn hàng, specFields=1
