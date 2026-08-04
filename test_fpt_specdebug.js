@@ -5,7 +5,7 @@ const fs = require('fs');
 const puppeteer = require('puppeteer');
 
 const WS_ENDPOINT = process.env.BRIGHTDATA_BROWSER_WS;
-const URL = 'https://fptshop.com.vn/may-tinh-xach-tay/macbook-neo-13-inch-8gb-256gb';
+const URL = 'https://fptshop.com.vn/may-tinh-xach-tay/asus-vivobook-x1404va-eb355w-core-7-150u';
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -18,7 +18,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
     page.setDefaultTimeout(30000);
-    await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
     await sleep(1500);
 
     // 1. Tim moi button/span/a co text lien quan "thong so"
