@@ -1,0 +1,45 @@
+name: Pilot FPT qua Bright Data Browser API (khong dung production)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-browserapi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (bo qua tai Chromium local - khong can vi ket noi remote)
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+
+      - name: Chay pilot scrape qua Browser API
+        env:
+          BRIGHTDATA_BROWSER_WS: ${{ secrets.BRIGHTDATA_BROWSER_WS }}
+        run: node test_fpt_browserapi.js
+
+      - name: Commit ket qua vao repo (de doc lai qua Contents API)
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          mkdir -p diagnostics
+          cp scrape-output/browserapi_* diagnostics/ 2>/dev/null || true
+          if [ -n "$(git status --porcelain diagnostics)" ]; then
+            git add diagnostics
+            git commit -m "diag(fpt): ket qua pilot Bright Data Browser API [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo "Khong co gi de commit"
+          fi
