@@ -1,0 +1,3 @@
+Dang ket noi Bright Data Browser API...
+Scrape xong sau 147.8s. Click "Xem them": 21. So SP: 382
+LOI: The service is currently unavailable.
