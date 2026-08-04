@@ -1,15 +1,12 @@
 Đã lấy access token, độ dài: 1024
 Đang GET: https://docs.google.com/spreadsheets/d/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/export?format=csv&gid=221053035
-Status: 307, elapsed: 0.2s, size: 430 bytes
-Content-Type: text/html; charset=UTF-8
-Body (first 1000 bytes): <HTML>
-<HEAD>
-<TITLE>Temporary Redirect</TITLE>
-</HEAD>
-<BODY BGCOLOR="#FFFFFF" TEXT="#000000">
-<!-- GSE Default Error -->
-<H1>Temporary Redirect</H1>
-The document has moved <A HREF="https://doc-0k-9c-sheets.googleusercontent.com/export/54bogvaave6cua4cdnls17ksc4/qf3ucui4v62nal1tcld3vg7ql8/1785832140000/109344535543104914476/*/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w?format=csv&amp;gid=221053035">here</A>.
-</BODY>
-</HTML>
-
+   → redirect 307 tới: https://doc-0k-9c-sheets.googleusercontent.com/export/54bogvaave6cua4cdnls17ksc4/muo9f0ilbe7s1b3d2lmqiqjo0s/178583228000...
+LỖI: Error: timeout
+    at ClientRequest.<anonymous> (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/test-csv-export.js:30:55)
+    at ClientRequest.emit (node:events:524:28)
+    at TLSSocket.emitRequestTimeout (node:_http_client:849:9)
+    at Object.onceWrapper (node:events:638:28)
+    at TLSSocket.emit (node:events:536:35)
+    at Socket._onTimeout (node:net:595:8)
+    at listOnTimeout (node:internal/timers:581:17)
+    at process.processTimers (node:internal/timers:519:7)
