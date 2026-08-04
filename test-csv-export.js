@@ -10,18 +10,27 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = '/tmp/gcreds-csvexport.json';
 const TARGET_GID = process.env.TARGET_GID || '221053035'; // Dailly SRP Tracking
 
-function httpsGetWithAuth(url, token) {
+function httpsGetWithAuth(url, token, maxRedirects = 5) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, {
-      headers: { Authorization: `Bearer ${token}` },
-      timeout: 120000,
-    }, (res) => {
-      let chunks = [];
-      res.on('data', (c) => chunks.push(c));
-      res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks), headers: res.headers }));
-    });
-    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
-    req.on('error', reject);
+    function doGet(u, redirectsLeft) {
+      const req = https.get(u, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 120000,
+      }, (res) => {
+        if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirectsLeft > 0) {
+          res.resume();
+          console.log(`   → redirect ${res.statusCode} tới: ${res.headers.location.slice(0, 120)}...`);
+          doGet(res.headers.location, redirectsLeft - 1);
+          return;
+        }
+        let chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks), headers: res.headers }));
+      });
+      req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+      req.on('error', reject);
+    }
+    doGet(url, maxRedirects);
   });
 }
 
