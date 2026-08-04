@@ -28,6 +28,10 @@ async function fetchViaBrightData(url) {
     console.log('❌ Thiếu BRIGHTDATA_API_KEY');
     process.exit(1);
   }
+  const debugInfo = `API_KEY length=${API_KEY.length}, first4=${API_KEY.slice(0,4)}, last4=${API_KEY.slice(-4)}, zone=${ZONE}`;
+  console.log(`Debug: ${debugInfo}`);
+  fs.mkdirSync('scrape-output', { recursive: true });
+  fs.writeFileSync('scrape-output/debug.txt', debugInfo);
 
   console.log(`→ Gọi Bright Data Web Unlocker cho: ${TARGET_URL}`);
   const t0 = Date.now();
@@ -40,8 +44,8 @@ async function fetchViaBrightData(url) {
   }
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(`← HTTP ${result.status} sau ${elapsed}s, độ dài: ${result.text.length} bytes`);
+  fs.appendFileSync('scrape-output/debug.txt', `\nHTTP status=${result.status}, elapsed=${elapsed}s, textLen=${result.text.length}`);
 
-  fs.mkdirSync('scrape-output', { recursive: true });
   fs.writeFileSync('scrape-output/fpt_brightdata_raw.html', result.text);
 
   if (result.status !== 200) {
