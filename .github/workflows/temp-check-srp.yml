@@ -1,0 +1,28 @@
+name: TEMP check srp tab
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node check-srptab.js > srptab-report.txt 2>&1 || cat srptab-report.txt
+      - run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add srptab-report.txt
+          git commit -m "chore: temp srp tab check [skip ci]" || echo "nothing"
+          git pull --rebase origin main
+          git push origin HEAD:main
