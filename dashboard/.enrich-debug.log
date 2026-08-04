@@ -1,13 +1,13 @@
-[2026-08-04T06:51:01.130Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-04T06:51:01.138Z] Đọc được 1561 SP từ 3 file artifact (scrape-artifacts)
-[2026-08-04T06:51:01.138Z] Đọc Part # (FORMULA render)...
-[2026-08-04T06:51:01.622Z]   3503 dòng
-[2026-08-04T06:51:01.622Z] Đọc Segment (FORMULA render)...
-[2026-08-04T06:51:01.875Z]   120 dòng
-[2026-08-04T06:51:01.875Z] Đọc Key Focus model (FORMULA render)...
-[2026-08-04T06:51:02.081Z]   0 dòng
-[2026-08-04T06:51:02.108Z] Part# map: 3503 SKU
-[2026-08-04T06:51:02.109Z] Focus model map: 0 Part#
-[2026-08-04T06:51:02.110Z] Tính xong 1422 dòng enriched (loại 139 SP EOL)
-[2026-08-04T06:51:02.145Z] data.csv cũ: 2681 dòng, giữ lại 1304 dòng (loại dòng 04/08/2026 nếu có, sẽ thêm bản mới)
-[2026-08-04T06:51:02.170Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 2727 dòng (kể cả header), 913 KB
+[2026-08-04T08:15:09.087Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-04T08:15:09.094Z] Đọc được 1576 SP từ 3 file artifact (scrape-artifacts)
+[2026-08-04T08:15:09.094Z] Đọc Part # (FORMULA render)...
+[2026-08-04T08:15:09.421Z]   3503 dòng
+[2026-08-04T08:15:09.421Z] Đọc Segment (FORMULA render)...
+[2026-08-04T08:15:09.533Z]   120 dòng
+[2026-08-04T08:15:09.533Z] Đọc Key Focus model (FORMULA render)...
+[2026-08-04T08:15:09.621Z]   0 dòng
+[2026-08-04T08:15:09.650Z] Part# map: 3503 SKU
+[2026-08-04T08:15:09.650Z] Focus model map: 0 Part#
+[2026-08-04T08:15:09.651Z] Tính xong 1436 dòng enriched (loại 140 SP EOL)
+[2026-08-04T08:15:09.686Z] data.csv cũ: 2726 dòng, giữ lại 1304 dòng (loại dòng 04/08/2026 nếu có, sẽ thêm bản mới)
+[2026-08-04T08:15:09.717Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 2741 dòng (kể cả header), 917 KB
