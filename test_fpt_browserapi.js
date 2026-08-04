@@ -91,9 +91,26 @@ async function scrapeListingOnly(page) {
     page.setDefaultTimeout(30000);
     page.setDefaultNavigationTimeout(60000);
 
+    // Chan tai anh/font/media/stylesheet — chi can HTML/JS de lay data, khong
+    // can render hinh anh that. Giam bang thong manh (Browser API tinh tien
+    // theo GB) ma khong anh huong ket qua scrape (chi lay text/link).
+    let blockedBytes = 0, allowedBytes = 0;
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      const type = req.resourceType();
+      if (['image', 'font', 'media'].includes(type)) {
+        blockedBytes++; // dem so request bi chan (khong co size truoc khi tai)
+        req.abort();
+      } else {
+        allowedBytes++;
+        req.continue();
+      }
+    });
+
     const { products, clicks } = await scrapeListingOnly(page);
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
     record(`Xong sau ${elapsed}s. So lan click "Xem them": ${clicks}. So SP lay duoc: ${products.length}`);
+    record(`Requests: chan ${blockedBytes} (image/font/media), cho phep ${allowedBytes}`);
     record(`5 SP dau: ${JSON.stringify(products.slice(0, 5), null, 0)}`);
 
     fs.mkdirSync('scrape-output', { recursive: true });
