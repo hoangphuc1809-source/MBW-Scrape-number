@@ -1,3 +1,5 @@
 Dang ket noi Bright Data Browser API...
-Scrape xong sau 147.8s. Click "Xem them": 21. So SP: 382
-LOI: The service is currently unavailable.
+Scrape xong sau 149.9s. Click "Xem them": 21. So SP: 398
+Da luu 398 SP ra file (phong khi ghi Sheet loi)
+Tab FPT_TEST moi tao (lan thu 1)
+Da ghi 398 dong vao tab FPT_TEST

@@ -1,8 +1,7 @@
 {
-  "startedAt": "2026-08-04T02:50:10.835Z",
-  "productCount": 382,
+  "startedAt": "2026-08-04T02:57:27.968Z",
+  "productCount": 398,
   "clicks": 21,
-  "elapsedSec": "147.8",
-  "status": "error",
-  "error": "The service is currently unavailable."
+  "elapsedSec": "149.9",
+  "status": "success"
 }
