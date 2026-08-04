@@ -72,21 +72,12 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     });
     record(`Cau truc DOM quanh label "CPU": ${JSON.stringify(cpuRowInfo, null, 1)}`);
 
-    // 6. Test selector moi: .flex.items-start.gap-2
-    const newSelectorTest = await page.evaluate(() => {
-      const rows = document.querySelectorAll('.flex.items-start.gap-2');
-      const pairs = [];
-      rows.forEach(row => {
-        const ch = [...row.children];
-        if (ch.length >= 2) {
-          const label = ch[0].innerText?.trim();
-          const value = ch[1].innerText?.trim().replace(/\n+/g, ' ');
-          if (label && value) pairs.push([label, value]);
-        }
-      });
-      return { rowCount: rows.length, pairs: pairs.slice(0, 25) };
+    // 6. Test selector moi: .flex.items-start.gap-2 - dump outerHTML that xem cau truc
+    const rowsHtml = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll('.flex.items-start.gap-2')];
+      return rows.slice(0, 4).map(r => r.outerHTML.slice(0, 500));
     });
-    record(`Selector moi .flex.items-start.gap-2: ${newSelectorTest.rowCount} rows, pairs: ${JSON.stringify(newSelectorTest.pairs, null, 1)}`);
+    record(`outerHTML cua 4 row dau (.flex.items-start.gap-2):\n${rowsHtml.join('\n---\n')}`);
 
   } catch (e) {
     record(`LOI: ${e.message}`);
