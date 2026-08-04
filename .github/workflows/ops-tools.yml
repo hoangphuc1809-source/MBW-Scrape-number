@@ -129,7 +129,7 @@ jobs:
     name: Archive RAW DATA - DRY RUN (chi xem, khong sua)
     if: ${{ inputs.run_archive_rawdata_dryrun }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     permissions:
       contents: write
     steps:
@@ -158,7 +158,9 @@ jobs:
     name: '‼️ Archive RAW DATA - THUC THI THAT'
     if: ${{ inputs.run_archive_rawdata_EXECUTE }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -170,7 +172,16 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           ARCHIVE_DAYS_TO_KEEP: ${{ inputs.archive_days_to_keep }}
           EXECUTE: 'true'
-        run: node archive-rawdata.js
+        run: node archive-rawdata.js > archive-execute-report.txt 2>&1 || true
+      - name: Commit ket qua execute
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add archive-execute-report.txt
+          git commit -m "chore: archive rawdata execute report [skip ci]" || echo "nothing"
+          git pull --rebase origin main
+          git push origin HEAD:main
 
   check-rawdata:
     name: Check RAW DATA
