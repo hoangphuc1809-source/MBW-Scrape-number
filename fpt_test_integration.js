@@ -141,31 +141,52 @@ async function ensureTestSheetExists(sheets) {
     runInfo.clicks = clicks;
     runInfo.elapsedSec = elapsed;
 
-    // Ghi vao Google Sheet
+    // Luu ngay ra file TRUOC khi thu ghi Sheet - neu ghi Sheet loi thi van
+    // con data de ghi lai sau ma KHONG can scrape lai (ton tien).
+    fs.mkdirSync('scrape-output', { recursive: true });
+    fs.writeFileSync('scrape-output/fpttest_products.json', JSON.stringify(products, null, 2));
+    record(`Da luu ${products.length} SP ra file (phong khi ghi Sheet loi)`);
+
+    await browser.close().catch(() => {});
+    browser = null; // dong browser truoc khi ghi Sheet - khong can giu ket noi (tiet kiem)
+
+    // Ghi vao Google Sheet, retry toi 3 lan neu loi tam thoi
     fs.writeFileSync(CREDS_PATH, process.env.GOOGLE_CREDENTIALS);
     const auth = new google.auth.GoogleAuth({ keyFile: CREDS_PATH, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
     const sheets = google.sheets({ version: 'v4', auth });
 
-    const created = await ensureTestSheetExists(sheets);
-    record(`Tab FPT_TEST ${created ? 'moi tao' : 'da ton tai'}`);
+    let lastErr;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const created = await ensureTestSheetExists(sheets);
+        record(`Tab FPT_TEST ${created ? 'moi tao' : 'da ton tai'} (lan thu ${attempt})`);
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('vi-VN');
-    const timeStr = now.toLocaleTimeString('vi-VN');
-    const rows = products.map((p, i) => [
-      dateStr, timeStr, i + 1, 'FPT Retail', p.name, p.brand,
-      p.origPrice, p.salePrice, p.discount, p.stockStatus, p.link, 'BrightData-BrowserAPI',
-    ]);
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('vi-VN');
+        const timeStr = now.toLocaleTimeString('vi-VN');
+        const rows = products.map((p, i) => [
+          dateStr, timeStr, i + 1, 'FPT Retail', p.name, p.brand,
+          p.origPrice, p.salePrice, p.discount, p.stockStatus, p.link, 'BrightData-BrowserAPI',
+        ]);
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${TEST_SHEET_NAME}!A1`,
-      valueInputOption: 'USER_ENTERED',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: { values: rows },
-    });
-    record(`Da ghi ${rows.length} dong vao tab FPT_TEST`);
-    runInfo.status = 'success';
+        await sheets.spreadsheets.values.append({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `${TEST_SHEET_NAME}!A1`,
+          valueInputOption: 'USER_ENTERED',
+          insertDataOption: 'INSERT_ROWS',
+          requestBody: { values: rows },
+        });
+        record(`Da ghi ${rows.length} dong vao tab FPT_TEST`);
+        runInfo.status = 'success';
+        lastErr = null;
+        break;
+      } catch (e) {
+        lastErr = e;
+        record(`Lan thu ${attempt} ghi Sheet loi: ${e.message}`);
+        if (attempt < 3) await sleep(5000 * attempt);
+      }
+    }
+    if (lastErr) throw lastErr;
   } catch (e) {
     record(`LOI: ${e.message}`);
     runInfo.status = 'error';
