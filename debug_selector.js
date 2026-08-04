@@ -32,29 +32,34 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     record(`Da click nut: ${clicked}`);
     await sleep(1500);
 
-    // Tim container chua "Dung lượng RAM" SAU khi click, dump cau truc quanh no
+    // Tim container chua thong so SAU khi click - tim nhieu tu khoa, khong yeu cau exact match
     const info = await page.evaluate(() => {
+      const fullText = document.body.innerText || '';
+      const keywords = ['Dung lượng RAM', 'CPU', 'Card đồ họa', 'Màn hình', 'Ổ cứng', 'Cân nặng', 'Pin', 'Công nghệ CPU', 'Loại CPU'];
+      const foundKeywords = keywords.filter(k => fullText.includes(k));
+
+      // Tim bat ky element nao text chua "Dung lượng RAM" (khong can exact match)
       const all = [...document.querySelectorAll('*')];
-      const target = all.find(el =>
-        el.children.length === 0 && /Dung lượng RAM/.test(el.textContent || '') && el.textContent.trim() === 'Dung lượng RAM'
+      const candidates = all.filter(el =>
+        el.children.length === 0 && (el.textContent || '').includes('Dung lượng RAM')
       );
-      if (!target) return { found: false, bodyTextSnippet: (document.body.innerText || '').slice(0, 500) };
-      // Di len 4 cap cha de tim container lap lai (row pattern)
-      let row = target;
-      const chain = [];
-      for (let i = 0; i < 5 && row; i++) {
-        chain.push({ tag: row.tagName, className: row.className, outerHTMLSnippet: row.outerHTML.slice(0, 300) });
-        row = row.parentElement;
-      }
-      // Dem so phan tu co cung class voi cha truc tiep cua target (de doan selector lap)
-      const parent = target.parentElement;
-      const grandParent = parent ? parent.parentElement : null;
-      let siblingCount = 0, siblingClass = '';
-      if (grandParent) {
-        siblingClass = parent.className;
-        siblingCount = [...grandParent.children].filter(c => c.className === parent.className).length;
-      }
-      return { found: true, chain, siblingClass, siblingCount };
+      const chains = candidates.slice(0, 3).map(target => {
+        let row = target;
+        const chain = [];
+        for (let i = 0; i < 6 && row; i++) {
+          chain.push({ tag: row.tagName, className: row.className, textSnippet: (row.textContent||'').slice(0,100) });
+          row = row.parentElement;
+        }
+        return chain;
+      });
+
+      return {
+        foundKeywords,
+        candidateCount: candidates.length,
+        chains,
+        fullTextLength: fullText.length,
+        fullTextTail: fullText.slice(-3000), // phan cuoi trang, spec thuong o cuoi
+      };
     });
     fs.mkdirSync('scrape-output', { recursive: true });
     fs.writeFileSync('scrape-output/selector_debug.json', JSON.stringify(info, null, 2));
