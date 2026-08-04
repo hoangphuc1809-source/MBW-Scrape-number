@@ -1,0 +1,241 @@
+name: Ops Tools - Chon phan can chay (khong dung production)
+
+# 1 workflow duy nhat cho cac tool test/tien ich (KHONG bao gom scrape.yml -
+# do la pipeline production dang chay on dinh hang ngay, de rieng tranh rui
+# ro). Tick chon tung phan can chay, hoac tick "Chay tat ca" de chay het.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_all:
+        description: 'Chay TAT CA cac phan ben duoi'
+        type: boolean
+        default: false
+      run_fpt_test:
+        description: 'FPT_TEST — scrape FPT qua Bright Data Browser API, ghi tab FPT_TEST'
+        type: boolean
+        default: false
+      run_check_rawdata:
+        description: 'Check RAW DATA — kiem tra tab RAW DATA production'
+        type: boolean
+        default: false
+      run_diagnose_sheet:
+        description: 'Diagnose Sheet Formulas — chan doan cong thuc sheet'
+        type: boolean
+        default: false
+      run_freeze_formulas:
+        description: 'Freeze Heavy Formulas — dong bang cong thuc nang'
+        type: boolean
+        default: false
+      run_inspect_structure:
+        description: 'Inspect Sheet Structure — xem cau truc sheet'
+        type: boolean
+        default: false
+      run_fpt_diagnostic:
+        description: 'FPT Blocking Diagnostic — so sanh cloud vs MSI (can self-hosted online)'
+        type: boolean
+        default: false
+      fpt_url:
+        description: 'URL FPT can test (chi dung cho FPT Blocking Diagnostic)'
+        required: false
+        default: 'https://fptshop.com.vn/may-tinh-xach-tay'
+      control_url:
+        description: 'URL doi chung (chi dung cho FPT Blocking Diagnostic)'
+        required: false
+        default: 'https://www.thegioididong.com/laptop'
+
+jobs:
+  fpt-test:
+    name: FPT_TEST (Bright Data Browser API)
+    if: ${{ inputs.run_all || inputs.run_fpt_test }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+      - name: Chay scrape + ghi tab FPT_TEST
+        env:
+          BRIGHTDATA_BROWSER_WS: ${{ secrets.BRIGHTDATA_BROWSER_WS }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node fpt_test_integration.js
+      - name: Bao cao Telegram (best-effort)
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then exit 0; fi
+          INFO=$(cat scrape-output/fpttest_summary.json 2>/dev/null || echo '{}')
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" --data-urlencode "text=[FPT_TEST] ${INFO}" -o /dev/null -w "telegram: %{http_code}\n" || true
+
+  check-rawdata:
+    name: Check RAW DATA
+    if: ${{ inputs.run_all || inputs.run_check_rawdata }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node check-rawdata.js
+      - run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if [ -f rawdata-check-report.txt ] && [ -n "$(git status --porcelain rawdata-check-report.txt)" ]; then
+            git add rawdata-check-report.txt
+            git commit -m "chore: rawdata check report [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+  diagnose-sheet:
+    name: Diagnose Sheet Formulas
+    if: ${{ inputs.run_all || inputs.run_diagnose_sheet }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node diagnose-sheet.js
+      - run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if [ -f diagnostic-report.txt ] && [ -n "$(git status --porcelain diagnostic-report.txt)" ]; then
+            git add diagnostic-report.txt
+            git commit -m "chore: diagnostic report [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+  freeze-formulas:
+    name: Freeze Heavy Formulas
+    if: ${{ inputs.run_all || inputs.run_freeze_formulas }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node freeze-formulas.js
+      - run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if [ -f freeze-report.txt ] && [ -n "$(git status --porcelain freeze-report.txt)" ]; then
+            git add freeze-report.txt
+            git commit -m "chore: freeze report [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+  inspect-structure:
+    name: Inspect Sheet Structure
+    if: ${{ inputs.run_all || inputs.run_inspect_structure }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node inspect-structure.js
+      - run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if [ -f structure-report.txt ] && [ -n "$(git status --porcelain structure-report.txt)" ]; then
+            git add structure-report.txt
+            git commit -m "chore: structure report [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+  fpt-diagnostic-cloud:
+    name: FPT Blocking Diagnostic - cloud (IP datacenter)
+    if: ${{ inputs.run_all || inputs.run_fpt_diagnostic }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          npm install puppeteer --no-save
+          npx puppeteer browsers install chrome
+      - continue-on-error: true
+        env:
+          FPT_URL: ${{ inputs.fpt_url }}
+          CONTROL_URL: ${{ inputs.control_url }}
+        run: node test_fpt_diagnostic.js
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpt-diagnostic-cloud
+          path: artifacts/
+          retention-days: 14
+          if-no-files-found: warn
+
+  fpt-diagnostic-selfhosted:
+    name: FPT Blocking Diagnostic - MSI (IP dan cu)
+    if: ${{ inputs.run_all || inputs.run_fpt_diagnostic }}
+    runs-on: [self-hosted, msi]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          npm install puppeteer --no-save
+          npx puppeteer browsers install chrome
+      - continue-on-error: true
+        env:
+          FPT_URL: ${{ inputs.fpt_url }}
+          CONTROL_URL: ${{ inputs.control_url }}
+        run: node test_fpt_diagnostic.js
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpt-diagnostic-msi
+          path: artifacts/
+          retention-days: 14
+          if-no-files-found: warn
