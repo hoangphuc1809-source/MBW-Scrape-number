@@ -1620,6 +1620,12 @@ async function writeToSheet(sheets, allProducts) {
   // Lỗi Run #362/#363: "Range ('RAW DATA'!A45002) exceeds grid limits. Max rows: 45001"
   // do data tích lũy quá 45k rows. Fix: kiểm tra + mở rộng grid trước khi ghi.
   const totalRowsNeeded = allRows.length + 1; // +1 for header
+  // v3.6.2: tuong tu cho COT — can toi thieu 34 cot (den AH, noi ghi
+  // AG1=mapping version, AH1=health note). Sheets KHONG tu mo rong cot nhu
+  // no tu mo rong dong khi ghi vuot pham vi — phai mo rong thu cong truoc,
+  // neu khong values.update se loi "exceeds grid limits" (gap y het loi
+  // gay fail 2 lan chay ngay 05/08/2026 sau khi doi T1/U1 sang AG1/AH1).
+  const MIN_COLS_NEEDED = 34; // A..AH
   try {
     const sheetMeta = await withRetry(() => sheets.spreadsheets.get({
       spreadsheetId: SPREADSHEET_ID,
@@ -1628,23 +1634,32 @@ async function writeToSheet(sheets, allProducts) {
     const rawSheet = sheetMeta.data.sheets.find(s => s.properties.title === SHEET_NAME);
     if (rawSheet) {
       const currentMaxRows = rawSheet.properties.gridProperties.rowCount;
+      const currentMaxCols = rawSheet.properties.gridProperties.columnCount;
+      const gridProperties = {};
+      const fields = [];
       if (totalRowsNeeded > currentMaxRows) {
         const newMaxRows = totalRowsNeeded + 5000; // buffer 5k rows cho lần sau
         console.log(`   📐 Mở rộng sheet từ ${currentMaxRows} → ${newMaxRows} rows (cần ${totalRowsNeeded})`);
+        gridProperties.rowCount = newMaxRows;
+        fields.push('gridProperties.rowCount');
+      }
+      if (currentMaxCols < MIN_COLS_NEEDED) {
+        console.log(`   📐 Mở rộng sheet từ ${currentMaxCols} → ${MIN_COLS_NEEDED} cột (cần ghi tới cột AH)`);
+        gridProperties.columnCount = MIN_COLS_NEEDED;
+        fields.push('gridProperties.columnCount');
+      }
+      if (fields.length > 0) {
         await withRetry(() => sheets.spreadsheets.batchUpdate({
           spreadsheetId: SPREADSHEET_ID,
           requestBody: {
             requests: [{
               updateSheetProperties: {
-                properties: {
-                  sheetId: rawSheet.properties.sheetId,
-                  gridProperties: { rowCount: newMaxRows },
-                },
-                fields: 'gridProperties.rowCount',
+                properties: { sheetId: rawSheet.properties.sheetId, gridProperties },
+                fields: fields.join(','),
               },
             }],
           },
-        }), { label: 'expand grid rows' });
+        }), { label: 'expand grid rows/cols' });
       }
     }
   } catch (e) {
