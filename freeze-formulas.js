@@ -94,10 +94,10 @@ async function main() {
   for (const s of meta.data.sheets) byTitle[s.properties.title] = s.properties.gridProperties.rowCount;
 
   log(`--- Đóng băng formula — ${new Date().toISOString()} ---`);
-  log(`Row count: RAW DATA=${byTitle['RAW DATA']}, Part #=${byTitle['Part #']}, Check=${byTitle['Check']}`);
+  log(`Row count: RAW DATA=${byTitle['Daily SRP Tracking']}, Part #=${byTitle['Part #']}, Check=${byTitle['Check']}`);
 
   // RAW DATA!V — MAP tra 'Part #'
-  await freezeRange(sheets, 'RAW DATA', 'V', 'V', byTitle['RAW DATA']);
+  await freezeRange(sheets, 'Daily SRP Tracking', 'V', 'V', byTitle['Daily SRP Tracking']);
 
   // Part #!L, N:S — MAP tra RAW DATA / Segment
   await freezeRange(sheets, 'Part #', 'L', 'L', byTitle['Part #']);
