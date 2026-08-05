@@ -1,11 +1,11 @@
-[2026-08-05T08:58:17.494Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-05T08:58:17.502Z] Đọc được 1549 SP từ 3 file artifact (scrape-artifacts)
-[2026-08-05T08:58:17.502Z] Đọc Part # (FORMULA render)...
-[2026-08-05T08:58:17.956Z]   3503 dòng
-[2026-08-05T08:58:17.956Z] Đọc Segment (FORMULA render)...
-[2026-08-05T08:58:18.233Z]   120 dòng
-[2026-08-05T08:58:18.233Z] Đọc Key Focus model (FORMULA render)...
-[2026-08-05T08:58:18.408Z] 💥 Lỗi: Error: Unable to parse range: 'Key Focus model'!A1:D
+[2026-08-05T09:18:07.331Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-05T09:18:07.338Z] Đọc được 1537 SP từ 3 file artifact (scrape-artifacts)
+[2026-08-05T09:18:07.339Z] Đọc Part # (FORMULA render)...
+[2026-08-05T09:18:07.781Z]   3503 dòng
+[2026-08-05T09:18:07.782Z] Đọc Segment (FORMULA render)...
+[2026-08-05T09:18:07.963Z]   120 dòng
+[2026-08-05T09:18:07.964Z] Đọc Key Focus model (FORMULA render)...
+[2026-08-05T09:18:08.126Z] 💥 Lỗi: Error: Unable to parse range: 'Key Focus model'!A1:D
     at Gaxios._request (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/gaxios/build/src/gaxios.js:142:23)
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
     at async JWT.requestAsync (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
