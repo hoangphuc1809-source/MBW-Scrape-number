@@ -20,7 +20,7 @@ const { google } = require('googleapis');
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = '/tmp/gcreds-archive.json';
-const RAW_DATA_TAB = 'RAW DATA';
+const RAW_DATA_TAB = 'Daily SRP Tracking';
 const ARCHIVE_TAB = 'RAW DATA ARCHIVE';
 const RAW_DATA_KEEP_DAYS = parseInt(process.env.RAW_DATA_KEEP_DAYS || '15', 10);
 const ARCHIVE_KEEP_DAYS = parseInt(process.env.ARCHIVE_KEEP_DAYS || '15', 10);
