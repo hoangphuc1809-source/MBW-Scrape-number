@@ -1,1 +1,0 @@
-V1:V3 (FORMULA mode): [["=MAP($E$2:$E,LAMBDA(sku,\nIF(sku=\"\",,\nIFERROR(INDEX('Part #'!$A:$S,MATCH(sku,'Part #'!$A:$A,0),MATCH(\"Status\",'Part #'!$A$1:$S$1,0)),))))"]]
