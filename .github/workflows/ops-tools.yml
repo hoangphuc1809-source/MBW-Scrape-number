@@ -49,6 +49,14 @@ on:
         description: 'CHECK: danh sach tab + nguon Focus Model'
         type: boolean
         default: false
+      run_backfill_dryrun:
+        description: 'Backfill enrichment T-AE tu Part# - XEM TRUOC (dry run)'
+        type: boolean
+        default: false
+      run_backfill_EXECUTE:
+        description: '‼️ Backfill enrichment T-AE tu Part# - THUC THI THAT (doi header + dien du lieu)'
+        type: boolean
+        default: false
       run_check_rawdata:
         description: 'Check RAW DATA — kiem tra tab RAW DATA production'
         type: boolean
@@ -214,6 +222,62 @@ jobs:
           SUMMARY=$(tail -5 archive-execute-report.txt 2>/dev/null || echo "khong co report")
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" --data-urlencode "text=[Archive RAW DATA - tu dong hang tuan] ${SUMMARY}" -o /dev/null -w "telegram: %{http_code}\n" || true
+
+  backfill-enrichment-dryrun:
+    name: 'Backfill enrichment T-AE - DRY RUN'
+    if: ${{ inputs.run_backfill_dryrun }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          EXECUTE: 'false'
+        run: node backfill-enrichment.js > backfill-dryrun-report.txt 2>&1 || true
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add backfill-dryrun-report.txt
+          git commit -m "chore: backfill enrichment dry-run report [skip ci]" || echo "nothing"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  backfill-enrichment-execute:
+    name: '‼️ Backfill enrichment T-AE - THUC THI THAT'
+    if: ${{ inputs.run_backfill_EXECUTE }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          EXECUTE: 'true'
+        run: node backfill-enrichment.js > backfill-execute-report.txt 2>&1 || true
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add backfill-execute-report.txt
+          git commit -m "chore: backfill enrichment execute report [skip ci]" || echo "nothing"
+          git pull --rebase origin main
+          git push origin HEAD:main
 
   check-tabs-focusmodel:
     name: 'CHECK: tab list + Focus Model source'
