@@ -1,24 +1,32 @@
 /**
  * export-dashboard-data.js
  *
- * 03/08/2026: Fix triệt để lỗi dashboard "Không tải được dữ liệu mới —
- * đang dùng dữ liệu cũ". Nguyên nhân gốc: dashboard/index.html trước đây
- * CHỈ có 1 nguồn data — client-side fetch trực tiếp CSV export từ
- * docs.google.com (tab "Dailly SRP Tracking") mỗi khi user mở trang.
- * Cách này mong manh: phụ thuộc CORS/rate-limit của Google, tốc độ mạng
- * người xem, và kích thước tab (đang phình to). Khi fetch fail sau 5 lần
- * retry, dashboard rơi về DATA tĩnh nhúng cứng trong HTML từ lần build
- * cuối (11/06/2026) — không tự cập nhật bao giờ.
+ * v3.6.1 (05/08/2026): Nguon doi hoan toan — khong con doc tu "Dailly SRP
+ * Tracking" (tab cu, sap xoa) nua. Gio doc truc tiep tu "Daily SRP Tracking"
+ * (ten moi cua tab RAW DATA, da co san enrich T->AE tu Part#/Segment bang
+ * CODE — khong con formula nao, khong con nghen). Vi layout cot khac hoan
+ * toan (A->S tieng Anh + T->AE enrich, thay vi 24 cot QUERY-derived cu), can
+ * REMAP lai dung thu tu cot CSV cu (dashboard/index.html dang doc theo vi
+ * tri cot co dinh) + AP LAI FILTER ma QUERY formula cu tung lam (Sale Price
+ * khong rong, Product Link khong rong, Status khac 'EOL') vi nguon moi la
+ * RAW, chua loc.
  *
- * Script này chạy NGAY SAU khi write-sheet ghi xong Google Sheet (server-
- * side, trong GitHub Actions — không giới hạn 8s như client browser), đọc
- * toàn bộ tab "Dailly SRP Tracking" rồi xuất ra dashboard/data.csv, commit
- * thẳng vào repo. Dashboard giờ đọc file CSV same-origin này TRƯỚC (nhanh,
- * không CORS, không phụ thuộc Google), chỉ fallback về Google Sheets nếu
- * vì lý do gì đó file local chưa có/lỗi.
+ * 03/08/2026: Fix triet de loi dashboard "Khong tai duoc du lieu moi -
+ * dang dung du lieu cu". Nguyen nhan goc: dashboard/index.html truoc day
+ * CHI co 1 nguon data - client-side fetch truc tiep CSV export tu
+ * docs.google.com moi khi user mo trang. Cach nay mong manh: phu thuoc
+ * CORS/rate-limit cua Google, toc do mang nguoi xem, va kich thuoc tab
+ * (dang phinh to). Khi fetch fail sau 5 lan retry, dashboard roi ve DATA
+ * tinh nhung cung trong HTML tu lan build cuoi - khong tu cap nhat bao gio.
  *
- * Best-effort: nếu export lỗi, KHÔNG làm fail job chính (write-sheet) —
- * dashboard vẫn còn data.csv cũ dùng tạm, còn hơn để job đỏ vì bước phụ.
+ * Script nay chay NGAY SAU khi write-sheet ghi xong Google Sheet (server-
+ * side, trong GitHub Actions - khong gioi han 8s nhu client browser), doc
+ * tab nguon roi xuat ra dashboard/data.csv, commit thang vao repo. Dashboard
+ * gio doc file CSV same-origin nay TRUOC (nhanh, khong CORS, khong phu
+ * thuoc Google), chi fallback ve Google Sheets neu file local chua co/loi.
+ *
+ * Best-effort: neu export loi, KHONG lam fail job chinh (write-sheet) -
+ * dashboard van con data.csv cu dung tam, con hon de job do vi buoc phu.
  */
 const { google } = require('googleapis');
 const fs = require('fs');
@@ -28,15 +36,28 @@ const os = require('os');
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = path.join(os.tmpdir(), 'export-gcreds.json');
 const DEBUG_LOG_PATH = path.join(__dirname, 'dashboard', '.export-debug.log');
-// gid của tab "Dailly SRP Tracking" — lấy đúng bằng gid thay vì tên, để
-// không vỡ nếu ai đó đổi tên tab sau này.
-const TARGET_GID = 221053035;
-// Dashboard chỉ cần tối đa 30 ngày lịch sử (xem dayBtns=[7,14,30] trong
-// dashboard/index.html). Tab "Dailly SRP Tracking" đang rất lớn (đọc 1 lần
-// A:Z bị Sheets API trả 503 sau ~6 phút — xác nhận 03/08/2026), nên chỉ lấy
-// ~40k dòng cuối (dư ra so với 30 ngày thực tế) thay vì đọc toàn bộ.
+// gid cua tab nguon - "Daily SRP Tracking" (RAW DATA cu, Phuc da rename
+// 04-05/08/2026). Lay bang gid de khong vo neu ten tab doi tiep sau nay.
+const TARGET_GID = 889472306;
+// Dashboard chi can toi da 30 ngay lich su (xem dayBtns=[7,14,30] trong
+// dashboard/index.html). Chi lay ~40k dong cuoi thay vi doc toan bo.
 const MAX_DATA_ROWS = 40000;
-const CHUNK_SIZE = 5000; // đọc theo lô nhỏ, tránh 1 request bị timeout
+const CHUNK_SIZE = 5000; // doc theo lo nho, tranh 1 request bi timeout
+
+// Header CSV theo THU TU CU (dashboard/index.html dang doc theo vi tri cot
+// nay - giu nguyen de khong phai sua frontend).
+const CSV_HEADER = [
+  'Date', 'Hour', 'Dealers', 'SKU', 'SRP', 'Promotion Price', 'Change', 'Sold',
+  'Rate', 'Vendor', 'Series Group', 'Segment', 'CPU Segment', 'CPU', 'RAM',
+  'SSD', 'Screen', 'GPU', 'V-RAM', 'Weight', 'Products Link', 'Part #',
+  'Focus Model', 'Status',
+];
+// Vi tri cot (0-indexed) trong tab nguon MOI ("Daily SRP Tracking", A->AE)
+// tuong ung voi tung cot CSV_HEADER o tren, theo dung thu tu.
+// (A=0,B=1,C=2,D=3,E=4,F=5,G=6,H=7,I=8,J=9,K=10,L=11,M=12,N=13,O=14,P=15,
+//  Q=16,R=17,S=18,T=19,U=20,V=21,W=22,X=23,Y=24,Z=25,AA=26,AB=27,AC=28,
+//  AD=29,AE=30)
+const SRC_COL_INDEX = [0, 1, 3, 4, 12, 13, 14, 15, 16, 5, 20, 21, 22, 23, 24, 25, 26, 27, 28, 11, 17, 29, 30, 19];
 
 function debugLog(msg) {
   const line = `[${new Date().toISOString()}] ${msg}\n`;
@@ -50,7 +71,7 @@ async function withRetry(fn, label, tries = 2) {
     try { return await fn(); }
     catch (err) {
       lastErr = err;
-      debugLog(`   ⚠ ${label} lần ${i}/${tries} lỗi: ${err.message}`);
+      debugLog(`   lỗi ${label} lần ${i}/${tries}: ${err.message}`);
       if (i < tries) await new Promise(r => setTimeout(r, 2000));
     }
   }
@@ -59,17 +80,34 @@ async function withRetry(fn, label, tries = 2) {
 
 function csvEscape(v) {
   const s = (v === null || v === undefined) ? '' : String(v);
-  if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  if (/["\n\r,]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
   return s;
 }
 
+function remapRow(srcRow) {
+  return SRC_COL_INDEX.map(i => srcRow[i] ?? '');
+}
+
+// Thay cho WHERE cua QUERY formula cu: "N is not null and R is not null and
+// V<>'EOL'" - tren tab nguon MOI, N (Sale Price) = index 13, R (Product
+// Link) = index 17, T (Status) = index 19.
+function passesFilter(srcRow) {
+  const salePrice = srcRow[13];
+  const productLink = srcRow[17];
+  const status = srcRow[19];
+  if (!salePrice) return false;
+  if (!productLink) return false;
+  if (status === 'EOL') return false;
+  return true;
+}
+
 async function main() {
-  try { fs.writeFileSync(DEBUG_LOG_PATH, ''); } catch (_) {} // reset log mỗi lần chạy, tránh phình vô hạn
+  try { fs.writeFileSync(DEBUG_LOG_PATH, ''); } catch (_) {}
   debugLog('--- Bắt đầu export-dashboard-data.js ---');
   debugLog(`SPREADSHEET_ID set: ${!!SPREADSHEET_ID}, GOOGLE_CREDENTIALS set: ${!!process.env.GOOGLE_CREDENTIALS}`);
 
   if (!SPREADSHEET_ID || !process.env.GOOGLE_CREDENTIALS) {
-    debugLog('⚠ Thiếu SPREADSHEET_ID hoặc GOOGLE_CREDENTIALS — bỏ qua export dashboard data.');
+    debugLog('Thiếu SPREADSHEET_ID hoặc GOOGLE_CREDENTIALS - bỏ qua export dashboard data.');
     return;
   }
 
@@ -79,7 +117,7 @@ async function main() {
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   });
   const sheets = google.sheets({ version: 'v4', auth });
-  const REQ_TIMEOUT_MS = 20000; // fail nhanh — tab "Dailly SRP Tracking" đang treo lâu do formula nặng, không cần đợi lâu
+  const REQ_TIMEOUT_MS = 20000;
 
   debugLog('Gọi spreadsheets.get() để lấy metadata...');
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID }, { timeout: REQ_TIMEOUT_MS });
@@ -87,27 +125,13 @@ async function main() {
   debugLog(`Danh sách tab tìm thấy: ${allTabs.join(' | ')}`);
 
   const sheetMeta = (meta.data.sheets || []).find(s => s.properties.sheetId === TARGET_GID);
-  if (!sheetMeta) throw new Error(`Không tìm thấy tab với gid=${TARGET_GID} trong spreadsheet. Các tab hiện có: ${allTabs.join(', ')}`);
+  if (!sheetMeta) throw new Error(`Không tìm thấy tab với gid=${TARGET_GID}. Các tab hiện có: ${allTabs.join(', ')}`);
   const tabName = sheetMeta.properties.title;
   const totalRows = sheetMeta.properties.gridProperties.rowCount;
-  debugLog(`📋 Tab "${tabName}" (gid ${TARGET_GID}) — tổng ${totalRows} dòng (theo metadata, gồm cả dòng trống chưa dùng)`);
+  debugLog(`Tab "${tabName}" (gid ${TARGET_GID}) - tổng ${totalRows} dòng`);
 
-  // Header luôn ở dòng 1
-  const headerRes = await withRetry(
-    () => sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${tabName}'!A1:Z1`,
-      valueRenderOption: 'FORMULA',
-      dateTimeRenderOption: 'FORMATTED_STRING',
-    }, { timeout: REQ_TIMEOUT_MS }),
-    'Đọc header'
-  );
-  const header = (headerRes.data.values || [[]])[0];
-
-  // Chỉ lấy MAX_DATA_ROWS dòng dữ liệu cuối (mới nhất) — dư so với 30 ngày
-  // dashboard cần, nhưng tránh đọc hết tab đang bị phình (gây 503/timeout).
   const dataStartRow = Math.max(2, totalRows - MAX_DATA_ROWS + 1);
-  debugLog(`   Sẽ đọc dòng ${dataStartRow} → ${totalRows} theo lô ${CHUNK_SIZE} dòng/lần...`);
+  debugLog(`   Sẽ đọc dòng ${dataStartRow} -> ${totalRows} (cột A:AE) theo lô ${CHUNK_SIZE} dòng/lần...`);
 
   const dataRows = [];
   for (let start = dataStartRow; start <= totalRows; start += CHUNK_SIZE) {
@@ -115,35 +139,37 @@ async function main() {
     const chunkRes = await withRetry(
       () => sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `'${tabName}'!A${start}:Z${end}`,
+        range: `'${tabName}'!A${start}:AE${end}`,
         valueRenderOption: 'FORMULA',
         dateTimeRenderOption: 'FORMATTED_STRING',
       }, { timeout: REQ_TIMEOUT_MS }),
       `Đọc lô ${start}-${end}`
     );
     const chunkRows = chunkRes.data.values || [];
-    // Bỏ các dòng hoàn toàn trống (vùng cuối sheet thường có nhiều dòng trống chưa dùng)
     for (const r of chunkRows) if (r.some(c => c !== '' && c !== undefined && c !== null)) dataRows.push(r);
-    debugLog(`   ✓ Lô ${start}-${end}: ${chunkRows.length} dòng thô`);
+    debugLog(`   Lô ${start}-${end}: ${chunkRows.length} dòng thô`);
   }
 
-  const rows = [header, ...dataRows];
-  debugLog(`   Tổng ${rows.length} dòng (kể cả header) sau khi lọc dòng trống`);
+  debugLog(`   Đọc thô được ${dataRows.length} dòng, đang lọc + remap cột...`);
+  const filteredRemapped = dataRows.filter(passesFilter).map(remapRow);
+  debugLog(`   Sau filter: ${filteredRemapped.length}/${dataRows.length} dòng`);
+
+  const rows = [CSV_HEADER, ...filteredRemapped];
   if (rows.length < 10) {
-    throw new Error(`Chỉ đọc được ${rows.length} dòng — nghi ngờ lỗi, không ghi đè data.csv cũ`);
+    throw new Error(`Chỉ có ${rows.length} dòng sau lọc - không ghi đè data.csv cũ`);
   }
 
   const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n') + '\n';
   const outPath = path.join(__dirname, 'dashboard', 'data.csv');
   fs.writeFileSync(outPath, csv, 'utf8');
-  debugLog(`✅ Đã ghi ${outPath} (${(csv.length / 1024).toFixed(0)} KB)`);
+  debugLog(`Đã ghi ${outPath} (${(csv.length / 1024).toFixed(0)} KB, ${rows.length - 1} dòng data)`);
 
   fs.unlinkSync(CREDS_PATH);
   debugLog('--- Kết thúc export-dashboard-data.js: THÀNH CÔNG ---');
 }
 
 main().catch(err => {
-  debugLog(`💥 Export dashboard data thất bại: ${err && err.stack ? err.stack : String(err)}`);
+  debugLog(`Export dashboard data thất bại: ${err && err.stack ? err.stack : String(err)}`);
   if (err && err.response && err.response.data) {
     debugLog(`   API response data: ${JSON.stringify(err.response.data).substring(0, 3000)}`);
   }
