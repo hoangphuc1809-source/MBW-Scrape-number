@@ -1,13 +1,17 @@
-[2026-08-05T01:23:10.236Z] --- Bắt đầu export-dashboard-data.js ---
-[2026-08-05T01:23:10.237Z] SPREADSHEET_ID set: true, GOOGLE_CREDENTIALS set: true
-[2026-08-05T01:23:10.238Z] Gọi spreadsheets.get() để lấy metadata...
-[2026-08-05T01:23:10.575Z] Danh sách tab tìm thấy: Key Focus model (gid=1652349882) | SRP checking (gid=1241321671) | Dailly SRP Tracking (gid=221053035) | RAW DATA (gid=889472306) | RAW DATA ARCHIVE (gid=463742773) | Part # (gid=1652208865) | Check (gid=899133970) | Segment (gid=1545218913) | Introduce (gid=1355004314) | Fix (gid=279452386) | FPT_TEST (gid=1933409101)
-[2026-08-05T01:23:10.575Z] 📋 Tab "Dailly SRP Tracking" (gid 221053035) — tổng 82479 dòng (theo metadata, gồm cả dòng trống chưa dùng)
-[2026-08-05T01:24:11.225Z]    ⚠ Đọc header lần 1/2 lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Dailly%20SRP%20Tracking%27%21A1%3AZ1?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
-[2026-08-05T01:25:13.874Z]    ⚠ Đọc header lần 2/2 lỗi: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Dailly%20SRP%20Tracking%27%21A1%3AZ1?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
-[2026-08-05T01:25:13.874Z] 💥 Export dashboard data thất bại: Error: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Dailly%20SRP%20Tracking%27%21A1%3AZ1?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING
-    at Gaxios._request (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/gaxios/build/src/gaxios.js:149:19)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at async JWT.requestAsync (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
-    at async withRetry (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/export-dashboard-data.js:50:18)
-    at async main (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/export-dashboard-data.js:96:21)
+[2026-08-05T05:05:29.555Z] --- Bắt đầu export-dashboard-data.js ---
+[2026-08-05T05:05:29.556Z] SPREADSHEET_ID set: true, GOOGLE_CREDENTIALS set: true
+[2026-08-05T05:05:29.557Z] Gọi spreadsheets.get() để lấy metadata...
+[2026-08-05T05:05:30.275Z] Danh sách tab tìm thấy: SRP checking (gid=1241321671) | Dailly SRP Tracking (gid=221053035) | RAW DATA (gid=889472306) | RAW DATA ARCHIVE (gid=463742773) | Part # (gid=1652208865) | Check (gid=899133970) | Segment (gid=1545218913) | Introduce (gid=1355004314) | Fix (gid=279452386) | FPT_TEST (gid=1933409101)
+[2026-08-05T05:05:30.275Z] 📋 Tab "Dailly SRP Tracking" (gid 221053035) — tổng 68225 dòng (theo metadata, gồm cả dòng trống chưa dùng)
+[2026-08-05T05:05:30.464Z]    Sẽ đọc dòng 28226 → 68225 theo lô 5000 dòng/lần...
+[2026-08-05T05:05:31.054Z]    ✓ Lô 28226-33225: 4852 dòng thô
+[2026-08-05T05:05:31.268Z]    ✓ Lô 33226-38225: 0 dòng thô
+[2026-08-05T05:05:31.434Z]    ✓ Lô 38226-43225: 0 dòng thô
+[2026-08-05T05:05:31.729Z]    ✓ Lô 43226-48225: 0 dòng thô
+[2026-08-05T05:05:31.896Z]    ✓ Lô 48226-53225: 0 dòng thô
+[2026-08-05T05:05:32.170Z]    ✓ Lô 53226-58225: 0 dòng thô
+[2026-08-05T05:05:32.452Z]    ✓ Lô 58226-63225: 0 dòng thô
+[2026-08-05T05:05:32.607Z]    ✓ Lô 63226-68225: 0 dòng thô
+[2026-08-05T05:05:32.608Z]    Tổng 4853 dòng (kể cả header) sau khi lọc dòng trống
+[2026-08-05T05:05:32.627Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv (1639 KB)
+[2026-08-05T05:05:32.628Z] --- Kết thúc export-dashboard-data.js: THÀNH CÔNG ---
