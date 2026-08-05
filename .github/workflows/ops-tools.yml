@@ -53,6 +53,10 @@ on:
         description: 'CHECK: cau truc tab Segment + Part# L/M'
         type: boolean
         default: false
+      run_check_simple:
+        description: 'CHECK: don gian danh sach tab'
+        type: boolean
+        default: false
       run_backfill_dryrun:
         description: 'Backfill enrichment T-AE tu Part# - XEM TRUOC (dry run)'
         type: boolean
@@ -280,6 +284,33 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add backfill-execute-report.txt
           git commit -m "chore: backfill enrichment execute report [skip ci]" || echo "nothing"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  check-simple:
+    name: 'CHECK: simple tab list'
+    if: ${{ inputs.run_check_simple }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install googleapis@140 --no-save --no-audit --no-fund
+      - env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node check-simple.js > check-simple-log.txt 2>&1 || true
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add check-simple-log.txt
+          git commit -m "chore: check simple [skip ci]" || echo "nothing"
           git pull --rebase origin main
           git push origin HEAD:main
 
