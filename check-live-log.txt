@@ -1,0 +1,6 @@
+Dailly SRP Tracking rowCount: 68225
+Range A1:X5: 5 dòng, có formula: false
+Range A34112:X34115: 0 dòng, có formula: false
+Range A68220:X68225: 0 dòng, có formula: false
+
+RAW DATA V1:V5 (FORMULA mode): [["Status"]]
