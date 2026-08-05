@@ -8,7 +8,7 @@ const { google } = require('googleapis');
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = '/tmp/gcreds-backfill.json';
-const RAW_DATA_TAB = 'RAW DATA';
+const RAW_DATA_TAB = 'Daily SRP Tracking';
 const PART_TAB = 'Part #';
 const EXECUTE = process.env.EXECUTE === 'true';
 
