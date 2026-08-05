@@ -1424,6 +1424,14 @@ async function buildPartLookupMap(sheets) {
     valueRenderOption: 'FORMULA',
   }), { label: 'đọc header Part #' });
   const hIdx = buildHeaderIndex((headerRes.data.values || [[]])[0]);
+  // TAM THOI (05/08/2026): dump header Part # de dieu tra Focus Model bi trong
+  try {
+    fs.writeFileSync(path.join(__dirname, 'debug-part-header.json'), JSON.stringify({
+      rawHeaderRow: (headerRes.data.values || [[]])[0],
+      hIdxKeys: Object.keys(hIdx),
+      hIdx,
+    }, null, 2));
+  } catch (_) {}
 
   const REQUIRED = ['Product Name', 'Part #', 'CPU Segment', 'CPU', 'RAM', 'SSD', 'Screen', 'GPU', 'V-RAM', 'Status', 'Focus Model'];
   const missing = REQUIRED.filter(name => !(name in hIdx));
