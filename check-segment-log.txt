@@ -119,4 +119,4 @@ Part # A1:M5 (gia tri da tinh): [
   "Vivobook"
  ]
 ]
-LOI: Unable to parse range: 'RAW DATA'!S1:AE1
+LOI: Cannot read properties of undefined (reading 'properties')
