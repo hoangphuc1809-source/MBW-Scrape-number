@@ -458,11 +458,11 @@ async function checkStockHTTP(url) {
     });
     clearTimeout(timer);
     const html = await res.text();
-    if (/tạm\s*hết\s*hàng/i.test(html)) return 'Tạm hết hàng';
+    if (/tạm\s*hết\s*hàng|hết\s*hàng/i.test(html)) return 'Tạm hết hàng';
     if (/ngừng\s*kinh\s*doanh|sản phẩm không tồn tại|không tìm thấy/i.test(html)) return 'Ngừng KD';
     return 'Còn hàng';
   } catch {
-    return 'Còn hàng'; // lỗi mạng → assume còn hàng, an toàn hơn
+    return 'Chưa rõ'; // FIX 05/08/2026: loi mang -> khong ro, khong mac dinh con hang (tung gay sai lech Availability)
   }
 }
 
@@ -526,7 +526,7 @@ async function fetchSpecsFPT(page, url) {
       const priceEl = document.querySelector('[class*="b1-semibold"],[class*="price"]');
       if (priceEl && /liên hệ/i.test(priceEl.innerText || '')) return 'Liên hệ';
       return 'Còn hàng';
-    }).catch(() => 'Còn hàng');
+    }).catch(() => 'Chưa rõ'); // FIX 05/08/2026: loi ky thuat -> khong ro, khong mac dinh con hang
 
     const clicked = await page.evaluate(() => {
       const btn = [...document.querySelectorAll('span, button, a')]
@@ -600,7 +600,7 @@ async function fetchSpecsCPS(page, url) {
       const priceEl = document.querySelector('.product__price--show,.tpt-price,.price-show');
       if (!priceEl || !/\d/.test(priceEl.innerText || '')) return 'Liên hệ';
       return 'Còn hàng';
-    }).catch(() => 'Còn hàng');
+    }).catch(() => 'Chưa rõ'); // FIX 05/08/2026: loi ky thuat -> khong ro, khong mac dinh con hang
 
     const raw = await page.evaluate(() => {
       const specs = {};
@@ -984,10 +984,17 @@ async function scrapeMBW(page) {
       const weight = weightRaw;
 
       // MBW: detect stock status từ listing page
-      // "Ngừng kinh doanh" → thường không có giá (origPrice=0, salePrice=0)
-      // và có text "Ngừng" hoặc không có nút mua
+      // FIX 05/08/2026: truoc day chi check gia (thieu gia -> Chua ro, con
+      // lai luon mac dinh "Con hang") — KHONG doc chu "het hang"/"tam het
+      // hang" tren card, gay sai lech nghiem trong (site ghi het hang nhung
+      // Availability van "Con hang"). Vi enrichSpecs hien khong con fetch
+      // trang chi tiet cho SP da cache (tat tu 23/07 de on dinh), day RA
+      // TUYEN PHONG THU DUY NHAT cho Availability — phai kiem tra ky nhu CPS.
       const mbwStatus = (() => {
-        // Nếu đã bán rất nhiều nhưng không còn giá → ngừng KD
+        const cardText = (card.innerText || '').toLowerCase();
+        if (/tạm hết hàng|hết hàng|out of stock/.test(cardText)) return 'Tạm hết hàng';
+        if (/ngừng kinh doanh|ngừng bán/.test(cardText)) return 'Ngừng KD';
+        if (/sắp về|hàng sắp về|pre.?order|đặt trước/.test(cardText)) return 'Hàng sắp về';
         if (!origPrice && !salePrice) return 'Chưa rõ';
         return 'Còn hàng';
       })();
@@ -1101,12 +1108,15 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       const origPrice = parseInt((card.querySelector('span[class*="line-through"]')?.textContent||'').replace(/\D/g,'')) || 0;
       const discount  = card.querySelector('[class*="discount"],[class*="percent"]')?.innerText?.trim() || '';
       if (!name || name.length < 5) return;
-      // FPT listing: detect "Hàng sắp về" từ card text
-      // Detail page sẽ update chính xác hơn khi fetch specs
+      // FPT listing: detect stock status tu card text
+      // FIX 05/08/2026: truoc day CHI check "hang sap ve"/"ngung", THIEU HAN
+      // "het hang"/"tam het hang" — cung ly do nhu MBW o tren, day la tuyen
+      // phong thu duy nhat vi detail-page fetch da tat (23/07).
       const fptStatus = (() => {
         const cardText = (card.innerText || '').toLowerCase();
+        if (/tạm hết hàng|hết hàng/.test(cardText)) return 'Tạm hết hàng';
         if (/hàng sắp về/.test(cardText)) return 'Hàng sắp về';
-        if (/ngừng/.test(cardText)) return 'Ngừng KD';
+        if (/ngừng kinh doanh|ngừng bán|ngừng/.test(cardText)) return 'Ngừng KD';
         if (!salePrice && !origPrice) return 'Chưa rõ';
         return 'Còn hàng';
       })();
