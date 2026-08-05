@@ -1490,6 +1490,10 @@ async function buildPartLookupMap(sheets) {
 
   const map = new Map();
   const CHUNK = 5000;
+  // TAM THOI (05/08/2026): gop debug qua TAT CA chunk (truoc day ghi de moi
+  // vong lap -> chi thay chunk CUOI, la vung trong hop le ngoai pham vi data
+  // thuc -> hieu lam la "Part # rong". Gop lai moi thay dung buc tranh.
+  const debugChunks = [];
   for (let start = 2; start <= totalRows; start += CHUNK) {
     const end = Math.min(start + CHUNK - 1, totalRows);
     const res = await withRetry(() => sheets.spreadsheets.values.get({
@@ -1498,16 +1502,12 @@ async function buildPartLookupMap(sheets) {
       valueRenderOption: 'FORMULA',
     }), { label: `đọc Part # ${start}-${end}` });
     const rows = res.data.values || [];
-    // TAM THOI (05/08/2026): dump mau du lieu cot Focus Model tu Part # de
-    // dieu tra vi sao enrichment ra rong toan bo du header lookup dung.
     try {
-      const sampleRows = rows.slice(0, 15).map(r => ({
-        name: r[iName], focusRaw: r[iFocus], rowLen: r.length, fullRow: r,
-      }));
       const nonEmptyFocusCount = rows.filter(r => r[iFocus] !== undefined && r[iFocus] !== '' && r[iFocus] !== null).length;
-      fs.writeFileSync(path.join(__dirname, 'debug-part-focus-sample.json'), JSON.stringify({
-        iFocus, totalRowsThisChunk: rows.length, nonEmptyFocusCount, sampleRows,
-      }, null, 2));
+      debugChunks.push({
+        range: `${start}-${end}`, rowsInChunk: rows.length, nonEmptyFocusCount,
+        sample: rows.slice(0, 3).map(r => ({ name: r[iName], focusRaw: r[iFocus] })),
+      });
     } catch (_) {}
     for (const r of rows) {
       const name = (r[iName] || '').trim();
@@ -1530,6 +1530,12 @@ async function buildPartLookupMap(sheets) {
     }
   }
   console.log(`   📋 Đã đọc ${map.size} Product Name từ "${PART_TAB}" (tra theo tên cột, không theo vị trí cố định)`);
+  try {
+    const totalNonEmptyFocus = debugChunks.reduce((s, c) => s + c.nonEmptyFocusCount, 0);
+    fs.writeFileSync(path.join(__dirname, 'debug-part-focus-sample.json'), JSON.stringify({
+      iFocus, mapSize: map.size, totalNonEmptyFocusAcrossAllChunks: totalNonEmptyFocus, chunks: debugChunks,
+    }, null, 2));
+  } catch (_) {}
 
   // v3.6.1: doc tab "Segment" (tra theo ten cot: Brand, Segment, Series
   // Group) de tinh Series Group/Segment bang code — thay cho cong thuc
