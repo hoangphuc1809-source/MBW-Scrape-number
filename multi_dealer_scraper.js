@@ -1371,6 +1371,31 @@ async function withRetry(fn, { retries = 3, baseDelayMs = 2000, label = '' } = {
 // cong thuc khac cua Part # (L→S co MAP/LAMBDA rieng, khong lien quan).
 // Cot T cua Part # (Focus Model) la cot moi, co the chua co du lieu — van
 // doc binh thuong, chi la gia tri se trong cho toi khi duoc dien.
+// v3.6.2: doc header (dong 1) truoc, tra ve object { ten cot (chuan hoa) ->
+// vi tri cot 0-indexed }. Dung de tra cuu CAC COT CAN THIET theo TEN, khong
+// theo vi tri co dinh — Phuc co the chen/doi vi tri cot trong Part # bat cu
+// luc nao ma khong lam vo code.
+function buildHeaderIndex(headerRow) {
+  const idx = {};
+  (headerRow || []).forEach((h, i) => {
+    const key = String(h || '').trim();
+    if (key) idx[key] = i;
+  });
+  return idx;
+}
+
+function colLetter(n) {
+  // 0-indexed -> ky tu cot Sheets (A, B, ..., Z, AA, AB, ...)
+  let s = '';
+  let num = n + 1;
+  while (num > 0) {
+    const rem = (num - 1) % 26;
+    s = String.fromCharCode(65 + rem) + s;
+    num = Math.floor((num - 1) / 26);
+  }
+  return s;
+}
+
 async function buildPartLookupMap(sheets) {
   const meta = await withRetry(() => sheets.spreadsheets.get({
     spreadsheetId: SPREADSHEET_ID,
@@ -1379,6 +1404,35 @@ async function buildPartLookupMap(sheets) {
   const partSheet = meta.data.sheets.find(s => s.properties.title === PART_TAB);
   if (!partSheet) { console.log(`   ⚠ Không tìm thấy tab "${PART_TAB}" — bỏ qua enrichment`); return { partMap: new Map(), segmentRefs: [] }; }
   const totalRows = partSheet.properties.gridProperties.rowCount;
+  const totalCols = partSheet.properties.gridProperties.columnCount;
+  const lastCol = colLetter(totalCols - 1);
+
+  // Doc header truoc de biet vi tri THAT SU cua tung cot can, khong doan mo.
+  const headerRes = await withRetry(() => sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `'${PART_TAB}'!A1:${lastCol}1`,
+    valueRenderOption: 'FORMULA',
+  }), { label: 'đọc header Part #' });
+  const hIdx = buildHeaderIndex((headerRes.data.values || [[]])[0]);
+
+  const REQUIRED = ['Product Name', 'Part #', 'CPU Segment', 'CPU', 'RAM', 'SSD', 'Screen', 'GPU', 'V-RAM', 'Status', 'Focus Model'];
+  const missing = REQUIRED.filter(name => !(name in hIdx));
+  if (missing.length > 0) {
+    console.log(`   ⚠ Part # thiếu cột: ${missing.join(', ')} — các field này sẽ để trống. Kiểm tra lại tên cột nếu không phải cố ý.`);
+  }
+  const iName = hIdx['Product Name'];
+  const iPart = hIdx['Part #'];
+  const iCpuSeg = hIdx['CPU Segment'];
+  const iCpu = hIdx['CPU'];
+  const iRam = hIdx['RAM'];
+  const iSsd = hIdx['SSD'];
+  const iScreen = hIdx['Screen'];
+  const iGpu = hIdx['GPU'];
+  const iVram = hIdx['V-RAM'];
+  const iStatus = hIdx['Status'];
+  const iFocus = hIdx['Focus Model'];
+
+  if (iName === undefined) { console.log('   ⚠ Không tìm thấy cột "Product Name" — không thể enrich, bỏ qua.'); return { partMap: new Map(), segmentRefs: [] }; }
 
   const map = new Map();
   const CHUNK = 5000;
@@ -1386,46 +1440,56 @@ async function buildPartLookupMap(sheets) {
     const end = Math.min(start + CHUNK - 1, totalRows);
     const res = await withRetry(() => sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${PART_TAB}'!A${start}:T${end}`,
+      range: `'${PART_TAB}'!A${start}:${lastCol}${end}`,
       valueRenderOption: 'FORMULA',
     }), { label: `đọc Part # ${start}-${end}` });
     const rows = res.data.values || [];
     for (const r of rows) {
-      const name = (r[0] || '').trim();
+      const name = (r[iName] || '').trim();
       if (!name) continue;
       map.set(name, {
-        status:       safeVal(r[10]),  // K
-        cpuSegment:   safeVal(r[3]),   // D
-        cpu:          safeVal(r[4]),   // E
-        ram:          safeVal(r[5]),   // F
-        ssd:          safeVal(r[6]),   // G
-        screen:       safeVal(r[7]),   // H
-        gpu:          safeVal(r[8]),   // I
-        vram:         safeVal(r[9]),   // J
-        partNumber:   safeVal(r[2]),   // C
-        focusModel:   safeVal(r[19]),  // T (cot moi, Phuc se dien)
-        // L (Series Group), M (Segment) KHONG doc tu day nua — day la
-        // formula song trong Part #, tra qua tab "Segment". Tinh truc tiep
-        // bang code o duoi (xem buildSegmentRefs + matchSegment).
+        status:       iStatus  !== undefined ? safeVal(r[iStatus])  : '',
+        cpuSegment:   iCpuSeg  !== undefined ? safeVal(r[iCpuSeg])  : '',
+        cpu:          iCpu     !== undefined ? safeVal(r[iCpu])     : '',
+        ram:          iRam     !== undefined ? safeVal(r[iRam])     : '',
+        ssd:          iSsd     !== undefined ? safeVal(r[iSsd])     : '',
+        screen:       iScreen  !== undefined ? safeVal(r[iScreen])  : '',
+        gpu:          iGpu     !== undefined ? safeVal(r[iGpu])     : '',
+        vram:         iVram    !== undefined ? safeVal(r[iVram])    : '',
+        partNumber:   iPart    !== undefined ? safeVal(r[iPart])    : '',
+        focusModel:   iFocus   !== undefined ? safeVal(r[iFocus])   : '',
+        // Series Group, Segment KHONG doc tu day — la formula song trong
+        // Part #, tra qua tab "Segment". Tinh truc tiep bang code o duoi
+        // (buildSegmentRefs + matchSegment).
       });
     }
   }
-  console.log(`   📋 Đã đọc ${map.size} Product Name từ "${PART_TAB}"`);
+  console.log(`   📋 Đã đọc ${map.size} Product Name từ "${PART_TAB}" (tra theo tên cột, không theo vị trí cố định)`);
 
-  // v3.6.1: doc tab "Segment" (B=Brand, C=tu khoa Segment, D=Series Group)
-  // de tinh Series Group/Segment bang code — thay cho cong thuc song L/M
-  // cua Part # (MAP + BYROW/REGEXMATCH tra qua tab nay).
+  // v3.6.1: doc tab "Segment" (tra theo ten cot: Brand, Segment, Series
+  // Group) de tinh Series Group/Segment bang code — thay cho cong thuc
+  // song L/M cua Part # (MAP + BYROW/REGEXMATCH tra qua tab nay).
   const segmentSheet = meta.data.sheets.find(s => s.properties.title === SEGMENT_TAB);
   let segmentRefs = [];
   if (segmentSheet) {
-    const segRes = await withRetry(() => sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${SEGMENT_TAB}'!B2:D${segmentSheet.properties.gridProperties.rowCount}`,
-    }), { label: 'đọc Segment tab' });
-    segmentRefs = (segRes.data.values || [])
-      .filter(r => r[1]) // co tu khoa Segment (cot C, index 1 trong B:D)
-      .map(r => ({ keyword: String(r[1]).trim(), keywordLower: String(r[1]).trim().toLowerCase(), seriesGroup: r[2] || '' }));
-    console.log(`   📋 Đã đọc ${segmentRefs.length} từ khoá Segment từ tab "${SEGMENT_TAB}"`);
+    const segHeaderRes = await withRetry(() => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID, range: `'${SEGMENT_TAB}'!A1:${colLetter(segmentSheet.properties.gridProperties.columnCount - 1)}1`,
+    }), { label: 'đọc header Segment' });
+    const sIdx = buildHeaderIndex((segHeaderRes.data.values || [[]])[0]);
+    const iSegKeyword = sIdx['Segment'];
+    const iSeriesGroup = sIdx['Series Group'];
+    if (iSegKeyword === undefined || iSeriesGroup === undefined) {
+      console.log(`   ⚠ Tab "${SEGMENT_TAB}" thiếu cột "Segment" hoặc "Series Group" — bỏ qua tra cứu Series Group/Segment.`);
+    } else {
+      const segRes = await withRetry(() => sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${SEGMENT_TAB}'!A2:${colLetter(segmentSheet.properties.gridProperties.columnCount - 1)}${segmentSheet.properties.gridProperties.rowCount}`,
+      }), { label: 'đọc Segment tab' });
+      segmentRefs = (segRes.data.values || [])
+        .filter(r => r[iSegKeyword])
+        .map(r => ({ keyword: String(r[iSegKeyword]).trim(), keywordLower: String(r[iSegKeyword]).trim().toLowerCase(), seriesGroup: r[iSeriesGroup] || '' }));
+      console.log(`   📋 Đã đọc ${segmentRefs.length} từ khoá Segment từ tab "${SEGMENT_TAB}" (tra theo tên cột)`);
+    }
   } else {
     console.log(`   ⚠ Không tìm thấy tab "${SEGMENT_TAB}" — Series Group/Segment sẽ để trống`);
   }
