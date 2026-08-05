@@ -1011,7 +1011,6 @@ async function scrapeMBW(page) {
 }
 
 // ── SCRAPER 2 — FPT Retail ────────────────────────────────
-const fptClickLog = []; // TAM THOI (05/08/2026): dieu tra vi sao "Xem them" dung som
 async function scrapeFPT(page, brand, specCache, startTime) {
   console.log(`  [FPT] ${brand.name}`);
   // FPT bị Cloudflare bot-challenge ngay cả qua Worker proxy (Cloudflare Worker
@@ -1035,11 +1034,10 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   // "Xem thêm sản phẩm" để load hết toàn bộ danh mục (giống MBW/CPS).
   let clicks = 0;
   while (true) {
-    const clickResult = await page.evaluate(() => {
+    const clicked = await page.evaluate(() => {
       // FPT button: "Xem thêm N kết quả" — match by text pattern /xem thêm \d+ kết quả/i
       // Must exclude product-card overlay buttons (short "Xem thêm" without digit)
       const allBtns = [...document.querySelectorAll('button, a')];
-      const cardCount = document.querySelectorAll('div.cardInfo').length;
 
       // Primary: "Xem thêm N kết quả" (load more results button)
       const loadMoreBtn = allBtns.find(el =>
@@ -1049,7 +1047,7 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       if (loadMoreBtn) {
         loadMoreBtn.scrollIntoView({block:'center'});
         loadMoreBtn.click();
-        return { clicked: true, via: 'primary', btnText: (loadMoreBtn.textContent||'').trim().slice(0,40), cardCount };
+        return true;
       }
 
       // Fallback: any visible button/link with "xem thêm" NOT in product card overlay
@@ -1064,21 +1062,11 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       if (fallbackBtn) {
         fallbackBtn.scrollIntoView({block:'center'});
         fallbackBtn.click();
-        return { clicked: true, via: 'fallback', btnText: (fallbackBtn.textContent||'').trim().slice(0,40), cardCount };
+        return true;
       }
-      // TAM THOI debug: khong tim thay nut nao -> ghi lai ly do de dieu tra
-      const anyXemThemEl = allBtns.find(el => /xem\s*thêm/i.test(el.textContent || ''));
-      return {
-        clicked: false, cardCount,
-        anyXemThemFound: !!anyXemThemEl,
-        anyXemThemText: anyXemThemEl ? (anyXemThemEl.textContent||'').trim().slice(0,60) : null,
-        anyXemThemVisible: anyXemThemEl ? anyXemThemEl.offsetParent !== null : null,
-      };
-    }).catch((e) => ({ clicked: false, evalError: String(e).slice(0,100) }));
-    // TAM THOI debug: log chi tiet moi vong lap (dieu tra FPT 284 vs 447 that)
-    console.log(`    🔍 [FPT-debug] click#${clicks} -> ${JSON.stringify(clickResult)}`);
-    fptClickLog.push({ click: clicks, ...clickResult });
-    if (!clickResult.clicked) break;
+      return false;
+    }).catch(() => false);
+    if (!clicked) break;
     clicks++;
     await sleep(2000);
     // Simple scroll: KHÔNG dùng scrollToBottom() vì CDP timeout trên trang 400+ products
@@ -1444,30 +1432,6 @@ async function buildPartLookupMap(sheets) {
     valueRenderOption: 'FORMULA',
   }), { label: 'đọc header Part #' });
   const hIdx = buildHeaderIndex((headerRes.data.values || [[]])[0]);
-  // TAM THOI (05/08/2026): dump header Part # de dieu tra Focus Model bi trong.
-  // A2:D20 (hep cot) co du lieu, nhung chunk goc A2:AB5001 (het cot) tra rong
-  // -> co lap: la do SO COT rong hay SO DONG rong? Test ca 2 chieu rieng.
-  try {
-    const smallRes = await withRetry(() => sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID, range: `'${PART_TAB}'!A2:D20`, valueRenderOption: 'FORMULA',
-    }), { label: 'đọc thử A2:D20 Part #' });
-    const wideColRes = await withRetry(() => sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID, range: `'${PART_TAB}'!A2:${lastCol}20`, valueRenderOption: 'FORMULA',
-    }), { label: `đọc thử A2:${lastCol}20 Part #` }).catch(e => ({ error: e.message }));
-    const wideRowRes = await withRetry(() => sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID, range: `'${PART_TAB}'!A2:D5001`, valueRenderOption: 'FORMULA',
-    }), { label: 'đọc thử A2:D5001 Part #' }).catch(e => ({ error: e.message }));
-    fs.writeFileSync(path.join(__dirname, 'debug-part-header.json'), JSON.stringify({
-      rawHeaderRow: (headerRes.data.values || [[]])[0],
-      hIdxKeys: Object.keys(hIdx),
-      hIdx,
-      totalRows, totalCols, lastCol,
-      smallRead_A2_D20_rowCount: (smallRes.data.values || []).length,
-      wideCol_A2_to_lastCol_20_rowCount: wideColRes.error ? `ERROR: ${wideColRes.error}` : (wideColRes.data.values || []).length,
-      wideRow_A2_D5001_rowCount: wideRowRes.error ? `ERROR: ${wideRowRes.error}` : (wideRowRes.data.values || []).length,
-      sample_A2_D20: smallRes.data.values || [],
-    }, null, 2));
-  } catch (_) {}
 
   const REQUIRED = ['Product Name', 'Part #', 'CPU Segment', 'CPU', 'RAM', 'SSD', 'Screen', 'GPU', 'V-RAM', 'Status', 'Focus Model'];
   const missing = REQUIRED.filter(name => !(name in hIdx));
@@ -1490,10 +1454,6 @@ async function buildPartLookupMap(sheets) {
 
   const map = new Map();
   const CHUNK = 5000;
-  // TAM THOI (05/08/2026): gop debug qua TAT CA chunk (truoc day ghi de moi
-  // vong lap -> chi thay chunk CUOI, la vung trong hop le ngoai pham vi data
-  // thuc -> hieu lam la "Part # rong". Gop lai moi thay dung buc tranh.
-  const debugChunks = [];
   for (let start = 2; start <= totalRows; start += CHUNK) {
     const end = Math.min(start + CHUNK - 1, totalRows);
     const res = await withRetry(() => sheets.spreadsheets.values.get({
@@ -1502,13 +1462,6 @@ async function buildPartLookupMap(sheets) {
       valueRenderOption: 'FORMULA',
     }), { label: `đọc Part # ${start}-${end}` });
     const rows = res.data.values || [];
-    try {
-      const nonEmptyFocusCount = rows.filter(r => r[iFocus] !== undefined && r[iFocus] !== '' && r[iFocus] !== null).length;
-      debugChunks.push({
-        range: `${start}-${end}`, rowsInChunk: rows.length, nonEmptyFocusCount,
-        sample: rows.slice(0, 3).map(r => ({ name: r[iName], focusRaw: r[iFocus] })),
-      });
-    } catch (_) {}
     for (const r of rows) {
       const name = (r[iName] || '').trim();
       if (!name) continue;
@@ -1530,12 +1483,6 @@ async function buildPartLookupMap(sheets) {
     }
   }
   console.log(`   📋 Đã đọc ${map.size} Product Name từ "${PART_TAB}" (tra theo tên cột, không theo vị trí cố định)`);
-  try {
-    const totalNonEmptyFocus = debugChunks.reduce((s, c) => s + c.nonEmptyFocusCount, 0);
-    fs.writeFileSync(path.join(__dirname, 'debug-part-focus-sample.json'), JSON.stringify({
-      iFocus, mapSize: map.size, totalNonEmptyFocusAcrossAllChunks: totalNonEmptyFocus, chunks: debugChunks,
-    }, null, 2));
-  } catch (_) {}
 
   // v3.6.1: doc tab "Segment" (tra theo ten cot: Brand, Segment, Series
   // Group) de tinh Series Group/Segment bang code — thay cho cong thuc
@@ -2037,14 +1984,6 @@ async function runScrapeMode() {
     const outPath = path.join(OUTPUT_DIR, `products-${tag}.json`);
     fs.writeFileSync(outPath, JSON.stringify(allProducts));
     console.log(`\n💾 Đã lưu ${allProducts.length} SP ra ${outPath} (WRITE_MODE=file — chưa ghi Sheet, chờ job combine)`);
-    // TAM THOI (05/08/2026): xuat fptClickLog qua artifact JSON (khong qua git,
-    // dung chinh co che upload-artifact da chay on dinh) de dieu tra vi sao
-    // vong lap "Xem them" dung som.
-    if (fptClickLog.length > 0) {
-      const diagPath = path.join(OUTPUT_DIR, 'fpt-diagnostics.json');
-      fs.writeFileSync(diagPath, JSON.stringify(fptClickLog, null, 2));
-      console.log(`   🔍 Đã lưu ${fptClickLog.length} dòng debug click vào ${diagPath}`);
-    }
   } else {
     console.log('\n📝 Ghi Sheets...');
     await writeToSheet(sheets, allProducts);

@@ -172,7 +172,6 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           SCRAPE_DEALERS: FPT
           WRITE_MODE: file
-          FPT_DEBUG_LOG: '1'
         run: npm start
 
       - name: Upload artifact
@@ -244,21 +243,6 @@ jobs:
           COMBINE_INPUT_DIR: scrape-artifacts
         shell: bash
         run: set -o pipefail; npm start 2>&1 | tee combine-write-debug.log
-
-      - name: TAM THOI - luu debug-part-header.json + fpt-diagnostics.json (se xoa sau khi fix)
-        if: always()
-        run: |
-          git config user.name "msi-data-bot"
-          git config user.email "actions@users.noreply.github.com"
-          cp scrape-artifacts/scrape-fpt-output/fpt-diagnostics.json ./fpt-diagnostics.json 2>/dev/null || true
-          if [ -f debug-part-header.json ] || [ -f debug-part-focus-sample.json ] || [ -f fpt-diagnostics.json ]; then
-            git add debug-part-header.json debug-part-focus-sample.json fpt-diagnostics.json 2>/dev/null || true
-            git commit -m "chore(debug): dump Part# header + FPT click diagnostics [skip ci]" || echo "nothing"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          else
-            echo "khong co file debug nao ton tai"
-          fi
 
       - name: Neu buoc tren that bai, luu log de chan doan
         if: failure()
