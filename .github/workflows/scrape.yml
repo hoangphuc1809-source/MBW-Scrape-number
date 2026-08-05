@@ -238,16 +238,17 @@ jobs:
           SCRAPE_DEALERS: MBW,FPT,CPS
           COMBINE_MODE: 'true'
           COMBINE_INPUT_DIR: scrape-artifacts
-        run: npm start 2>&1 | tee combine-write-debug.log
+        shell: bash
+        run: set -o pipefail; npm start 2>&1 | tee combine-write-debug.log
 
-      - name: TAM THOI - commit log loi de chan doan (se xoa sau khi fix)
-        if: always()
+      - name: Neu buoc tren that bai, luu log de chan doan
+        if: failure()
         run: |
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
           tail -c 20000 combine-write-debug.log > combine-write-debug-tail.log 2>/dev/null || cp combine-write-debug.log combine-write-debug-tail.log
           git add combine-write-debug-tail.log
-          git commit -m "chore(debug): log chan doan write-sheet [skip ci]" || echo "nothing"
+          git commit -m "chore(debug): write-sheet failed, log chan doan [skip ci]" || echo "nothing"
           git pull --rebase origin main
           git push origin HEAD:main
 
