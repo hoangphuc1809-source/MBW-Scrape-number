@@ -1,0 +1,34 @@
+  doc 2-5001: 5000 dong
+  doc 5002-10001: 5000 dong
+  doc 10002-15001: 5000 dong
+  doc 15002-20001: 5000 dong
+  doc 20002-25001: 5000 dong
+  doc 25002-30001: 5000 dong
+  doc 30002-35001: 5000 dong
+  doc 35002-40001: 112 dong
+  doc 40002-45001: 0 dong
+  doc 45002-50001: 0 dong
+  doc 50002-55001: 0 dong
+  doc 55002-60001: 0 dong
+  doc 60002-65001: 0 dong
+  doc 65002-68267: 0 dong
+Tong 35112 dong
+Cac ngay co trong data: [ '03/08/2026', '04/08/2026', '05/08/2026' ]
+
+Data ngay 05/08/2026: 1062 dong
+
+Phan bo Availability theo dealer (ngay moi nhat):
+{
+  "CellPhone S": {
+    "Còn hàng": 649,
+    "Chưa rõ": 51,
+    "Hết hàng": 2,
+    "Còn hàng - bị bỏ sót khi scrape (lỗi thật, cần kiểm tra thuật toán tải trang)": 2
+  },
+  "FPT Retail": {
+    "Còn hàng": 286,
+    "Hàng sắp về": 52,
+    "Còn hàng - bị bỏ sót khi scrape (lỗi thật, cần kiểm tra thuật toán tải trang)": 19,
+    "Hết hàng": 1
+  }
+}
