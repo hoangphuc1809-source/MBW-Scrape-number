@@ -18,6 +18,9 @@ const CREDS_PATH = '/tmp/gc-checksegment.json';
   const partLMVal = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'Part #'!A1:M5` });
   console.log('\nPart # A1:M5 (gia tri da tinh):', JSON.stringify(partLMVal.data.values, null, 1));
 
-  const rawHeader = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'RAW DATA'!S1:AE1`, valueRenderOption: 'FORMULA' });
-  console.log('\nRAW DATA S1:AE1 (hien tai):', JSON.stringify(rawHeader.data.values));
+  const rawMeta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID, fields: 'sheets(properties(title,gridProperties))' });
+  const rawSheetInfo = rawMeta.data.sheets.find(s => s.properties.title === 'RAW DATA');
+  console.log('\nRAW DATA gridProperties:', JSON.stringify(rawSheetInfo.properties.gridProperties));
+  const rawHeader = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'RAW DATA'!S1:Z1`, valueRenderOption: 'FORMULA' });
+  console.log('\nRAW DATA S1:Z1 (hien tai):', JSON.stringify(rawHeader.data.values));
 })().catch(e => { console.log('LOI:', e.message); process.exitCode = 1; });
