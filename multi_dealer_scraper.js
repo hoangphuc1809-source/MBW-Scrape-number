@@ -1109,7 +1109,15 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       return 'Other';
     }
     document.querySelectorAll('div.cardInfo').forEach(card => {
-      const linkEl = card.querySelector('a[href*="may-tinh-xach-tay/"]');
+      // FIX 05/08/2026: truoc day chi nhan href chua "/may-tinh-xach-tay/" —
+      // MacBook va co the vai brand khac dung path rieng (vd /macbook/...),
+      // bi loai het du van la SP hop le trong div.cardInfo (da chac chan la
+      // card san pham). Noi long: lay <a> dau tien co href "that" (khong
+      // phai javascript:void, #, hay rong).
+      const linkEl = [...card.querySelectorAll('a[href]')].find(a => {
+        const h = a.getAttribute('href') || '';
+        return h && h !== '#' && !h.startsWith('javascript:');
+      });
       if (!linkEl) return;
       const href = linkEl.getAttribute('href') || '';
       const link = href.startsWith('http') ? href : BASE + href;
@@ -1438,10 +1446,17 @@ async function buildPartLookupMap(sheets) {
   const hIdx = buildHeaderIndex((headerRes.data.values || [[]])[0]);
   // TAM THOI (05/08/2026): dump header Part # de dieu tra Focus Model bi trong
   try {
+    const smallRes = await withRetry(() => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${PART_TAB}'!A2:D20`,
+      valueRenderOption: 'FORMULA',
+    }), { label: 'đọc thử A2:D20 Part #' });
     fs.writeFileSync(path.join(__dirname, 'debug-part-header.json'), JSON.stringify({
       rawHeaderRow: (headerRes.data.values || [[]])[0],
       hIdxKeys: Object.keys(hIdx),
       hIdx,
+      totalRows, totalCols, lastCol,
+      smallRead_A2_D20: smallRes.data.values || [],
     }, null, 2));
   } catch (_) {}
 
