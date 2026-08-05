@@ -78,7 +78,10 @@ async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
   const totalRows = rawSheet.properties.gridProperties.rowCount;
   console.log(`Tab "${RAW_DATA_TAB}": grid rowCount=${totalRows}`);
 
-  const header = (await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A1:S1` })).data.values[0];
+  const header = (await withRetry(
+    () => sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A1:S1` }, { timeout: 60000 }),
+    'Đọc header'
+  )).data.values[0];
   console.log('Header:', JSON.stringify(header));
 
   console.log('Đang đọc toàn bộ RAW DATA...');
@@ -118,7 +121,10 @@ async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
   }
 
   // BƯỚC 1: Ghi phần archive vào RAW DATA ARCHIVE (APPEND, không đụng gì cũ)
-  const archiveMeta = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${ARCHIVE_TAB}'!A:A` });
+  const archiveMeta = await withRetry(
+    () => sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${ARCHIVE_TAB}'!A:A` }, { timeout: 60000 }),
+    'Đọc RAW DATA ARCHIVE (trước ghi)'
+  );
   const archiveRowsBefore = (archiveMeta.data.values || []).length;
   console.log(`\nSố dòng hiện có trong ${ARCHIVE_TAB} trước khi ghi: ${archiveRowsBefore}`);
 
@@ -126,17 +132,23 @@ async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
   const CHUNK = 5000;
   for (let i = 0; i < toArchive.length; i += CHUNK) {
     const chunk = toArchive.slice(i, i + CHUNK);
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${ARCHIVE_TAB}'!A${appendStartRow + i}`,
-      valueInputOption: 'RAW',
-      requestBody: { values: chunk },
-    });
+    await withRetry(
+      () => sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${ARCHIVE_TAB}'!A${appendStartRow + i}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: chunk },
+      }, { timeout: 60000 }),
+      `Ghi archive lô ${i}`
+    );
     console.log(`   ✓ Đã ghi archive lô ${i}-${i + chunk.length}`);
   }
 
   // BƯỚC 2: XÁC NHẬN ghi archive thành công trước khi đụng RAW DATA
-  const archiveMetaAfter = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${ARCHIVE_TAB}'!A:A` });
+  const archiveMetaAfter = await withRetry(
+    () => sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${ARCHIVE_TAB}'!A:A` }, { timeout: 60000 }),
+    'Đọc RAW DATA ARCHIVE (sau ghi, xác nhận)'
+  );
   const archiveRowsAfter = (archiveMetaAfter.data.values || []).length;
   const expectedAfter = archiveRowsBefore + toArchive.length;
   console.log(`Số dòng trong ${ARCHIVE_TAB} sau khi ghi: ${archiveRowsAfter} (kỳ vọng ${expectedAfter})`);
@@ -150,15 +162,21 @@ async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
 
   // BƯỚC 3: Chỉ bây giờ mới trim RAW DATA — giữ header + toKeep
   console.log(`\nĐang ghi lại ${RAW_DATA_TAB} chỉ với ${toKeep.length} dòng gần đây (chỉ cột A:S — không đụng cột T/U/V là note/formula)...`);
-  await sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A2:S` });
+  await withRetry(
+    () => sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A2:S` }, { timeout: 60000 }),
+    'Clear RAW DATA'
+  );
   for (let i = 0; i < toKeep.length; i += CHUNK) {
     const chunk = toKeep.slice(i, i + CHUNK);
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${RAW_DATA_TAB}'!A${2 + i}`,
-      valueInputOption: 'RAW',
-      requestBody: { values: chunk },
-    });
+    await withRetry(
+      () => sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${RAW_DATA_TAB}'!A${2 + i}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: chunk },
+      }, { timeout: 60000 }),
+      `Ghi lại RAW DATA lô ${i}`
+    );
     console.log(`   ✓ Đã ghi lại RAW DATA lô ${i}-${i + chunk.length}`);
   }
   console.log(`\n✅ HOÀN TẤT. RAW DATA giờ còn ${toKeep.length} dòng (từ ${totalRows} ban đầu), đã archive ${toArchive.length} dòng.`);
