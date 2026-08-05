@@ -97,7 +97,7 @@ async function main() {
     () => sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: `'${tabName}'!A1:Z1`,
-      valueRenderOption: 'UNFORMATTED_VALUE',
+      valueRenderOption: 'FORMULA',
       dateTimeRenderOption: 'FORMATTED_STRING',
     }, { timeout: REQ_TIMEOUT_MS }),
     'Đọc header'
@@ -116,7 +116,7 @@ async function main() {
       () => sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
         range: `'${tabName}'!A${start}:Z${end}`,
-        valueRenderOption: 'UNFORMATTED_VALUE',
+        valueRenderOption: 'FORMULA',
         dateTimeRenderOption: 'FORMATTED_STRING',
       }, { timeout: REQ_TIMEOUT_MS }),
       `Đọc lô ${start}-${end}`
