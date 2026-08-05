@@ -5,6 +5,12 @@ name: Ops Tools - Chon phan can chay (khong dung production)
 # ro). Tick chon tung phan can chay, hoac tick "Chay tat ca" de chay het.
 
 on:
+  schedule:
+    # Tu dong chay Archive RAW DATA (cua so truot 15+15 ngay) moi tuan 1 lan
+    # — Chu Nhat 02:00 UTC (~09:00 VN). Cac job khac KHONG bi anh huong boi
+    # schedule nay (chi archive-rawdata-execute moi tu kich hoat, xem dieu
+    # kien "if" cua job do).
+    - cron: '0 2 * * 0'
   workflow_dispatch:
     inputs:
       run_all:
@@ -165,7 +171,7 @@ jobs:
 
   archive-rawdata-execute:
     name: '‼️ Archive RAW DATA - THUC THI THAT'
-    if: ${{ inputs.run_archive_rawdata_EXECUTE }}
+    if: ${{ inputs.run_archive_rawdata_EXECUTE || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -179,8 +185,8 @@ jobs:
       - env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          RAW_DATA_KEEP_DAYS: ${{ inputs.raw_data_keep_days }}
-          ARCHIVE_KEEP_DAYS: ${{ inputs.archive_keep_days }}
+          RAW_DATA_KEEP_DAYS: ${{ inputs.raw_data_keep_days || '15' }}
+          ARCHIVE_KEEP_DAYS: ${{ inputs.archive_keep_days || '15' }}
           EXECUTE: 'true'
         run: node archive-rawdata.js > archive-execute-report.txt 2>&1 || true
       - name: Commit ket qua execute
@@ -192,6 +198,18 @@ jobs:
           git commit -m "chore: archive rawdata execute report [skip ci]" || echo "nothing"
           git pull --rebase origin main
           git push origin HEAD:main
+      - name: Bao cao Telegram (best-effort)
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then exit 0; fi
+          SUMMARY=$(tail -5 archive-execute-report.txt 2>/dev/null || echo "khong co report")
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" --data-urlencode "text=[Archive RAW DATA - tu dong hang tuan] ${SUMMARY}" -o /dev/null -w "telegram: %{http_code}\n" || true
 
   check-live-formulas:
     name: 'CHECK: con formula song o Dailly SRP / RAW DATA V khong'
