@@ -1,1 +1,0 @@
-T1:V1: [["Status","Series Group","Segment"]]
