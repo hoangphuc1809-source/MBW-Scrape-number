@@ -20,7 +20,7 @@ async function main() {
     try {
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `'RAW DATA'!A${row}:E${row}`,
+        range: `'Daily SRP Tracking'!A${row}:E${row}`,
         valueRenderOption: 'FORMULA',
       }, { timeout: 20000 });
       const v = res.data.values || [];
@@ -35,7 +35,7 @@ async function main() {
   try {
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'RAW DATA'!A2:A3000`,
+      range: `'Daily SRP Tracking'!A2:A3000`,
       valueRenderOption: 'FORMULA',
     }, { timeout: 25000 });
     const vals = (res.data.values || []).map(r => r[0]).filter(Boolean);
