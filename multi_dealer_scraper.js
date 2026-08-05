@@ -383,6 +383,7 @@ const ENRICHMENT_HEADERS = [
   'Screen', 'GPU', 'V-RAM', 'Part #', 'Focus Model',
 ];
 const PART_TAB = 'Part #';
+const SEGMENT_TAB = 'Segment';
 
 // ── Helpers ───────────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1376,7 +1377,7 @@ async function buildPartLookupMap(sheets) {
     fields: 'sheets(properties(title,gridProperties))',
   }), { label: 'get Part # metadata' });
   const partSheet = meta.data.sheets.find(s => s.properties.title === PART_TAB);
-  if (!partSheet) { console.log(`   ⚠ Không tìm thấy tab "${PART_TAB}" — bỏ qua enrichment`); return new Map(); }
+  if (!partSheet) { console.log(`   ⚠ Không tìm thấy tab "${PART_TAB}" — bỏ qua enrichment`); return { partMap: new Map(), segmentRefs: [] }; }
   const totalRows = partSheet.properties.gridProperties.rowCount;
 
   const map = new Map();
@@ -1394,8 +1395,6 @@ async function buildPartLookupMap(sheets) {
       if (!name) continue;
       map.set(name, {
         status:       safeVal(r[10]),  // K
-        seriesGroup:  safeVal(r[11]),  // L
-        segment:      safeVal(r[12]),  // M
         cpuSegment:   safeVal(r[3]),   // D
         cpu:          safeVal(r[4]),   // E
         ram:          safeVal(r[5]),   // F
@@ -1405,11 +1404,33 @@ async function buildPartLookupMap(sheets) {
         vram:         safeVal(r[9]),   // J
         partNumber:   safeVal(r[2]),   // C
         focusModel:   safeVal(r[19]),  // T (cot moi, Phuc se dien)
+        // L (Series Group), M (Segment) KHONG doc tu day nua — day la
+        // formula song trong Part #, tra qua tab "Segment". Tinh truc tiep
+        // bang code o duoi (xem buildSegmentRefs + matchSegment).
       });
     }
   }
   console.log(`   📋 Đã đọc ${map.size} Product Name từ "${PART_TAB}"`);
-  return map;
+
+  // v3.6.1: doc tab "Segment" (B=Brand, C=tu khoa Segment, D=Series Group)
+  // de tinh Series Group/Segment bang code — thay cho cong thuc song L/M
+  // cua Part # (MAP + BYROW/REGEXMATCH tra qua tab nay).
+  const segmentSheet = meta.data.sheets.find(s => s.properties.title === SEGMENT_TAB);
+  let segmentRefs = [];
+  if (segmentSheet) {
+    const segRes = await withRetry(() => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${SEGMENT_TAB}'!B2:D${segmentSheet.properties.gridProperties.rowCount}`,
+    }), { label: 'đọc Segment tab' });
+    segmentRefs = (segRes.data.values || [])
+      .filter(r => r[1]) // co tu khoa Segment (cot C, index 1 trong B:D)
+      .map(r => ({ keyword: String(r[1]).trim(), keywordLower: String(r[1]).trim().toLowerCase(), seriesGroup: r[2] || '' }));
+    console.log(`   📋 Đã đọc ${segmentRefs.length} từ khoá Segment từ tab "${SEGMENT_TAB}"`);
+  } else {
+    console.log(`   ⚠ Không tìm thấy tab "${SEGMENT_TAB}" — Series Group/Segment sẽ để trống`);
+  }
+
+  return { partMap: map, segmentRefs };
 }
 
 function safeVal(v) {
@@ -1419,14 +1440,30 @@ function safeVal(v) {
   return v ?? '';
 }
 
+// Thay cho cong thuc BYROW+REGEXMATCH cua Part # cot M, roi MAP+INDEX cua
+// cot L: tim tu khoa Segment (tab Segment cot C) DAI NHAT xuat hien trong
+// ten san pham (khong phan biet hoa/thuong), tra ve chinh tu khoa do
+// (=Segment) va Series Group tuong ung (cot D).
+function matchSegment(productName, segmentRefs) {
+  const nameLower = (productName || '').toLowerCase();
+  let best = null;
+  for (const ref of segmentRefs) {
+    if (ref.keywordLower && nameLower.includes(ref.keywordLower)) {
+      if (!best || ref.keyword.length > best.keyword.length) best = ref;
+    }
+  }
+  return best ? { segment: best.keyword, seriesGroup: best.seriesGroup } : { segment: '', seriesGroup: '' };
+}
+
 // row: 1 dong cua allRows (19 phan tu, khop HEADERS A:S). Tra ve array 12
 // phan tu khop ENRICHMENT_HEADERS (T:AE).
-function enrichOneRow(row, partMap) {
+function enrichOneRow(row, partMap, segmentRefs) {
   const modelName = (row[4] || '').trim(); // cot E = Model Name
   const info = partMap.get(modelName);
-  if (!info) return ['', '', '', '', '', '', '', '', '', '', '', ''];
+  const { segment, seriesGroup } = matchSegment(modelName, segmentRefs);
+  if (!info) return ['', seriesGroup, segment, '', '', '', '', '', '', '', '', ''];
   return [
-    info.status, info.seriesGroup, info.segment, info.cpuSegment, info.cpu,
+    info.status, seriesGroup, segment, info.cpuSegment, info.cpu,
     info.ram, info.ssd, info.screen, info.gpu, info.vram, info.partNumber,
     info.focusModel,
   ];
@@ -1579,8 +1616,8 @@ async function writeToSheet(sheets, allProducts) {
   // enrichment khop dung voi du lieu vua ghi (existingRows + newRows).
   try {
     console.log('🔎 Đang tra cứu Part # để enrich cột T→AE...');
-    const partMap = await buildPartLookupMap(sheets);
-    const enrichRows = allRows.map(row => enrichOneRow(row, partMap));
+    const { partMap, segmentRefs } = await buildPartLookupMap(sheets);
+    const enrichRows = allRows.map(row => enrichOneRow(row, partMap, segmentRefs));
     await withRetry(() => sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!T1:AE1`,
