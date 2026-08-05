@@ -1462,6 +1462,17 @@ async function buildPartLookupMap(sheets) {
       valueRenderOption: 'FORMULA',
     }), { label: `đọc Part # ${start}-${end}` });
     const rows = res.data.values || [];
+    // TAM THOI (05/08/2026): dump mau du lieu cot Focus Model tu Part # de
+    // dieu tra vi sao enrichment ra rong toan bo du header lookup dung.
+    try {
+      const sampleRows = rows.slice(0, 15).map(r => ({
+        name: r[iName], focusRaw: r[iFocus], rowLen: r.length, fullRow: r,
+      }));
+      const nonEmptyFocusCount = rows.filter(r => r[iFocus] !== undefined && r[iFocus] !== '' && r[iFocus] !== null).length;
+      fs.writeFileSync(path.join(__dirname, 'debug-part-focus-sample.json'), JSON.stringify({
+        iFocus, totalRowsThisChunk: rows.length, nonEmptyFocusCount, sampleRows,
+      }, null, 2));
+    } catch (_) {}
     for (const r of rows) {
       const name = (r[iName] || '').trim();
       if (!name) continue;
