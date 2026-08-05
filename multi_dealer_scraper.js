@@ -1034,11 +1034,12 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   // "Xem thêm sản phẩm" để load hết toàn bộ danh mục (giống MBW/CPS).
   let clicks = 0;
   while (true) {
-    const clicked = await page.evaluate(() => {
+    const clickResult = await page.evaluate(() => {
       // FPT button: "Xem thêm N kết quả" — match by text pattern /xem thêm \d+ kết quả/i
       // Must exclude product-card overlay buttons (short "Xem thêm" without digit)
       const allBtns = [...document.querySelectorAll('button, a')];
-      
+      const cardCount = document.querySelectorAll('div.cardInfo').length;
+
       // Primary: "Xem thêm N kết quả" (load more results button)
       const loadMoreBtn = allBtns.find(el =>
         /xem\s*thêm\s+\d+/i.test(el.textContent || '') &&
@@ -1047,9 +1048,9 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       if (loadMoreBtn) {
         loadMoreBtn.scrollIntoView({block:'center'});
         loadMoreBtn.click();
-        return true;
+        return { clicked: true, via: 'primary', btnText: (loadMoreBtn.textContent||'').trim().slice(0,40), cardCount };
       }
-      
+
       // Fallback: any visible button/link with "xem thêm" NOT in product card overlay
       // Exclude buttons inside cardInfo (those are card-level overlays)
       const fallbackBtn = allBtns.find(el => {
@@ -1062,11 +1063,20 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       if (fallbackBtn) {
         fallbackBtn.scrollIntoView({block:'center'});
         fallbackBtn.click();
-        return true;
+        return { clicked: true, via: 'fallback', btnText: (fallbackBtn.textContent||'').trim().slice(0,40), cardCount };
       }
-      return false;
-    }).catch(() => false);
-    if (!clicked) break;
+      // TAM THOI debug: khong tim thay nut nao -> ghi lai ly do de dieu tra
+      const anyXemThemEl = allBtns.find(el => /xem\s*thêm/i.test(el.textContent || ''));
+      return {
+        clicked: false, cardCount,
+        anyXemThemFound: !!anyXemThemEl,
+        anyXemThemText: anyXemThemEl ? (anyXemThemEl.textContent||'').trim().slice(0,60) : null,
+        anyXemThemVisible: anyXemThemEl ? anyXemThemEl.offsetParent !== null : null,
+      };
+    }).catch((e) => ({ clicked: false, evalError: String(e).slice(0,100) }));
+    // TAM THOI debug: log chi tiet moi vong lap (dieu tra FPT 284 vs 447 that)
+    console.log(`    🔍 [FPT-debug] click#${clicks} -> ${JSON.stringify(clickResult)}`);
+    if (!clickResult.clicked) break;
     clicks++;
     await sleep(2000);
     // Simple scroll: KHÔNG dùng scrollToBottom() vì CDP timeout trên trang 400+ products
