@@ -71,7 +71,10 @@
   "totalRows": 10283,
   "totalCols": 28,
   "lastCol": "AB",
-  "smallRead_A2_D20": [
+  "smallRead_A2_D20_rowCount": 19,
+  "wideCol_A2_to_lastCol_20_rowCount": 19,
+  "wideRow_A2_D5001_rowCount": 3503,
+  "sample_A2_D20": [
     [
       "Laptop Asus Vivobook Go E1504FA - BQ1160W (R5 7520U, 16GB, 512GB, Full HD, Win11)",
       "Asus",
