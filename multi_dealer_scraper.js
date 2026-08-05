@@ -1181,10 +1181,14 @@ async function scrapeCPS(page, brand, specCache, startTime) {
   // tại cửa hàng gần" thay vì "còn bán online", làm mất ~75% SP hợp lệ (143/590).
   // Chỉ giữ lớp (b) card-text detection + lớp (c) post-filter.
 
-  // v3.4.15→v3.4.16: giảm cap từ 15 → 8. Run #363 vẫn 1523 SP CPS (cap 15
-  // quá rộng). MSI page = 52 SP (~3 clicks), brand lớn nhất ~100 SP (~5 clicks).
-  // Cap 8 = tối đa ~180 SP/brand, 9 brands × 100 ≈ ~700 SP max — gần ~590.
-  const CPS_MAX_CLICKS = 8;
+  // v3.4.15→v3.4.16 (SAI - đã sửa 06/08/2026): từng giảm cap 15→8 vì tưởng
+  // "1523 SP là quá nhiều" dựa trên gia định catalog mỗi brand ~100 SP. Kiểm
+  // tra trực tiếp trên web (06/08/2026) cho thấy RIÊNG brand Asus đã có 825 SP
+  // — gia định cũ sai hoàn toàn, khiến cap=8 cắt mất phần lớn brand lớn (chỉ
+  // lấy được ~160-190/825 SP Asus). Nâng cap lên mức an toàn, để điều kiện
+  // dừng THẬT (nút "Load thêm" biến mất — `if (!clicked) break` dưới đây) tự
+  // quyết định khi nào hết, cap chỉ còn là lưới an toàn chống loop vô hạn.
+  const CPS_MAX_CLICKS = 60;
   let clicks = 0;
   while (clicks < CPS_MAX_CLICKS) {
     await scrollToBottom(page);
@@ -1245,11 +1249,15 @@ async function scrapeCPS(page, brand, specCache, startTime) {
     return [];
   }
 
-  // v3.4.12: Lọc bỏ SP hết hàng/ngừng KD khỏi kết quả (card-text detection)
+  // FIX 06/08/2026: TRƯỚC ĐÂY xoá hẳn SP hết hàng khỏi kết quả — không nhất
+  // quán với MBW/FPT (đã sửa sáng nay: giữ lại SP hết hàng, chỉ gắn đúng
+  // Availability). Giờ CPS cũng vậy: giữ TOÀN BỘ SP, chỉ đánh dấu trạng thái.
+  // inStock/oosCardText chỉ dùng để quyết định SP nào cần enrich spec/HTTP
+  // check thêm (đỡ tốn request cho SP đã biết chắc hết hàng).
   const oosCardText = products.filter(p => p.stockStatus !== 'Còn hàng' && p.stockStatus !== 'Chưa rõ');
   let inStock       = products.filter(p => p.stockStatus === 'Còn hàng' || p.stockStatus === 'Chưa rõ');
   if (oosCardText.length > 0) {
-    console.log(`    🚫 Card-text lọc ${oosCardText.length}/${products.length} SP hết hàng/ngừng KD`);
+    console.log(`    🏷 Card-text đánh dấu ${oosCardText.length}/${products.length} SP hết hàng/ngừng KD (vẫn giữ trong kết quả)`);
     oosCardText.slice(0, 3).forEach(p =>
       console.log(`       ↳ [${p.stockStatus}] ${p.name.substring(0,60)}`)
     );
@@ -1257,24 +1265,30 @@ async function scrapeCPS(page, brand, specCache, startTime) {
 
   // v3.4.14: HTTP stock check — cho SP KHÔNG có trong cache, fetch detail page
   // HTML rồi regex tìm "TẠM HẾT HÀNG". Không dùng Puppeteer → giữ ổn định.
+  // batchCheckStockHTTP() mutate p.stockStatus TRỰC TIẾP trên object, nên
+  // products (mảng gốc, KHÔNG bị filter) cũng tự động phản ánh trạng thái mới.
   const { filtered: httpFiltered, checked: httpChecked } = await batchCheckStockHTTP(inStock, specCache);
   if (httpFiltered > 0) {
     const httpOos = inStock.filter(p => p.stockStatus !== 'Còn hàng' && p.stockStatus !== 'Chưa rõ');
-    console.log(`    🚫 HTTP check lọc thêm ${httpFiltered}/${httpChecked} SP (detail page "Tạm hết hàng")`);
+    console.log(`    🏷 HTTP check đánh dấu thêm ${httpFiltered}/${httpChecked} SP hết hàng (detail page "Tạm hết hàng") — vẫn giữ trong kết quả`);
     httpOos.slice(0, 5).forEach(p =>
       console.log(`       ↳ [${p.stockStatus}] ${p.name.substring(0,60)}`)
     );
     if (httpOos.length > 5) console.log(`       ↳ ... và ${httpOos.length - 5} SP khác`);
-    inStock = inStock.filter(p => p.stockStatus === 'Còn hàng' || p.stockStatus === 'Chưa rõ');
+    // KHÔNG filter inStock nữa — object đã mutate stockStatus tại chỗ, va
+    // products (tra ve cuoi cung) da phan anh dung trang thai moi nhat.
   } else if (httpChecked > 0) {
     console.log(`    ✅ HTTP check ${httpChecked} SP mới → tất cả còn hàng`);
   }
 
-  console.log(`    → ${inStock.length} SP (còn hàng, sau lọc)`);
+  console.log(`    → ${products.length} SP (giữ cả hết hàng — đã gắn đúng trạng thái)`);
   // v3.4.10: tạm tắt fetch specs mới cho CPS (skipNewFetch=true) — xem comment
   // dài trong enrichSpecs(). Chỉ áp dụng cache cho SP đã biết.
+  // Chỉ enrich spec cho SP còn hàng (đỡ tốn request) — SP hết hàng vẫn được
+  // TRẢ VỀ trong "products" bên dưới, chỉ là thiếu spec chi tiết (không sao,
+  // vì đã hết hàng thì spec không còn quan trọng bằng chính trạng thái).
   await enrichSpecs(inStock, specCache, fetchSpecsCPS, page, startTime, undefined, true);
-  return inStock;
+  return products;
 }
 
 // ── Google Sheets: load spec cache ───────────────────────
