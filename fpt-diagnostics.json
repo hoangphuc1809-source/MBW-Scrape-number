@@ -1,0 +1,157 @@
+[
+  {
+    "click": 0,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 423 kết quả",
+    "cardCount": 24
+  },
+  {
+    "click": 1,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 399 kết quả",
+    "cardCount": 48
+  },
+  {
+    "click": 2,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 375 kết quả",
+    "cardCount": 72
+  },
+  {
+    "click": 3,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 351 kết quả",
+    "cardCount": 96
+  },
+  {
+    "click": 4,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 327 kết quả",
+    "cardCount": 120
+  },
+  {
+    "click": 5,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 303 kết quả",
+    "cardCount": 144
+  },
+  {
+    "click": 6,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 279 kết quả",
+    "cardCount": 168
+  },
+  {
+    "click": 7,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 255 kết quả",
+    "cardCount": 192
+  },
+  {
+    "click": 8,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 231 kết quả",
+    "cardCount": 216
+  },
+  {
+    "click": 9,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 207 kết quả",
+    "cardCount": 240
+  },
+  {
+    "click": 10,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 183 kết quả",
+    "cardCount": 264
+  },
+  {
+    "click": 11,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 159 kết quả",
+    "cardCount": 288
+  },
+  {
+    "click": 12,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 135 kết quả",
+    "cardCount": 312
+  },
+  {
+    "click": 13,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 111 kết quả",
+    "cardCount": 336
+  },
+  {
+    "click": 14,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 87 kết quả",
+    "cardCount": 360
+  },
+  {
+    "click": 15,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 63 kết quả",
+    "cardCount": 384
+  },
+  {
+    "click": 16,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 39 kết quả",
+    "cardCount": 408
+  },
+  {
+    "click": 17,
+    "clicked": true,
+    "via": "primary",
+    "btnText": "Xem thêm 15 kết quả",
+    "cardCount": 432
+  },
+  {
+    "click": 18,
+    "clicked": true,
+    "via": "fallback",
+    "btnText": "Xem thêm",
+    "cardCount": 447
+  },
+  {
+    "click": 19,
+    "clicked": true,
+    "via": "fallback",
+    "btnText": "Xem thêm",
+    "cardCount": 447
+  },
+  {
+    "click": 20,
+    "clicked": true,
+    "via": "fallback",
+    "btnText": "Xem thêm",
+    "cardCount": 447
+  },
+  {
+    "click": 21,
+    "clicked": false,
+    "cardCount": 447,
+    "anyXemThemFound": false,
+    "anyXemThemText": null,
+    "anyXemThemVisible": null
+  }
+]
