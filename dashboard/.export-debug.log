@@ -1,17 +1,18 @@
-[2026-08-05T05:05:29.555Z] --- Bắt đầu export-dashboard-data.js ---
-[2026-08-05T05:05:29.556Z] SPREADSHEET_ID set: true, GOOGLE_CREDENTIALS set: true
-[2026-08-05T05:05:29.557Z] Gọi spreadsheets.get() để lấy metadata...
-[2026-08-05T05:05:30.275Z] Danh sách tab tìm thấy: SRP checking (gid=1241321671) | Dailly SRP Tracking (gid=221053035) | RAW DATA (gid=889472306) | RAW DATA ARCHIVE (gid=463742773) | Part # (gid=1652208865) | Check (gid=899133970) | Segment (gid=1545218913) | Introduce (gid=1355004314) | Fix (gid=279452386) | FPT_TEST (gid=1933409101)
-[2026-08-05T05:05:30.275Z] 📋 Tab "Dailly SRP Tracking" (gid 221053035) — tổng 68225 dòng (theo metadata, gồm cả dòng trống chưa dùng)
-[2026-08-05T05:05:30.464Z]    Sẽ đọc dòng 28226 → 68225 theo lô 5000 dòng/lần...
-[2026-08-05T05:05:31.054Z]    ✓ Lô 28226-33225: 4852 dòng thô
-[2026-08-05T05:05:31.268Z]    ✓ Lô 33226-38225: 0 dòng thô
-[2026-08-05T05:05:31.434Z]    ✓ Lô 38226-43225: 0 dòng thô
-[2026-08-05T05:05:31.729Z]    ✓ Lô 43226-48225: 0 dòng thô
-[2026-08-05T05:05:31.896Z]    ✓ Lô 48226-53225: 0 dòng thô
-[2026-08-05T05:05:32.170Z]    ✓ Lô 53226-58225: 0 dòng thô
-[2026-08-05T05:05:32.452Z]    ✓ Lô 58226-63225: 0 dòng thô
-[2026-08-05T05:05:32.607Z]    ✓ Lô 63226-68225: 0 dòng thô
-[2026-08-05T05:05:32.608Z]    Tổng 4853 dòng (kể cả header) sau khi lọc dòng trống
-[2026-08-05T05:05:32.627Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv (1639 KB)
-[2026-08-05T05:05:32.628Z] --- Kết thúc export-dashboard-data.js: THÀNH CÔNG ---
+[2026-08-05T07:24:19.371Z] --- Bắt đầu export-dashboard-data.js ---
+[2026-08-05T07:24:19.373Z] SPREADSHEET_ID set: true, GOOGLE_CREDENTIALS set: true
+[2026-08-05T07:24:19.373Z] Gọi spreadsheets.get() để lấy metadata...
+[2026-08-05T07:24:20.035Z] Danh sách tab tìm thấy: SRP checking (gid=1241321671) | Dailly SRP Tracking 2 (gid=221053035) | Daily SRP Tracking (gid=889472306) | RAW DATA ARCHIVE (gid=463742773) | Part # (gid=1652208865) | Check (gid=899133970) | Segment (gid=1545218913) | Introduce (gid=1355004314) | Fix (gid=279452386) | FPT_TEST (gid=1933409101)
+[2026-08-05T07:24:20.036Z] Tab "Daily SRP Tracking" (gid 889472306) - tổng 68267 dòng
+[2026-08-05T07:24:20.036Z]    Sẽ đọc dòng 28268 -> 68267 (cột A:AE) theo lô 5000 dòng/lần...
+[2026-08-05T07:24:20.677Z]    Lô 28268-33267: 5000 dòng thô
+[2026-08-05T07:24:21.142Z]    Lô 33268-38267: 2313 dòng thô
+[2026-08-05T07:24:21.418Z]    Lô 38268-43267: 0 dòng thô
+[2026-08-05T07:24:21.576Z]    Lô 43268-48267: 0 dòng thô
+[2026-08-05T07:24:21.867Z]    Lô 48268-53267: 0 dòng thô
+[2026-08-05T07:24:22.158Z]    Lô 53268-58267: 0 dòng thô
+[2026-08-05T07:24:22.456Z]    Lô 58268-63267: 0 dòng thô
+[2026-08-05T07:24:22.622Z]    Lô 63268-68267: 0 dòng thô
+[2026-08-05T07:24:22.622Z]    Đọc thô được 7313 dòng, đang lọc + remap cột...
+[2026-08-05T07:24:22.628Z]    Sau filter: 5723/7313 dòng
+[2026-08-05T07:24:22.650Z] Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv (1897 KB, 5723 dòng data)
+[2026-08-05T07:24:22.650Z] --- Kết thúc export-dashboard-data.js: THÀNH CÔNG ---
