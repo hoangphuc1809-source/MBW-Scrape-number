@@ -1444,19 +1444,28 @@ async function buildPartLookupMap(sheets) {
     valueRenderOption: 'FORMULA',
   }), { label: 'đọc header Part #' });
   const hIdx = buildHeaderIndex((headerRes.data.values || [[]])[0]);
-  // TAM THOI (05/08/2026): dump header Part # de dieu tra Focus Model bi trong
+  // TAM THOI (05/08/2026): dump header Part # de dieu tra Focus Model bi trong.
+  // A2:D20 (hep cot) co du lieu, nhung chunk goc A2:AB5001 (het cot) tra rong
+  // -> co lap: la do SO COT rong hay SO DONG rong? Test ca 2 chieu rieng.
   try {
     const smallRes = await withRetry(() => sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `'${PART_TAB}'!A2:D20`,
-      valueRenderOption: 'FORMULA',
+      spreadsheetId: SPREADSHEET_ID, range: `'${PART_TAB}'!A2:D20`, valueRenderOption: 'FORMULA',
     }), { label: 'đọc thử A2:D20 Part #' });
+    const wideColRes = await withRetry(() => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID, range: `'${PART_TAB}'!A2:${lastCol}20`, valueRenderOption: 'FORMULA',
+    }), { label: `đọc thử A2:${lastCol}20 Part #` }).catch(e => ({ error: e.message }));
+    const wideRowRes = await withRetry(() => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID, range: `'${PART_TAB}'!A2:D5001`, valueRenderOption: 'FORMULA',
+    }), { label: 'đọc thử A2:D5001 Part #' }).catch(e => ({ error: e.message }));
     fs.writeFileSync(path.join(__dirname, 'debug-part-header.json'), JSON.stringify({
       rawHeaderRow: (headerRes.data.values || [[]])[0],
       hIdxKeys: Object.keys(hIdx),
       hIdx,
       totalRows, totalCols, lastCol,
-      smallRead_A2_D20: smallRes.data.values || [],
+      smallRead_A2_D20_rowCount: (smallRes.data.values || []).length,
+      wideCol_A2_to_lastCol_20_rowCount: wideColRes.error ? `ERROR: ${wideColRes.error}` : (wideColRes.data.values || []).length,
+      wideRow_A2_D5001_rowCount: wideRowRes.error ? `ERROR: ${wideRowRes.error}` : (wideRowRes.data.values || []).length,
+      sample_A2_D20: smallRes.data.values || [],
     }, null, 2));
   } catch (_) {}
 
