@@ -1,13 +1,13 @@
-[2026-08-05T02:17:13.184Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-05T02:17:13.191Z] Đọc được 1558 SP từ 3 file artifact (scrape-artifacts)
-[2026-08-05T02:17:13.192Z] Đọc Part # (FORMULA render)...
-[2026-08-05T02:17:13.671Z]   3503 dòng
-[2026-08-05T02:17:13.671Z] Đọc Segment (FORMULA render)...
-[2026-08-05T02:17:13.860Z]   120 dòng
-[2026-08-05T02:17:13.861Z] Đọc Key Focus model (FORMULA render)...
-[2026-08-05T02:17:14.085Z]   0 dòng
-[2026-08-05T02:17:14.113Z] Part# map: 3503 SKU
-[2026-08-05T02:17:14.114Z] Focus model map: 0 Part#
-[2026-08-05T02:17:14.115Z] Tính xong 1416 dòng enriched (loại 142 SP EOL)
-[2026-08-05T02:17:14.168Z] data.csv cũ: 4117 dòng, giữ lại 2740 dòng (loại dòng 05/08/2026 nếu có, sẽ thêm bản mới)
-[2026-08-05T02:17:14.224Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 4157 dòng (kể cả header), 1393 KB
+[2026-08-05T04:22:42.680Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-05T04:22:42.687Z] Đọc được 1529 SP từ 3 file artifact (scrape-artifacts)
+[2026-08-05T04:22:42.687Z] Đọc Part # (FORMULA render)...
+[2026-08-05T04:22:43.158Z]   3503 dòng
+[2026-08-05T04:22:43.158Z] Đọc Segment (FORMULA render)...
+[2026-08-05T04:22:43.321Z]   120 dòng
+[2026-08-05T04:22:43.321Z] Đọc Key Focus model (FORMULA render)...
+[2026-08-05T04:22:43.473Z] 💥 Lỗi: Error: Unable to parse range: 'Key Focus model'!A1:D
+    at Gaxios._request (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/gaxios/build/src/gaxios.js:142:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async JWT.requestAsync (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
+    at async readTabFormula (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/enrich-and-export.js:104:15)
+    at async main (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/enrich-and-export.js:154:21)
