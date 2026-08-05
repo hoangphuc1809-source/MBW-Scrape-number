@@ -12,7 +12,7 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = path.join(os.tmpdir(), 'inspect-gcreds.json');
 const REPORT_PATH = path.join(__dirname, 'structure-report.txt');
 const REQ_TIMEOUT_MS = 25000;
-const TABS = ['RAW DATA', 'Part #', 'Segment', 'Key Focus model'];
+const TABS = ['Daily SRP Tracking', 'Part #', 'Segment'];
 
 const lines = [];
 function log(msg) { lines.push(msg); console.log(msg); }
