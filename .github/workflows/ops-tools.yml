@@ -31,8 +31,8 @@ on:
         description: 'So ngay gan nhat giu lai trong RAW DATA khi archive (mac dinh 45)'
         required: false
         default: '45'
-      run_test_csv_export:
-        description: 'TEST: thu doc Dailly SRP Tracking qua CSV export thay vi Sheets API'
+      run_check_v_formula:
+        description: 'CHECK: cot V trong RAW DATA con formula khong'
         type: boolean
         default: false
       run_check_rawdata:
@@ -187,11 +187,11 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-  test-csv-export:
-    name: 'TEST: doc Dailly SRP Tracking qua CSV export'
-    if: ${{ inputs.run_test_csv_export }}
+  check-v-formula:
+    name: 'CHECK: cot V RAW DATA con formula khong'
+    if: ${{ inputs.run_check_v_formula }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
@@ -203,15 +203,14 @@ jobs:
       - env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          TARGET_GID: '221053035'
-        run: node test-csv-export.js > csv-export-test-log.txt 2>&1 || true
-      - name: Commit ket qua
+        run: node check-v-formula.js > check-v-log.txt 2>&1 || true
+      - name: Commit
         if: always()
         run: |
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add csv-export-test-log.txt
-          git commit -m "test: csv export ket qua [skip ci]" || echo "nothing"
+          git add check-v-log.txt
+          git commit -m "chore: check V formula [skip ci]" || echo "nothing"
           git pull --rebase origin main
           git push origin HEAD:main
 
