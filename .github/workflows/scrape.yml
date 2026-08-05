@@ -238,7 +238,18 @@ jobs:
           SCRAPE_DEALERS: MBW,FPT,CPS
           COMBINE_MODE: 'true'
           COMBINE_INPUT_DIR: scrape-artifacts
-        run: npm start
+        run: npm start 2>&1 | tee combine-write-debug.log
+
+      - name: TAM THOI - commit log loi de chan doan (se xoa sau khi fix)
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          tail -c 20000 combine-write-debug.log > combine-write-debug-tail.log 2>/dev/null || cp combine-write-debug.log combine-write-debug-tail.log
+          git add combine-write-debug-tail.log
+          git commit -m "chore(debug): log chan doan write-sheet [skip ci]" || echo "nothing"
+          git pull --rebase origin main
+          git push origin HEAD:main
 
       - name: Export snapshot dashboard/data.csv (tinh enrichment bang code, khong doc Dailly SRP Tracking)
         if: always()
