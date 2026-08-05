@@ -27,10 +27,14 @@ on:
         description: '‼️ Archive RAW DATA - THUC THI THAT (ghi archive + rut gon RAW DATA). Chi bam sau khi da xem dry-run va thay so lieu on.'
         type: boolean
         default: false
-      archive_days_to_keep:
-        description: 'So ngay gan nhat giu lai trong RAW DATA khi archive (mac dinh 45)'
+      raw_data_keep_days:
+        description: 'So ngay gan nhat giu trong RAW DATA (mac dinh 15)'
         required: false
-        default: '45'
+        default: '15'
+      archive_keep_days:
+        description: 'So ngay tiep theo giu trong RAW DATA ARCHIVE (mac dinh 15). Cu hon tong 2 so nay se bi XOA VINH VIEN.'
+        required: false
+        default: '15'
       run_check_live:
         description: 'CHECK: con formula song o Dailly SRP Tracking / RAW DATA V khong'
         type: boolean
@@ -145,7 +149,8 @@ jobs:
       - env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          ARCHIVE_DAYS_TO_KEEP: ${{ inputs.archive_days_to_keep }}
+          RAW_DATA_KEEP_DAYS: ${{ inputs.raw_data_keep_days }}
+          ARCHIVE_KEEP_DAYS: ${{ inputs.archive_keep_days }}
           EXECUTE: 'false'
         run: node archive-rawdata.js > archive-dryrun-report.txt 2>&1 || true
       - name: Commit ket qua dry-run
@@ -174,7 +179,8 @@ jobs:
       - env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          ARCHIVE_DAYS_TO_KEEP: ${{ inputs.archive_days_to_keep }}
+          RAW_DATA_KEEP_DAYS: ${{ inputs.raw_data_keep_days }}
+          ARCHIVE_KEEP_DAYS: ${{ inputs.archive_keep_days }}
           EXECUTE: 'true'
         run: node archive-rawdata.js > archive-execute-report.txt 2>&1 || true
       - name: Commit ket qua execute
