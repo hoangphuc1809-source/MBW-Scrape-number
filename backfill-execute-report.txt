@@ -1,0 +1,41 @@
+=== Backfill enrichment T→AE cho RAW DATA — THỰC THI ===
+Tab "Part #": grid rowCount=10283
+   đọc Part # 2-5001: 3503 dòng thô
+   đọc Part # 5002-10001: 0 dòng thô
+   đọc Part # 10002-10283: 0 dòng thô
+→ Map tra cứu có 3503 Product Name
+Tab "RAW DATA": grid rowCount=68267
+   đọc RAW DATA 2-5001: 5000 dòng thô
+   đọc RAW DATA 5002-10001: 5000 dòng thô
+   đọc RAW DATA 10002-15001: 5000 dòng thô
+   đọc RAW DATA 15002-20001: 5000 dòng thô
+   đọc RAW DATA 20002-25001: 5000 dòng thô
+   đọc RAW DATA 25002-30001: 5000 dòng thô
+   đọc RAW DATA 30002-35001: 5000 dòng thô
+   đọc RAW DATA 35002-40001: 608 dòng thô
+   đọc RAW DATA 40002-45001: 0 dòng thô
+   đọc RAW DATA 45002-50001: 0 dòng thô
+   đọc RAW DATA 50002-55001: 0 dòng thô
+   đọc RAW DATA 55002-60001: 0 dòng thô
+   đọc RAW DATA 60002-65001: 0 dòng thô
+   đọc RAW DATA 65002-68267: 0 dòng thô
+→ 35608 dòng có dữ liệu thật trong RAW DATA
+
+=== KẾT QUẢ ===
+Khớp được với Part #: 35314/35608
+Không khớp (để trống): 294/35608
+5 dòng mẫu đầu: [["","","","Ryzen 5","Ryzen 5 7520U","RAM 16 GB","SSD 512 GB","","","","D0BH1PA",""],["","","","","","RAM 8 GB","SSD 256 GB","","","","",""],["","","","Core 5","Core 5 210H","RAM 16 GB","SSD 512 GB","14\", WUXGA (1920 x 1200), 60 Hz","Intel UHD","","S3407VA - LY146W",""],["","","","Ryzen 5","Ryzen 5 7530U","RAM 16 GB","SSD 512 GB","","","","DC5R5973W1-2Y",""],["","","","","","RAM 16 GB","SSD 512 GB","","","","",""]]
+
+Đang đổi header A1:S1 sang tiếng Anh...
+Đang ghi header enrichment T1:AE1...
+Đang ghi dữ liệu enrichment (35608 dòng)...
+   ✓ Đã ghi lô 0-5000
+   ✓ Đã ghi lô 5000-10000
+   ✓ Đã ghi lô 10000-15000
+   ✓ Đã ghi lô 15000-20000
+   ✓ Đã ghi lô 20000-25000
+   ✓ Đã ghi lô 25000-30000
+   ✓ Đã ghi lô 30000-35000
+   ✓ Đã ghi lô 35000-35608
+
+✅ HOÀN TẤT. Header đã đổi tiếng Anh, cột T→AE đã điền xong.
