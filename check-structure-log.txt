@@ -1,0 +1,11 @@
+
+=== 'Part #' ===
+LOI: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Part%20%23%27%21A1%3AZ1
+
+=== 'Key Focus model' ===
+LOI: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Key%20Focus%20model%27%21A1%3AZ1
+
+=== 'Dailly SRP Tracking' ===
+LOI: network timeout at: https://sheets.googleapis.com/v4/spreadsheets/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/values/%27Dailly%20SRP%20Tracking%27%21A1%3AZ1
+
+Dailly SRP Tracking A1:X3 (FORMULA mode): [["Date","Hour","Dealers","SKU","SRP","Promotion Price","Change","Sold","Rate","Vendor","Series Group","Segment","CPU Segment","CPU","RAM","SSD","Screen","GPU","V-RAM","Weight","Products Link","Part #","Focus Model","Status"],["21/07/2026","07:21","MBW","Laptop HP 15 fc0023AU - D0BH1PA (R5 7520U, 16GB, 512GB, Full HD, Win11)","23,990,000","18,990,000","-20%","• Đã bán 4,5k","4.9","HP","Business& Productivity","HP 15","Ryzen 5","Ryzen 5 7520U","RAM 16 GB","SSD 512 GB","","","","","https://www.thegioididong.com/laptop/hp-15-fc0023au-r5-7520u-d0bh1pa","D0BH1PA","No","Còn hàng"],["21/07/2026","07:21","MBW","Laptop MacBook Neo 13 inch A18 Pro 8GB/256GB","19,490,000","18,990,000","","• Đã bán 2,3k","4.9","MacBook","Business& Productivity","MacBook Neo","","","RAM 8 GB","SSD 256 GB","","","","","https://www.thegioididong.com/laptop/macbook-neo-13-inch-a18-pro-8gb-256gb","","","Còn hàng"]]
