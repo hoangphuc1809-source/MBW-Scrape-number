@@ -1013,6 +1013,9 @@ async function scrapeMBW(page) {
 // ── SCRAPER 2 — FPT Retail ────────────────────────────────
 async function scrapeFPT(page, brand, specCache, startTime) {
   console.log(`  [FPT] ${brand.name}`);
+  if (process.env.FPT_DEBUG_LOG) {
+    try { fs.writeFileSync(path.join(__dirname, 'fpt-debug.log'), `--- FPT scrape ${new Date().toISOString()} ---\n`); } catch (_) {}
+  }
   // FPT bị Cloudflare bot-challenge ngay cả qua Worker proxy (Cloudflare Worker
   // → Cloudflare-protected origin bị chặn ở edge-to-edge level) → gọi trực tiếp.
   try {
@@ -1076,6 +1079,16 @@ async function scrapeFPT(page, brand, specCache, startTime) {
     }).catch((e) => ({ clicked: false, evalError: String(e).slice(0,100) }));
     // TAM THOI debug: log chi tiet moi vong lap (dieu tra FPT 284 vs 447 that)
     console.log(`    🔍 [FPT-debug] click#${clicks} -> ${JSON.stringify(clickResult)}`);
+    // TAM THOI (05/08/2026): ghi bang Node fs (khong qua shell pipe/tee) de
+    // tranh loi tren self-hosted Windows runner khi shell khong tuong thich.
+    if (process.env.FPT_DEBUG_LOG) {
+      try {
+        fs.appendFileSync(
+          path.join(__dirname, 'fpt-debug.log'),
+          `[${new Date().toISOString()}] click#${clicks} -> ${JSON.stringify(clickResult)}\n`
+        );
+      } catch (_) {}
+    }
     if (!clickResult.clicked) break;
     clicks++;
     await sleep(2000);

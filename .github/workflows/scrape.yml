@@ -172,20 +172,23 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           SCRAPE_DEALERS: FPT
           WRITE_MODE: file
-        shell: bash
-        run: set -o pipefail; npm start 2>&1 | tee scrape-fpt-debug.log
+          FPT_DEBUG_LOG: '1'
+        run: npm start
 
       - name: TAM THOI - luu log de dieu tra FPT it SP (se xoa sau khi fix)
         if: always()
-        shell: bash
         run: |
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          tail -c 20000 scrape-fpt-debug.log > scrape-fpt-debug-tail.log 2>/dev/null || cp scrape-fpt-debug.log scrape-fpt-debug-tail.log
-          git add scrape-fpt-debug-tail.log
-          git commit -m "chore(debug): log dieu tra FPT it SP [skip ci]" || echo "nothing"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          if (Test-Path fpt-debug.log) {
+            git add fpt-debug.log
+            git commit -m "chore(debug): log dieu tra FPT it SP [skip ci]"
+            if ($LASTEXITCODE -ne 0) { Write-Host "nothing to commit" }
+            git pull --rebase origin main
+            git push origin HEAD:main
+          } else {
+            Write-Host "fpt-debug.log khong ton tai"
+          }
 
       - name: Upload artifact
         if: always()
