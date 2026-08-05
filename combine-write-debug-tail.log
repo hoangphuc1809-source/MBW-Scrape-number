@@ -1,0 +1,36 @@
+
+> multi-dealer-laptop-scraper@1.0.0 start
+> node multi_dealer_scraper.js
+
+🔗 COMBINE MODE — gộp kết quả từ các job scrape song song, ghi Sheet 1 lần duy nhất
+📂 Đọc artifact từ: scrape-artifacts
+   📄 scrape-artifacts/scrape-cps-output/products-CPS.json: 703 SP
+   📄 scrape-artifacts/scrape-fpt-output/products-FPT.json: 369 SP
+   📄 scrape-artifacts/scrape-mbw-output/products-MBW.json: 0 SP
+
+📊 Tổng hợp từ 3 file:
+   MBW: 0 SP
+   FPT Retail: 369 SP
+   CellPhone S: 703 SP
+   TỔNG: 1072 SP
+
+📝 Ghi Sheets...
+
+🚨 CẢNH BÁO SỐ LƯỢNG SP GIẢM BẤT THƯỜNG:
+   ⚠ MBW: 0 SP hôm nay vs 456 SP ngày 04/08/2026 (giảm 100%) — kiểm tra xem có bị dừng sớm khi load "Xem thêm" không
+   📤 Đã ghi lô 1: dòng 2–5001 (5000 dòng)
+   📤 Đã ghi lô 2: dòng 5002–10001 (5000 dòng)
+   📤 Đã ghi lô 3: dòng 10002–15001 (5000 dòng)
+   📤 Đã ghi lô 4: dòng 15002–20001 (5000 dòng)
+   📤 Đã ghi lô 5: dòng 20002–25001 (5000 dòng)
+   📤 Đã ghi lô 6: dòng 25002–30001 (5000 dòng)
+   📤 Đã ghi lô 7: dòng 30002–35001 (5000 dòng)
+   📤 Đã ghi lô 8: dòng 35002–35123 (122 dòng)
+🔎 Đang tra cứu Part # để enrich cột T→AE...
+   📋 Đã đọc 3503 Product Name từ "Part #" (tra theo tên cột, không theo vị trí cố định)
+   📋 Đã đọc 120 từ khoá Segment từ tab "Segment" (tra theo tên cột)
+✅ Enrich xong: 33775/35122 dòng khớp được với Part # (theo Model Name)
+✅ Ghi 1072 dòng mới | Giữ 34050 dòng cũ
+⚠ 130 SP chưa có specs — sẽ fetch lần sau
+
+✅ Combine + ghi Sheet xong.
