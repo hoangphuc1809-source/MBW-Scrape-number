@@ -366,11 +366,23 @@ const BRANDS = [
 ];
 
 const HEADERS = [
-  'Ngày','Giờ','STT','Dealer','Tên Model','Hãng',
-  'CPU','RAM','Ổ cứng','Màn hình','Card đồ họa','Trọng lượng',
-  'Giá gốc (₫)','Giá KM (₫)','Giảm (%)','Đã bán','Rating (★)','Link sản phẩm',
-  'Tình trạng',
+  'Date', 'Time', 'No', 'Dealer', 'Model Name', 'Brand',
+  'CPU (Listed)', 'RAM (Listed)', 'Storage', 'Screen Size', 'GPU (Listed)', 'Weight',
+  'Original Price', 'Sale Price', 'Discount %', 'Units Sold', 'Rating', 'Product Link',
+  'Availability',
 ];
+// v3.6: cot rieng "Availability" (S) = tinh trang con/het hang LUC SCRAPE,
+// khac voi "Status" (T, xem duoi) la tinh trang SAN PHAM tra tu Part # (vd
+// EOL) — 2 khai niem khac nhau, tranh nham ten.
+
+// v3.6: 12 cot enrich T→AE, tra cuu bang CODE (khong con formula) tu tab
+// "Part #" theo Model Name (cot E) khop voi Part #!A (Product Name). Chay
+// tu dong moi lan scrape — xem enrichRawDataRows() + buildPartLookupMap().
+const ENRICHMENT_HEADERS = [
+  'Status', 'Series Group', 'Segment', 'CPU Segment', 'CPU', 'RAM', 'SSD',
+  'Screen', 'GPU', 'V-RAM', 'Part #', 'Focus Model',
+];
+const PART_TAB = 'Part #';
 
 // ── Helpers ───────────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1259,7 +1271,7 @@ async function loadSpecCacheFromSheet(sheets) {
     try {
       const vRes = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME}!T1`,  // T1: FPT mapping version (S giờ là cột Tình trạng data)
+        range: `${SHEET_NAME}!AG1`,  // v3.6: doi tu T1 sang AG1, nhuong T cho cot "Status" (Part# enrichment)
       });
       savedVersion = parseInt(vRes.data.values?.[0]?.[0] || '0') || 0;
     } catch(e) {}
@@ -1353,6 +1365,73 @@ async function withRetry(fn, { retries = 3, baseDelayMs = 2000, label = '' } = {
   throw lastErr;
 }
 
+// v3.6: doc tab "Part #" 1 lan, xay Map tra cuu theo Product Name (cot A)
+// -> cac field enrichment. Doc bang FORMULA mode de tranh kich hoat cac cot
+// cong thuc khac cua Part # (L→S co MAP/LAMBDA rieng, khong lien quan).
+// Cot T cua Part # (Focus Model) la cot moi, co the chua co du lieu — van
+// doc binh thuong, chi la gia tri se trong cho toi khi duoc dien.
+async function buildPartLookupMap(sheets) {
+  const meta = await withRetry(() => sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID,
+    fields: 'sheets(properties(title,gridProperties))',
+  }), { label: 'get Part # metadata' });
+  const partSheet = meta.data.sheets.find(s => s.properties.title === PART_TAB);
+  if (!partSheet) { console.log(`   ⚠ Không tìm thấy tab "${PART_TAB}" — bỏ qua enrichment`); return new Map(); }
+  const totalRows = partSheet.properties.gridProperties.rowCount;
+
+  const map = new Map();
+  const CHUNK = 5000;
+  for (let start = 2; start <= totalRows; start += CHUNK) {
+    const end = Math.min(start + CHUNK - 1, totalRows);
+    const res = await withRetry(() => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${PART_TAB}'!A${start}:T${end}`,
+      valueRenderOption: 'FORMULA',
+    }), { label: `đọc Part # ${start}-${end}` });
+    const rows = res.data.values || [];
+    for (const r of rows) {
+      const name = (r[0] || '').trim();
+      if (!name) continue;
+      map.set(name, {
+        status:       safeVal(r[10]),  // K
+        seriesGroup:  safeVal(r[11]),  // L
+        segment:      safeVal(r[12]),  // M
+        cpuSegment:   safeVal(r[3]),   // D
+        cpu:          safeVal(r[4]),   // E
+        ram:          safeVal(r[5]),   // F
+        ssd:          safeVal(r[6]),   // G
+        screen:       safeVal(r[7]),   // H
+        gpu:          safeVal(r[8]),   // I
+        vram:         safeVal(r[9]),   // J
+        partNumber:   safeVal(r[2]),   // C
+        focusModel:   safeVal(r[19]),  // T (cot moi, Phuc se dien)
+      });
+    }
+  }
+  console.log(`   📋 Đã đọc ${map.size} Product Name từ "${PART_TAB}"`);
+  return map;
+}
+
+function safeVal(v) {
+  // Bo qua neu vo tinh doc duoc formula text (khong nen xay ra voi cac cot
+  // nay nhung phong ho) — tra ve rong thay vi ghi formula-text vao RAW DATA.
+  if (typeof v === 'string' && v.startsWith('=')) return '';
+  return v ?? '';
+}
+
+// row: 1 dong cua allRows (19 phan tu, khop HEADERS A:S). Tra ve array 12
+// phan tu khop ENRICHMENT_HEADERS (T:AE).
+function enrichOneRow(row, partMap) {
+  const modelName = (row[4] || '').trim(); // cot E = Model Name
+  const info = partMap.get(modelName);
+  if (!info) return ['', '', '', '', '', '', '', '', '', '', '', ''];
+  return [
+    info.status, info.seriesGroup, info.segment, info.cpuSegment, info.cpu,
+    info.ram, info.ssd, info.screen, info.gpu, info.vram, info.partNumber,
+    info.focusModel,
+  ];
+}
+
 async function writeToSheet(sheets, allProducts) {
   const today   = new Date();
   const dateStr = formatDate(today);
@@ -1364,9 +1443,9 @@ async function writeToSheet(sheets, allProducts) {
     const res = await withRetry(() => sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!A2:R`,
-      // FIX 03/08/2026: cột A:R toàn data thô do scraper ghi (không có
-      // formula nào — formula duy nhất là cột V, ngoài phạm vi A:R), nên
-      // FORMULA render trả đúng giá trị mà KHÔNG kích hoạt tính toán như
+      // FIX 03/08/2026, cập nhật v3.6: cột A:R toàn data thô do scraper ghi,
+      // không có formula nào (cột V formula cũ đã xoá, thay bằng enrich code
+      // ở T→AE). Vẫn dùng FORMULA render để tránh kích hoạt tính toán như
       // FORMATTED_VALUE (default) — tránh timeout do spreadsheet quá tải,
       // là nguyên nhân gốc khiến lần đọc này lỗi và gây mất data trước đó.
       valueRenderOption: 'FORMULA',
@@ -1494,25 +1573,55 @@ async function writeToSheet(sheets, allProducts) {
     requestBody: { values: [HEADERS] },
   }), { label: 'update header row' });
 
-  // Lưu FPT_MAPPING_VERSION vào T1 để track khi nào cần re-fetch
+  // v3.6: enrich T→AE tu Part # (Status, Series Group, Segment, CPU
+  // Segment, CPU, RAM, SSD, Screen, GPU, V-RAM, Part #, Focus Model) —
+  // tinh bang CODE, khong con formula. Chay sau khi ghi xong A:S de dam bao
+  // enrichment khop dung voi du lieu vua ghi (existingRows + newRows).
+  try {
+    console.log('🔎 Đang tra cứu Part # để enrich cột T→AE...');
+    const partMap = await buildPartLookupMap(sheets);
+    const enrichRows = allRows.map(row => enrichOneRow(row, partMap));
+    await withRetry(() => sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!T1:AE1`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [ENRICHMENT_HEADERS] },
+    }), { label: 'update enrichment header T1:AE1' });
+    for (let i = 0; i < enrichRows.length; i += CHUNK_SIZE) {
+      const chunk = enrichRows.slice(i, i + CHUNK_SIZE);
+      const startRow = 2 + i;
+      await withRetry(() => sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${SHEET_NAME}!T${startRow}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: chunk },
+      }), { label: `update enrichment T${startRow}-${startRow+chunk.length-1}` });
+    }
+    const matchedCount = enrichRows.filter(r => r[0] || r[10]).length; // co Status hoac Part #
+    console.log(`✅ Enrich xong: ${matchedCount}/${enrichRows.length} dòng khớp được với Part # (theo Model Name)`);
+  } catch (e) {
+    console.log(`   ⚠ Enrich T→AE lỗi (bỏ qua, không ảnh hưởng A:S): ${e.message}`);
+  }
+
+  // v3.6: doi tu T1/U1 sang AG1/AH1 — nhuong T cho cot "Status" enrichment
   await withRetry(() => sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!T1`,  // T1: FPT mapping version
+    range: `${SHEET_NAME}!AG1`,  // AG1: FPT mapping version (truoc day o T1)
     valueInputOption: 'RAW',
     requestBody: { values: [[FPT_MAPPING_VERSION]] },
-  }), { label: 'update T1 mapping version' });
+  }), { label: 'update AG1 mapping version' });
 
-  // FIX #1: ghi health note vào U1 — mở sheet lên là thấy ngay lần chạy gần nhất
+  // FIX #1: ghi health note vào AH1 — mở sheet lên là thấy ngay lần chạy gần nhất
   // có bị tụt số lượng SP bất thường không, khỏi phải mò log GitHub Actions
   const healthNote = healthNotes.length > 0
     ? `[${dateStr} ${timeStr}] ${healthNotes.join(' | ')}`
     : `[${dateStr} ${timeStr}] ✅ OK — số lượng SP bình thường`;
   await withRetry(() => sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!U1`,  // U1: Scrape health note (lần chạy gần nhất)
+    range: `${SHEET_NAME}!AH1`,  // AH1: Scrape health note (truoc day o U1)
     valueInputOption: 'RAW',
     requestBody: { values: [[healthNote]] },
-  }), { label: 'update U1 health note' });
+  }), { label: 'update AH1 health note' });
 
   const missingSpecs = newRows.filter(r => !r[6] && !r[7]).length;
   console.log(`✅ Ghi ${newRows.length} dòng mới | Giữ ${existingRows.length} dòng cũ`);
