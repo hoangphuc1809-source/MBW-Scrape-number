@@ -242,7 +242,7 @@ jobs:
         run: set -o pipefail; npm start 2>&1 | tee combine-write-debug.log
 
       - name: Neu buoc tren that bai, luu log de chan doan
-        if: failure()
+        if: always()
         run: |
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
