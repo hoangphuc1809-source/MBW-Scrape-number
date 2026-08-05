@@ -1011,11 +1011,9 @@ async function scrapeMBW(page) {
 }
 
 // ── SCRAPER 2 — FPT Retail ────────────────────────────────
+const fptClickLog = []; // TAM THOI (05/08/2026): dieu tra vi sao "Xem them" dung som
 async function scrapeFPT(page, brand, specCache, startTime) {
   console.log(`  [FPT] ${brand.name}`);
-  if (process.env.FPT_DEBUG_LOG) {
-    try { fs.writeFileSync(path.join(__dirname, 'fpt-debug.log'), `--- FPT scrape ${new Date().toISOString()} ---\n`); } catch (_) {}
-  }
   // FPT bị Cloudflare bot-challenge ngay cả qua Worker proxy (Cloudflare Worker
   // → Cloudflare-protected origin bị chặn ở edge-to-edge level) → gọi trực tiếp.
   try {
@@ -1079,16 +1077,7 @@ async function scrapeFPT(page, brand, specCache, startTime) {
     }).catch((e) => ({ clicked: false, evalError: String(e).slice(0,100) }));
     // TAM THOI debug: log chi tiet moi vong lap (dieu tra FPT 284 vs 447 that)
     console.log(`    🔍 [FPT-debug] click#${clicks} -> ${JSON.stringify(clickResult)}`);
-    // TAM THOI (05/08/2026): ghi bang Node fs (khong qua shell pipe/tee) de
-    // tranh loi tren self-hosted Windows runner khi shell khong tuong thich.
-    if (process.env.FPT_DEBUG_LOG) {
-      try {
-        fs.appendFileSync(
-          path.join(__dirname, 'fpt-debug.log'),
-          `[${new Date().toISOString()}] click#${clicks} -> ${JSON.stringify(clickResult)}\n`
-        );
-      } catch (_) {}
-    }
+    fptClickLog.push({ click: clicks, ...clickResult });
     if (!clickResult.clicked) break;
     clicks++;
     await sleep(2000);
@@ -1929,22 +1918,6 @@ async function runScrapeMode() {
         console.log(`    💥 FPT All lỗi: ${e.message.substring(0,100)}`);
       }
       await pageFPT.close().catch(() => {});
-      // TAM THOI (05/08/2026): push fpt-debug.log NGAY trong process nay
-      // (khong qua step rieng) - tranh nghi van shell/env/cwd giua cac step.
-      if (process.env.FPT_DEBUG_LOG) {
-        try {
-          const { execSync } = require('child_process');
-          const logPath = path.join(__dirname, 'fpt-debug.log');
-          console.log(`    🔍 [FPT-debug] fpt-debug.log exists=${fs.existsSync(logPath)} size=${fs.existsSync(logPath) ? fs.statSync(logPath).size : 'N/A'}`);
-          const run = (cmd) => { try { return execSync(cmd, { encoding: 'utf8', cwd: __dirname }); } catch (e2) { return `ERR: ${e2.message}`; } };
-          console.log(run('git config user.name "msi-data-bot"'));
-          console.log(run('git config user.email "actions@users.noreply.github.com"'));
-          console.log(run('git add fpt-debug.log'));
-          console.log(run('git commit -m "chore(debug): log dieu tra FPT it SP [skip ci]"'));
-          console.log(run('git pull --rebase origin main'));
-          console.log(run('git push origin HEAD:main'));
-        } catch (e3) { console.log(`    ⚠ Push fpt-debug.log lỗi: ${e3.message}`); }
-      }
     } else {
       console.log('\n═══ FPT Retail ═══ (skip — không trong SCRAPE_DEALERS)');
     }
@@ -2034,6 +2007,14 @@ async function runScrapeMode() {
     const outPath = path.join(OUTPUT_DIR, `products-${tag}.json`);
     fs.writeFileSync(outPath, JSON.stringify(allProducts));
     console.log(`\n💾 Đã lưu ${allProducts.length} SP ra ${outPath} (WRITE_MODE=file — chưa ghi Sheet, chờ job combine)`);
+    // TAM THOI (05/08/2026): xuat fptClickLog qua artifact JSON (khong qua git,
+    // dung chinh co che upload-artifact da chay on dinh) de dieu tra vi sao
+    // vong lap "Xem them" dung som.
+    if (fptClickLog.length > 0) {
+      const diagPath = path.join(OUTPUT_DIR, 'fpt-diagnostics.json');
+      fs.writeFileSync(diagPath, JSON.stringify(fptClickLog, null, 2));
+      console.log(`   🔍 Đã lưu ${fptClickLog.length} dòng debug click vào ${diagPath}`);
+    }
   } else {
     console.log('\n📝 Ghi Sheets...');
     await writeToSheet(sheets, allProducts);

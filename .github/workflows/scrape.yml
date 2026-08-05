@@ -245,18 +245,19 @@ jobs:
         shell: bash
         run: set -o pipefail; npm start 2>&1 | tee combine-write-debug.log
 
-      - name: TAM THOI - luu debug-part-header.json de dieu tra Focus Model (se xoa sau khi fix)
+      - name: TAM THOI - luu debug-part-header.json + fpt-diagnostics.json (se xoa sau khi fix)
         if: always()
         run: |
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          if [ -f debug-part-header.json ] || [ -f debug-part-focus-sample.json ]; then
-            git add debug-part-header.json debug-part-focus-sample.json 2>/dev/null || true
-            git commit -m "chore(debug): dump header + sample Focus Model Part # [skip ci]" || echo "nothing"
+          cp scrape-artifacts/scrape-fpt-output/fpt-diagnostics.json ./fpt-diagnostics.json 2>/dev/null || true
+          if [ -f debug-part-header.json ] || [ -f debug-part-focus-sample.json ] || [ -f fpt-diagnostics.json ]; then
+            git add debug-part-header.json debug-part-focus-sample.json fpt-diagnostics.json 2>/dev/null || true
+            git commit -m "chore(debug): dump Part# header + FPT click diagnostics [skip ci]" || echo "nothing"
             git pull --rebase origin main
             git push origin HEAD:main
           else
-            echo "debug-part-header.json khong ton tai"
+            echo "khong co file debug nao ton tai"
           fi
 
       - name: Neu buoc tren that bai, luu log de chan doan
