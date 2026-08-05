@@ -177,18 +177,18 @@ jobs:
 
       - name: TAM THOI - luu log de dieu tra FPT it SP (se xoa sau khi fix)
         if: always()
+        shell: bash
         run: |
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          if (Test-Path fpt-debug.log) {
+          if [ -f fpt-debug.log ]; then
             git add fpt-debug.log
-            git commit -m "chore(debug): log dieu tra FPT it SP [skip ci]"
-            if ($LASTEXITCODE -ne 0) { Write-Host "nothing to commit" }
+            git commit -m "chore(debug): log dieu tra FPT it SP [skip ci]" || echo "nothing to commit"
             git pull --rebase origin main
             git push origin HEAD:main
-          } else {
-            Write-Host "fpt-debug.log khong ton tai"
-          }
+          else
+            echo "fpt-debug.log khong ton tai"
+          fi
 
       - name: Upload artifact
         if: always()
