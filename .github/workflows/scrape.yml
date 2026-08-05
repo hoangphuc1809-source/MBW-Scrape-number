@@ -175,11 +175,6 @@ jobs:
           FPT_DEBUG_LOG: '1'
         run: npm start
 
-      - name: TAM THOI - luu log de dieu tra FPT it SP (se xoa sau khi fix)
-        if: always()
-        continue-on-error: true
-        run: node push-debug-file.js fpt-debug.log
-
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v4

@@ -1929,6 +1929,22 @@ async function runScrapeMode() {
         console.log(`    💥 FPT All lỗi: ${e.message.substring(0,100)}`);
       }
       await pageFPT.close().catch(() => {});
+      // TAM THOI (05/08/2026): push fpt-debug.log NGAY trong process nay
+      // (khong qua step rieng) - tranh nghi van shell/env/cwd giua cac step.
+      if (process.env.FPT_DEBUG_LOG) {
+        try {
+          const { execSync } = require('child_process');
+          const logPath = path.join(__dirname, 'fpt-debug.log');
+          console.log(`    🔍 [FPT-debug] fpt-debug.log exists=${fs.existsSync(logPath)} size=${fs.existsSync(logPath) ? fs.statSync(logPath).size : 'N/A'}`);
+          const run = (cmd) => { try { return execSync(cmd, { encoding: 'utf8', cwd: __dirname }); } catch (e2) { return `ERR: ${e2.message}`; } };
+          console.log(run('git config user.name "msi-data-bot"'));
+          console.log(run('git config user.email "actions@users.noreply.github.com"'));
+          console.log(run('git add fpt-debug.log'));
+          console.log(run('git commit -m "chore(debug): log dieu tra FPT it SP [skip ci]"'));
+          console.log(run('git pull --rebase origin main'));
+          console.log(run('git push origin HEAD:main'));
+        } catch (e3) { console.log(`    ⚠ Push fpt-debug.log lỗi: ${e3.message}`); }
+      }
     } else {
       console.log('\n═══ FPT Retail ═══ (skip — không trong SCRAPE_DEALERS)');
     }
