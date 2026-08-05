@@ -35,9 +35,21 @@ const CREDS_PATH = '/tmp/gc-checklive.json';
     }
   }
 
-  // Cung kiem tra RAW DATA V column con formula khong (sau lan paste dau)
+  // Kiem tra RAW DATA V column con formula khong (sau lan paste dau)
   const vCheck = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID, range: `'RAW DATA'!V1:V5`, valueRenderOption: 'FORMULA',
   });
   console.log('\nRAW DATA V1:V5 (FORMULA mode):', JSON.stringify(vCheck.data.values));
+
+  // Cau truc Part # va Key Focus model de build code thay formula
+  for (const tab of ["Part #", "Key Focus model"]) {
+    console.log(`\n=== ${tab} ===`);
+    const meta2 = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID, fields: 'sheets(properties(title,gridProperties))' });
+    const t = meta2.data.sheets.find(s => s.properties.title === tab);
+    console.log('rowCount:', t ? t.properties.gridProperties.rowCount : 'N/A');
+    const header = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${tab}'!A1:S1`, valueRenderOption: 'FORMULA' });
+    console.log('Header:', JSON.stringify(header.data.values));
+    const sample = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${tab}'!A2:S4`, valueRenderOption: 'FORMULA' });
+    console.log('3 dòng mẫu:', JSON.stringify(sample.data.values));
+  }
 })().catch(e => { console.log('LOI:', e.message); process.exitCode = 1; });
