@@ -10,6 +10,7 @@ const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = '/tmp/gcreds-backfill.json';
 const RAW_DATA_TAB = 'Daily SRP Tracking';
 const PART_TAB = 'Part #';
+const SEGMENT_TAB = 'Segment';
 const EXECUTE = process.env.EXECUTE === 'true';
 
 const HEADERS_EN = [
@@ -39,6 +40,21 @@ async function withRetry(fn, label, tries = 3) {
 function safeVal(v) {
   if (typeof v === 'string' && v.startsWith('=')) return '';
   return v ?? '';
+}
+
+// Thay cho cong thuc BYROW+REGEXMATCH cua Part # cot M, roi MAP+INDEX cua
+// cot L: tim tu khoa Segment (tab Segment cot C) DAI NHAT xuat hien trong
+// ten san pham (khong phan biet hoa/thuong), tra ve chinh tu khoa do
+// (=Segment) va Series Group tuong ung (cot D).
+function matchSegment(productName, segmentRefs) {
+  const nameLower = (productName || '').toLowerCase();
+  let best = null;
+  for (const ref of segmentRefs) {
+    if (ref.keywordLower && nameLower.includes(ref.keywordLower)) {
+      if (!best || ref.keyword.length > best.keyword.length) best = ref;
+    }
+  }
+  return best ? { segment: best.keyword, seriesGroup: best.seriesGroup } : { segment: '', seriesGroup: '' };
 }
 
 async function readAllRows(sheets, tabName, totalRows, lastCol) {
@@ -78,13 +94,35 @@ async function readAllRows(sheets, tabName, totalRows, lastCol) {
     const name = (r[0] || '').trim();
     if (!name) continue;
     partMap.set(name, {
-      status: safeVal(r[10]), seriesGroup: safeVal(r[11]), segment: safeVal(r[12]),
+      status: safeVal(r[10]),
       cpuSegment: safeVal(r[3]), cpu: safeVal(r[4]), ram: safeVal(r[5]), ssd: safeVal(r[6]),
       screen: safeVal(r[7]), gpu: safeVal(r[8]), vram: safeVal(r[9]), partNumber: safeVal(r[2]),
       focusModel: safeVal(r[19]),
+      // seriesGroup (L), segment (M) KHONG doc tu day — la formula song
+      // trong Part #, tinh truc tiep bang code o duoi (buildSegmentRefs +
+      // matchSegment), giong multi_dealer_scraper.js.
     });
   }
   console.log(`→ Map tra cứu có ${partMap.size} Product Name`);
+
+  // Doc tab "Segment" (B=Brand, C=tu khoa Segment, D=Series Group)
+  const segmentSheet = meta.data.sheets.find((s) => s.properties.title === SEGMENT_TAB);
+  let segmentRefs = [];
+  if (segmentSheet) {
+    const segRes = await withRetry(
+      () => sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${SEGMENT_TAB}'!B2:D${segmentSheet.properties.gridProperties.rowCount}`,
+      }, { timeout: 60000 }),
+      'Đọc Segment tab'
+    );
+    segmentRefs = (segRes.data.values || [])
+      .filter((r) => r[1])
+      .map((r) => ({ keyword: String(r[1]).trim(), keywordLower: String(r[1]).trim().toLowerCase(), seriesGroup: r[2] || '' }));
+    console.log(`→ Đọc được ${segmentRefs.length} từ khoá Segment từ tab "${SEGMENT_TAB}"`);
+  } else {
+    console.log(`   ⚠ Không tìm thấy tab "${SEGMENT_TAB}" — Series Group/Segment sẽ để trống`);
+  }
 
   // 2. Doc RAW DATA (can cot E = Model Name)
   const rawSheet = meta.data.sheets.find((s) => s.properties.title === RAW_DATA_TAB);
@@ -94,18 +132,21 @@ async function readAllRows(sheets, tabName, totalRows, lastCol) {
   console.log(`→ ${rawRows.length} dòng có dữ liệu thật trong RAW DATA`);
 
   // 3. Tinh enrichment cho tung dong
-  let matched = 0, unmatched = 0;
+  let matched = 0, unmatched = 0, segmentMatched = 0;
   const enrichRows = rawRows.map((row) => {
     const modelName = (row[4] || '').trim();
     const info = partMap.get(modelName);
-    if (!info) { unmatched++; return ['', '', '', '', '', '', '', '', '', '', '', '']; }
+    const { segment, seriesGroup } = matchSegment(modelName, segmentRefs);
+    if (segment) segmentMatched++;
+    if (!info) { unmatched++; return ['', seriesGroup, segment, '', '', '', '', '', '', '', '', '']; }
     matched++;
-    return [info.status, info.seriesGroup, info.segment, info.cpuSegment, info.cpu,
+    return [info.status, seriesGroup, segment, info.cpuSegment, info.cpu,
       info.ram, info.ssd, info.screen, info.gpu, info.vram, info.partNumber, info.focusModel];
   });
 
   console.log(`\n=== KẾT QUẢ ===`);
   console.log(`Khớp được với Part #: ${matched}/${rawRows.length}`);
+  console.log(`Khớp được Series Group/Segment (qua tab Segment): ${segmentMatched}/${rawRows.length}`);
   console.log(`Không khớp (để trống): ${unmatched}/${rawRows.length}`);
   console.log(`5 dòng mẫu đầu:`, JSON.stringify(enrichRows.slice(0, 5)));
 
