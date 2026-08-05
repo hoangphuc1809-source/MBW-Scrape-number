@@ -51,7 +51,7 @@ async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
       () => sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
         range: `'${tabName}'!A${start}:${lastCol}${end}`,
-        valueRenderOption: 'UNFORMATTED_VALUE',
+        valueRenderOption: 'FORMULA',
         dateTimeRenderOption: 'FORMATTED_STRING',
       }, { timeout: 60000 }),
       `Đọc ${tabName} ${start}-${end}`
@@ -79,7 +79,7 @@ async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
   console.log(`Tab "${RAW_DATA_TAB}": grid rowCount=${totalRows}`);
 
   const header = (await withRetry(
-    () => sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A1:S1` }, { timeout: 60000 }),
+    () => sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!A1:S1`, valueRenderOption: 'FORMULA' }, { timeout: 60000 }),
     'Đọc header'
   )).data.values[0];
   console.log('Header:', JSON.stringify(header));
