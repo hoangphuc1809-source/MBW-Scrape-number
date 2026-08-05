@@ -60,18 +60,7 @@ jobs:
           SCRAPE_DEALERS: MBW
           WRITE_MODE: file
         shell: bash
-        run: set -o pipefail; npm start 2>&1 | tee scrape-mbw-debug.log
-
-      - name: TAM THOI - luu log de dieu tra MBW 0 SP (se xoa sau khi fix)
-        if: always()
-        run: |
-          git config user.name "msi-data-bot"
-          git config user.email "actions@users.noreply.github.com"
-          tail -c 20000 scrape-mbw-debug.log > scrape-mbw-debug-tail.log 2>/dev/null || cp scrape-mbw-debug.log scrape-mbw-debug-tail.log
-          git add scrape-mbw-debug-tail.log
-          git commit -m "chore(debug): log dieu tra MBW 0 SP [skip ci]" || echo "nothing"
-          git pull --rebase origin main
-          git push origin HEAD:main
+        run: npm start
 
       - name: Upload artifact
         if: always()

@@ -991,7 +991,7 @@ async function scrapeMBW(page) {
       // trang chi tiet cho SP da cache (tat tu 23/07 de on dinh), day RA
       // TUYEN PHONG THU DUY NHAT cho Availability — phai kiem tra ky nhu CPS.
       const mbwStatus = (() => {
-        const cardText = (card.innerText || '').toLowerCase();
+        const cardText = (item.innerText || '').toLowerCase();
         if (/tạm hết hàng|hết hàng|out of stock/.test(cardText)) return 'Tạm hết hàng';
         if (/ngừng kinh doanh|ngừng bán/.test(cardText)) return 'Ngừng KD';
         if (/sắp về|hàng sắp về|pre.?order|đặt trước/.test(cardText)) return 'Hàng sắp về';
