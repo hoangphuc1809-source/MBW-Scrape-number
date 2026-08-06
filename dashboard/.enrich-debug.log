@@ -1,11 +1,11 @@
-[2026-08-06T03:30:46.172Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-06T03:30:46.184Z] Đọc được 3405 SP từ 3 file artifact (scrape-artifacts)
-[2026-08-06T03:30:46.185Z] Đọc Part # (FORMULA render)...
-[2026-08-06T03:30:46.615Z]   10282 dòng
-[2026-08-06T03:30:46.615Z] Đọc Segment (FORMULA render)...
-[2026-08-06T03:30:46.722Z]   120 dòng
-[2026-08-06T03:30:46.722Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-08-06T03:30:46.751Z] Part# map: 3503 SKU
-[2026-08-06T03:30:46.756Z] Tính xong 1891 dòng enriched (loại 1514 SP EOL)
-[2026-08-06T03:30:46.874Z] data.csv cũ: 7475 dòng, giữ lại 5608 dòng (loại dòng 06/08/2026 nếu có, sẽ thêm bản mới)
-[2026-08-06T03:30:46.956Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 7500 dòng (kể cả header), 2505 KB
+[2026-08-06T04:27:15.810Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-06T04:27:15.824Z] Đọc được 3305 SP từ 3 file artifact (scrape-artifacts)
+[2026-08-06T04:27:15.824Z] Đọc Part # (FORMULA render)...
+[2026-08-06T04:27:16.341Z]   10282 dòng
+[2026-08-06T04:27:16.342Z] Đọc Segment (FORMULA render)...
+[2026-08-06T04:27:16.694Z]   120 dòng
+[2026-08-06T04:27:16.695Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-08-06T04:27:16.723Z] Part# map: 3503 SKU
+[2026-08-06T04:27:16.729Z] Tính xong 1795 dòng enriched (loại 1510 SP EOL)
+[2026-08-06T04:27:16.999Z] data.csv cũ: 21165 dòng, giữ lại 19683 dòng (loại dòng 06/08/2026 nếu có, sẽ thêm bản mới)
+[2026-08-06T04:27:17.206Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 21479 dòng (kể cả header), 7250 KB
