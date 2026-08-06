@@ -60,6 +60,14 @@ function csvEscape(v) {
 function isFormula(cell) {
   return typeof cell === 'string' && cell.trim().startsWith('=');
 }
+function buildHeaderIndex(headerRow) {
+  const idx = {};
+  (headerRow || []).forEach((h, i) => {
+    const key = String(h || '').trim();
+    if (key) idx[key] = i;
+  });
+  return idx;
+}
 function parseDMY(s) {
   const [d, m, y] = String(s).split('/').map(Number);
   return new Date(y, m - 1, d).getTime();
@@ -143,16 +151,12 @@ async function main() {
   const sheets = google.sheets({ version: 'v4', auth });
 
   debugLog('Đọc Part # (FORMULA render)...');
-  const partRows = await readTabFormula(sheets, 'Part #', 'S');
+  const partRows = await readTabFormula(sheets, 'Part #', 'AE');
   debugLog(`  ${Math.max(0, partRows.length - 1)} dòng`);
 
   debugLog('Đọc Segment (FORMULA render)...');
   const segmentRows = await readTabFormula(sheets, 'Segment', 'D');
   debugLog(`  ${Math.max(0, segmentRows.length - 1)} dòng`);
-
-  debugLog('Đọc Key Focus model (FORMULA render)...');
-  const focusRows = await readTabFormula(sheets, 'Key Focus model', 'D');
-  debugLog(`  ${Math.max(0, focusRows.length - 1)} dòng`);
 
   fs.unlinkSync(CREDS_PATH);
 
@@ -176,14 +180,39 @@ async function main() {
     return best;
   }
 
-  // 3) Part#!A (tên SP) -> spec đầy đủ
+  // 3) Part# tab -> spec đầy đủ. FIX 06/08/2026: tra theo TÊN CỘT (giống
+  // buildPartLookupMap() trong multi_dealer_scraper.js) — KHÔNG dùng vị trí
+  // cố định r[1],r[2]... nữa, vì Phuc có thể chèn/sắp lại cột tuỳ ý. Đồng
+  // thời KHÔNG còn đọc tab "Key Focus model" riêng (đã bỏ, không còn tồn tại
+  // — Focus Model giờ là 1 CỘT ngay trong tab "Part #", đọc trực tiếp ở đây).
+  const partHIdx = buildHeaderIndex(partRows[0]);
+  const iName = partHIdx['Product Name'];
+  const iVendor = partHIdx['Vendor'];
+  const iPartNo = partHIdx['Part #'];
+  const iCpuSeg = partHIdx['CPU Segment'];
+  const iCpu = partHIdx['CPU'];
+  const iRam = partHIdx['RAM'];
+  const iSsd = partHIdx['SSD'];
+  const iScreen = partHIdx['Screen'];
+  const iGpu = partHIdx['GPU'];
+  const iVram = partHIdx['V-RAM'];
+  const iStatus = partHIdx['Status'];
+  const iSeriesGroup = partHIdx['Series Group'];
+  const iSegment = partHIdx['Segment'];
+  const iFocus = partHIdx['Focus Model'];
+  debugLog(`Part# header index: ${JSON.stringify(partHIdx)}`);
+  if (iName === undefined || iFocus === undefined) {
+    debugLog(`⚠ Part# thiếu cột bắt buộc (Product Name hoặc Focus Model) — kiểm tra lại header tab.`);
+  }
+
   const partMap = new Map();
   for (let i = 1; i < partRows.length; i++) {
     const r = partRows[i];
-    const name = r[0];
+    const name = iName !== undefined ? r[iName] : undefined;
     if (!name) continue;
-    const status = r[10] || '';
-    const lRaw = r[11], mRaw = r[12];
+    const status = (iStatus !== undefined ? r[iStatus] : '') || '';
+    const lRaw = iSeriesGroup !== undefined ? r[iSeriesGroup] : undefined;
+    const mRaw = iSegment !== undefined ? r[iSegment] : undefined;
 
     let segment;
     if (mRaw && !isFormula(mRaw)) segment = String(mRaw);
@@ -196,23 +225,24 @@ async function main() {
       seriesGroup = exact ? exact.seriesGroup : '';
     }
 
+    const focusRaw = iFocus !== undefined ? r[iFocus] : '';
+    const focusModel = (focusRaw && !isFormula(focusRaw)) ? String(focusRaw) : 'No';
+
     partMap.set(String(name), {
-      vendor: r[1] || '', partNumber: r[2] || '', cpuSegment: r[3] || '',
-      cpu: r[4] || '', ram: r[5] || '', ssd: r[6] || '', screen: r[7] || '',
-      gpu: r[8] || '', vram: r[9] || '', status: String(status).trim(),
-      seriesGroup, segment,
+      vendor: (iVendor !== undefined && r[iVendor]) || '',
+      partNumber: (iPartNo !== undefined && r[iPartNo]) || '',
+      cpuSegment: (iCpuSeg !== undefined && r[iCpuSeg]) || '',
+      cpu: (iCpu !== undefined && r[iCpu]) || '',
+      ram: (iRam !== undefined && r[iRam]) || '',
+      ssd: (iSsd !== undefined && r[iSsd]) || '',
+      screen: (iScreen !== undefined && r[iScreen]) || '',
+      gpu: (iGpu !== undefined && r[iGpu]) || '',
+      vram: (iVram !== undefined && r[iVram]) || '',
+      status: String(status).trim(),
+      seriesGroup, segment, focusModel,
     });
   }
   debugLog(`Part# map: ${partMap.size} SKU`);
-
-  // 4) Key Focus model!B (Part#) -> D (Focus Model)
-  const focusMap = new Map();
-  for (let i = 1; i < focusRows.length; i++) {
-    const r = focusRows[i];
-    const partNo = r[1], focus = r[3];
-    if (partNo && !isFormula(focus)) focusMap.set(String(partNo), String(focus || 'No'));
-  }
-  debugLog(`Focus model map: ${focusMap.size} Part#`);
 
   // 5) Tính enrichment, loại EOL
   const today = new Date();
@@ -244,7 +274,7 @@ async function main() {
       p.weight || '',
       p.link || '',
       partNumber,
-      focusMap.get(partNumber) || 'No',
+      (info && info.focusModel) || 'No',
       p.stockStatus || '',
     ]);
   }
