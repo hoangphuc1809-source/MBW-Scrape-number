@@ -127,8 +127,26 @@ async function main() {
   const sheetMeta = (meta.data.sheets || []).find(s => s.properties.sheetId === TARGET_GID);
   if (!sheetMeta) throw new Error(`Không tìm thấy tab với gid=${TARGET_GID}. Các tab hiện có: ${allTabs.join(', ')}`);
   const tabName = sheetMeta.properties.title;
-  const totalRows = sheetMeta.properties.gridProperties.rowCount;
-  debugLog(`Tab "${tabName}" (gid ${TARGET_GID}) - tổng ${totalRows} dòng`);
+  const gridRowCount = sheetMeta.properties.gridProperties.rowCount;
+  debugLog(`Tab "${tabName}" (gid ${TARGET_GID}) - grid cấp phát ${gridRowCount} dòng (KHÔNG dùng trực tiếp — chỉ là kích thước grid, không phải số dòng có data thật)`);
+
+  // FIX 06/08/2026: gridProperties.rowCount là kích thước GRID được cấp phát
+  // (có thể tĩnh/rất lớn, không tăng theo data thật) — dùng nó để tính
+  // dataStartRow khiến script luôn đọc nhòm 1 VÙNG CỐ ĐỊNH dù data thật đã
+  // phát triển thêm nhiều dòng trong ngày (CSV "đông cứng" ở lần chạy đầu
+  // ngày, các lần chạy sau trong cùng ngày không được phản ánh). Đây CHÍNH
+  // LÀ lỗi cùng loại vừa tìm thấy ở tab "Part #" sáng nay (totalRowsThisChunk
+  // rỗng vì đọc quá xa data thật). Sửa: đọc range mở A:A (chỉ cột Date) —
+  // Sheets API tự trim về đúng dòng cuối THẬT SỰ có data, không phải grid.
+  const colARes = await withRetry(
+    () => sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${tabName}'!A:A`,
+    }, { timeout: REQ_TIMEOUT_MS }),
+    'Đọc cột A để tìm dòng cuối thật'
+  );
+  const totalRows = (colARes.data.values || []).length;
+  debugLog(`   Dòng cuối THẬT SỰ có data (cột A): ${totalRows} (chênh ${gridRowCount - totalRows} dòng trống phía dưới grid)`);
 
   const dataStartRow = Math.max(2, totalRows - MAX_DATA_ROWS + 1);
   debugLog(`   Sẽ đọc dòng ${dataStartRow} -> ${totalRows} (cột A:AE) theo lô ${CHUNK_SIZE} dòng/lần...`);
