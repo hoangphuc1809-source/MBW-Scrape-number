@@ -31,15 +31,18 @@ jobs:
     name: Check may self-hosted (BARACK/MSI) online?
     runs-on: ubuntu-latest
     timeout-minutes: 3
-    permissions:
-      administration: read
     outputs:
       online: ${{ steps.check.outputs.online }}
     steps:
       - name: Kiem tra trang thai runner qua GitHub API
         id: check
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # FIX 06/08/2026: GITHUB_TOKEN mac dinh KHONG the doc danh sach
+          # self-hosted runner (khong co scope "administration" hop le trong
+          # workflow permissions: block — GH API tra 422 khi khai bao). Dung
+          # PAT rieng (RUNNER_CHECK_PAT, tao qua Settings > Secrets, co scope
+          # repo admin) thay the.
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_PAT }}
         run: |
           RESULT=$(curl -s -H "Authorization: token $GH_TOKEN" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runners" || echo "")
