@@ -9,6 +9,15 @@ on:
   # cua GitHub HOAC cron ben ngoai) — khong dung ca 2 cung luc de tranh trung
   # gio gay 2 lan chay chong nhau (dung loai race condition da fix 28-29/07).
   workflow_dispatch:
+    inputs:
+      run_scrape:
+        description: 'Chay pipeline scrape day du (MBW+FPT+CPS+ghi Sheet) - binh thuong de TRUE'
+        type: boolean
+        default: true
+      run_reenrich_dashboard:
+        description: 'CHI re-enrich dashboard/data.csv tu Part# moi nhat (khong scrape, ~30-60s) - dung khi vua sua Part#'
+        type: boolean
+        default: false
 
 # Chan 2 LAN CHAY (workflow run) chong nhau — van giu nguyen tu ban fix
 # truoc, vi neu 2 lan trigger trung gio thi van co the co 2 bo "3 job song
@@ -29,6 +38,7 @@ jobs:
   # khi thuc su offline chi lam job do fail/timeout, khong ton tien).
   check-runners:
     name: Check may self-hosted (BARACK/MSI) online?
+    if: ${{ inputs.run_scrape }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     outputs:
@@ -74,6 +84,7 @@ jobs:
   # chay SAU KHI ca 3 job scrape da xong (needs), dam bao chi co 1 tien trinh
   # dung tuc dung vao Google Sheet tai bat ky thoi diem nao.
   scrape-mbw:
+    if: ${{ inputs.run_scrape }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -134,6 +145,7 @@ jobs:
             -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
   scrape-cps:
+    if: ${{ inputs.run_scrape }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -194,7 +206,7 @@ jobs:
   # BARACK deu nhan duoc - co che du phong co chu dich, DUNG ghim may cu the.
   scrape-fpt:
     needs: check-runners
-    if: needs.check-runners.outputs.online == 'true'
+    if: ${{ inputs.run_scrape && needs.check-runners.outputs.online == 'true' }}
     runs-on: self-hosted
     timeout-minutes: 90
     steps:
@@ -259,7 +271,7 @@ jobs:
   scrape-fpt-online:
     name: Scrape FPT (Bright Data - fallback khi may offline)
     needs: check-runners
-    if: needs.check-runners.outputs.online == 'false'
+    if: ${{ inputs.run_scrape && needs.check-runners.outputs.online == 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -317,7 +329,7 @@ jobs:
   # tien hon la doi cho hoan hao).
   write-sheet:
     needs: [scrape-mbw, scrape-cps, scrape-fpt, scrape-fpt-online]
-    if: always()
+    if: ${{ always() && inputs.run_scrape }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -409,6 +421,82 @@ jobs:
           fi
           if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
           MSG="[$ICON] GHI SHEET (combine MBW+CPS+FPT)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "text=${MSG}" \
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
+
+  # 06/08/2026: Trigger RIENG - CHI re-enrich dashboard/data.csv tu Part#
+  # moi nhat (khong scrape gi ca). Dung khi Phuc vua sua Part# (Focus Model,
+  # Series Group, CPU Segment...) va muon dashboard cap nhat NGAY, khong doi
+  # lan scrape sau (~20-25 phut). Job nay doc lai TOAN BO data.csv hien co,
+  # tra cuu Part#/Segment ban moi nhat, ghi de cot enrichment - khong dung
+  # gi den cot RAW (gia/model/link). Nam trong CUNG file scrape.yml de trigger
+  # tu 1 noi duy nhat, nhung hoan toan doc lap voi pipeline scrape (khong
+  # needs job nao ben tren, chi mat ~30-60s vi khong can Puppeteer/Chrome).
+  reenrich-dashboard:
+    name: Re-enrich dashboard/data.csv tu Part# (khong scrape)
+    if: ${{ inputs.run_reenrich_dashboard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install googleapis (khong can Puppeteer)
+        run: npm install googleapis@140 --no-save --no-audit --no-fund
+
+      - name: Re-enrich data.csv
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node reenrich-dashboard-csv.js
+
+      - name: Commit + push data.csv neu co thay doi
+        if: always()
+        run: |
+          git config user.name "msi-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          ADDED=0
+          if [ -f dashboard/data.csv ] && [ -n "$(git status --porcelain dashboard/data.csv)" ]; then
+            git add dashboard/data.csv
+            ADDED=1
+          fi
+          if [ -f dashboard/.reenrich-debug.log ] && [ -n "$(git status --porcelain dashboard/.reenrich-debug.log)" ]; then
+            git add dashboard/.reenrich-debug.log
+            ADDED=1
+          fi
+          if [ "$ADDED" = "1" ]; then
+            git commit -m "chore(dashboard): re-enrich tu Part# moi nhat (trigger rieng, khong scrape) [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            echo "Da push"
+          else
+            echo "Khong co thay doi, bo qua commit"
+          fi
+
+      - name: Bao cao ve Telegram
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            exit 0
+          fi
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] Re-enrich dashboard tu Part# (khong scrape)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" \
             -d "text=${MSG}" \
