@@ -1,13 +1,11 @@
-[2026-08-06T00:20:40.295Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-06T00:20:40.303Z] Đọc được 1851 SP từ 3 file artifact (scrape-artifacts)
-[2026-08-06T00:20:40.304Z] Đọc Part # (FORMULA render)...
-[2026-08-06T00:20:40.615Z]   3503 dòng
-[2026-08-06T00:20:40.615Z] Đọc Segment (FORMULA render)...
-[2026-08-06T00:20:40.839Z]   120 dòng
-[2026-08-06T00:20:40.839Z] Đọc Key Focus model (FORMULA render)...
-[2026-08-06T00:20:40.943Z] 💥 Lỗi: Error: Unable to parse range: 'Key Focus model'!A1:D
-    at Gaxios._request (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/gaxios/build/src/gaxios.js:142:23)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at async JWT.requestAsync (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
-    at async readTabFormula (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/enrich-and-export.js:104:15)
-    at async main (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/enrich-and-export.js:154:21)
+[2026-08-06T00:35:28.732Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-06T00:35:28.739Z] Đọc được 1640 SP từ 3 file artifact (scrape-artifacts)
+[2026-08-06T00:35:28.739Z] Đọc Part # (FORMULA render)...
+[2026-08-06T00:35:29.198Z]   3503 dòng
+[2026-08-06T00:35:29.199Z] Đọc Segment (FORMULA render)...
+[2026-08-06T00:35:29.341Z]   120 dòng
+[2026-08-06T00:35:29.341Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20}
+[2026-08-06T00:35:29.367Z] Part# map: 3503 SKU
+[2026-08-06T00:35:29.368Z] Tính xong 1207 dòng enriched (loại 433 SP EOL)
+[2026-08-06T00:35:29.439Z] data.csv cũ: 5723 dòng, giữ lại 5723 dòng (loại dòng 06/08/2026 nếu có, sẽ thêm bản mới)
+[2026-08-06T00:35:29.511Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 6931 dòng (kể cả header), 2327 KB
