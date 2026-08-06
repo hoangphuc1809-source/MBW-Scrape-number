@@ -69,7 +69,14 @@ async function scrapeListing(page) {
     const out = [];
     const seen = new Set();
     document.querySelectorAll('div.cardInfo').forEach((card) => {
-      const linkEl = card.querySelector('a[href*="may-tinh-xach-tay/"]');
+      // FIX 06/08/2026: giống bug tim thay o multi_dealer_scraper.js — gioi
+      // han href chua "/may-tinh-xach-tay/" lam mat MacBook va cac category
+      // dung path rieng (~25% SP, 447 thuc te chi con ~284-352 sau extract).
+      // Noi long: chi can la <a> co href "that" (khong phai #/javascript:void).
+      const linkEl = [...card.querySelectorAll('a[href]')].find((a) => {
+        const h = a.getAttribute('href') || '';
+        return h && h !== '#' && !h.startsWith('javascript:');
+      });
       if (!linkEl) return;
       const href = linkEl.getAttribute('href') || '';
       const link = href.startsWith('http') ? href : BASE + href;
@@ -81,7 +88,7 @@ async function scrapeListing(page) {
       const price = priceEl?.textContent?.trim() || '';
       const bodyText = card.textContent || '';
       let stockStatus = 'Còn hàng';
-      if (/hết hàng/i.test(bodyText)) stockStatus = 'Hết hàng';
+      if (/tạm hết hàng|hết hàng/i.test(bodyText)) stockStatus = 'Tạm hết hàng';
       else if (/sắp về/i.test(bodyText)) stockStatus = 'Hàng sắp về';
       out.push({ name, link, price, stockStatus });
     });
