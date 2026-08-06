@@ -1038,6 +1038,11 @@ async function scrapeMBW(page) {
 const PV_MAX_CLICKS = 20; // thực tế ~10-11 click cho 413 SP (batch ~40/click) — cap gấp đôi làm lưới an toàn
 async function scrapePV(page) {
   console.log('  [PV] Trang tổng /c/laptop');
+  // Giảm khả năng bị nhận diện automation (navigator.webdriver=true theo mặc
+  // định của Puppeteer) — 1 số site dùng cờ này để phân biệt IP cloud/bot.
+  await page.evaluateOnNewDocument(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+  });
   try {
     await page.goto(PV_URL, { waitUntil: 'networkidle2', timeout: 60000 });
   } catch(e) {
@@ -1045,6 +1050,33 @@ async function scrapePV(page) {
     return [];
   }
   await sleep(2000);
+
+  // 06/08/2026: run #31083846095 tren cloud (ubuntu-latest) tra ve 0 SP chi
+  // trong 9s — qua nhanh, khong co lech nao, nghi la card chua kip render
+  // (race dieu kien mang) HOAC IP cloud bi tra ve trang khac IP VN (BARACK
+  // scrape binh thuong ra 400 SP voi CUNG code nay). Them retry + diagnostic
+  // de lan chay sau biet chinh xac dang o truong hop nao.
+  let cardCount = await evalWithTimeout(page.evaluate(() =>
+    document.querySelectorAll('.product-card').length
+  ), 8000, 0);
+  let retry = 0;
+  while (cardCount === 0 && retry < 3) {
+    retry++;
+    const diag = await evalWithTimeout(page.evaluate(() => ({
+      title: document.title,
+      bodyLen: (document.body && document.body.innerText || '').length,
+      bodySnippet: (document.body && document.body.innerText || '').substring(0, 200),
+      readyState: document.readyState,
+    })), 8000, {});
+    console.log(`    ⚠ 0 card sau load (thử ${retry}/3) — title="${diag.title}" bodyLen=${diag.bodyLen} readyState=${diag.readyState}`);
+    console.log(`      bodySnippet: ${JSON.stringify(diag.bodySnippet)}`);
+    await sleep(5000);
+    cardCount = await evalWithTimeout(page.evaluate(() =>
+      document.querySelectorAll('.product-card').length
+    ), 8000, 0);
+  }
+  if (cardCount > 0) console.log(`    → Sau ${retry} lần retry: ${cardCount} card`);
+  else console.log(`    💥 Vẫn 0 card sau ${retry} lần retry — có thể cloud IP bị chặn/trả trang khác`);
 
   // Load-more: match CHÍNH XÁC text "Xem thêm sản phẩm" (phân biệt với nút
   // "Xem thêm" của filter sidebar Thương hiệu/RAM/SSD và "Xem thêm nội dung"
@@ -2147,7 +2179,7 @@ async function runScrapeMode() {
     await browser.close();
   }
 
-  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0 };
+  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0, 'Phong Vu':0 };
   allProducts.forEach(p => { if (p.dealer in byDealer) byDealer[p.dealer]++; });
   console.log('\n📊 Kết quả:');
   Object.entries(byDealer).forEach(([d,c]) => console.log(`   ${d}: ${c} SP`));
@@ -2225,7 +2257,7 @@ async function runCombineMode() {
     process.exit(1);
   }
 
-  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0 };
+  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0, 'Phong Vu':0 };
   allProducts.forEach(p => { if (p.dealer in byDealer) byDealer[p.dealer]++; });
   console.log(`\n📊 Tổng hợp từ ${files.length} file:`);
   Object.entries(byDealer).forEach(([d,c]) => console.log(`   ${d}: ${c} SP`));
