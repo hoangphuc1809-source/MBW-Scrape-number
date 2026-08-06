@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       run_scrape:
-        description: 'Chay pipeline scrape day du (MBW+FPT+CPS+PV+ghi Sheet) - binh thuong de TRUE'
+        description: 'Chay pipeline scrape day du (MBW+FPT+CPS+ghi Sheet) - binh thuong de TRUE'
         type: boolean
         default: true
       run_reenrich_dashboard:
@@ -201,69 +201,6 @@ jobs:
             -d "text=${MSG}" \
             -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
-  # 06/08/2026: Phong Vu (phongvu.vn) - dò DOM thật qua desktop-commander
-  # (chạy Puppeteer trực tiếp từ máy BARACK), KHÔNG bị chặn bot khi dùng
-  # Puppeteer thật (khác FPT). Test lần đầu chỉ chạy từ IP nhà/office VN
-  # (BARACK) — job này lần đầu chạy từ cloud (ubuntu-latest, IP nước ngoài)
-  # để xác nhận PV không chặn IP cloud giống CPS/MBW, hay bị chặn giống FPT.
-  # Nếu job này fail liên tục vì bị chặn, cần chuyển sang self-hosted như FPT.
-  scrape-pv:
-    if: ${{ inputs.run_scrape }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install Chrome for Puppeteer
-        run: npx puppeteer browsers install chrome
-
-      - name: Scrape PV (chi luu file, chua ghi Sheet)
-        env:
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          SCRAPE_DEALERS: PV
-          WRITE_MODE: file
-        run: npm start
-
-      - name: Upload artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: scrape-pv-output
-          path: scrape-output/*.json
-          if-no-files-found: ignore
-          retention-days: 1
-
-      - name: Bao cao ve Telegram
-        if: always()
-        continue-on-error: true
-        shell: bash
-        env:
-          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
-          CHAT: ${{ secrets.OPS_CHAT_ID }}
-          JOB_STATUS: ${{ job.status }}
-          RUN_NUMBER: ${{ github.run_number }}
-        run: |
-          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
-            echo "Chua dat OPS_BOT_TOKEN/OPS_CHAT_ID - bo qua bao cao"
-            exit 0
-          fi
-          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
-          MSG="[$ICON] Phong Vu (scrape)%0Amay: cloud (ubuntu-latest)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
-          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
-            -d "chat_id=${CHAT}" \
-            -d "text=${MSG}" \
-            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
-
   # FPT Retail - fptshop.com.vn chan bang Cloudflare bot-challenge (KHONG phai
   # chan IP), bat buoc self-hosted. Giu label chung 'self-hosted' de MSI va
   # BARACK deu nhan duoc - co che du phong co chu dich, DUNG ghim may cu the.
@@ -391,7 +328,7 @@ jobs:
   # ghi gi (giu triet ly STOP-AND-STABILIZE tu v3.4.10: listing on dinh uu
   # tien hon la doi cho hoan hao).
   write-sheet:
-    needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-fpt, scrape-fpt-online]
+    needs: [scrape-mbw, scrape-cps, scrape-fpt, scrape-fpt-online]
     if: ${{ always() && inputs.run_scrape }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -418,7 +355,7 @@ jobs:
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          SCRAPE_DEALERS: MBW,FPT,CPS,PV
+          SCRAPE_DEALERS: MBW,FPT,CPS
           COMBINE_MODE: 'true'
           COMBINE_INPUT_DIR: scrape-artifacts
         shell: bash
@@ -483,7 +420,7 @@ jobs:
             exit 0
           fi
           if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
-          MSG="[$ICON] GHI SHEET (combine MBW+CPS+FPT+PV)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          MSG="[$ICON] GHI SHEET (combine MBW+CPS+FPT)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
           curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT}" \
             -d "text=${MSG}" \
