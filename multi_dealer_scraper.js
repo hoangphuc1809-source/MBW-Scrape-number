@@ -973,7 +973,12 @@ async function scrapeMBW(page) {
       // Fallback findSpec nếu không có dấu ":"
       const findSpec = (kw) => specs.find(s => s.toLowerCase().includes(kw.toLowerCase())) || '';
 
-      const cpu    = parseSpec('Công nghệ CPU') || parseSpec('cpu') || findSpec('Core') || findSpec('Ryzen') || findSpec('Celeron') || findSpec('Snapdragon') || '';
+      const cpu    = parseSpec('Công nghệ CPU') || parseSpec('cpu') || findSpec('Core') || findSpec('Ryzen') || findSpec('Celeron') || findSpec('Snapdragon') ||
+        // FIX 06/08/2026: thegioididong.com da doi layout the SP - khong con
+        // dong "Cong nghe CPU:" rieng trong div.utility p nua (chi con RAM/
+        // SSD dang chip), CPU gio CHI nam trong TEN san pham (VD: "HP 15
+        // fc0023AU R5 7520U (D0BH1PA)"). Fallback: regex tim ma CPU tu name.
+        (name.match(/\b(i[3579]-?\d{4,5}[A-Z]{0,3}|Ultra\s?\d\s?\d{3}[A-Z]?|Core\s?\d\s?\d{2,3}[A-Z]?|R[3579]\s?\d{3,4}[A-Z]{0,3}|Ryzen\s?(AI\s?)?[3579]\s?\d{2,4}[A-Z]{0,3}|X1\s?\d{2}\s?\d{2,3}|M\d(\s?(Pro|Max|Ultra))?)\b/i) || [''])[0];
       // RAM từ compare (div.item-compare) là chính xác nhất
       // Màn hình từ spec listing
       const screen = parseSpec('Kích thước màn hình') || parseSpec('màn hình') || findSpec('inch') || '';
@@ -1729,6 +1734,16 @@ async function writeToSheet(sheets, allProducts) {
     console.log('🔎 Đang tra cứu Part # để enrich cột T→AE...');
     const { partMap, segmentRefs } = await buildPartLookupMap(sheets);
     const enrichRows = allRows.map(row => enrichOneRow(row, partMap, segmentRefs));
+    // FIX 06/08/2026: TRUOC DAY chi clear A2:R, KHONG clear T:AE truoc khi
+    // ghi lai — neu allRows.length lan nay NGAN HON lan truoc (VD: sau khi
+    // archive-rawdata.js cat gon RAW DATA), cac dong T:AE thua o CUOI (dai
+    // hon do dai moi) van con GIA TRI CU, tao ra "hang ma": A:S trong nhung
+    // T:AE (Status/Series Group/.../Part#/Focus Model) van con du lieu cua
+    // SP cu. Clear T2:AE (khong gioi han dong) truoc khi ghi de lai.
+    await withRetry(() => sheets.spreadsheets.values.clear({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!T2:AE`,
+    }), { label: 'clear T2:AE truoc khi ghi lai enrichment' });
     await withRetry(() => sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: `${SHEET_NAME}!T1:AE1`,

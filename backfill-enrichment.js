@@ -209,6 +209,11 @@ async function readAllRows(sheets, tabName, totalRows, lastCol) {
     valueInputOption: 'RAW', requestBody: { values: [HEADERS_EN] },
   }, { timeout: 60000 }), 'Cap nhat header A1:S1');
 
+  console.log('Dang xoa T2:AE cu truoc khi ghi lai (tranh hang ma khi so dong giam)...');
+  await withRetry(() => sheets.spreadsheets.values.clear({
+    spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!T2:AE`,
+  }, { timeout: 60000 }), 'Clear T2:AE truoc khi ghi lai');
+
   console.log('Dang ghi header enrichment T1:AE1...');
   await withRetry(() => sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID, range: `'${RAW_DATA_TAB}'!T1:AE1`,
