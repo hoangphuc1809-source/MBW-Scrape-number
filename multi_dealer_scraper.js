@@ -978,7 +978,11 @@ async function scrapeMBW(page) {
         // dong "Cong nghe CPU:" rieng trong div.utility p nua (chi con RAM/
         // SSD dang chip), CPU gio CHI nam trong TEN san pham (VD: "HP 15
         // fc0023AU R5 7520U (D0BH1PA)"). Fallback: regex tim ma CPU tu name.
-        (name.match(/\b(i[3579]-?\d{4,5}[A-Z]{0,3}|Ultra\s?\d\s?\d{3}[A-Z]?|Core\s?\d\s?\d{2,3}[A-Z]?|R[3579]\s?\d{3,4}[A-Z]{0,3}|Ryzen\s?(AI\s?)?[3579]\s?\d{2,4}[A-Z]{0,3}|X1\s?\d{2}\s?\d{2,3}|M\d(\s?(Pro|Max|Ultra))?)\b/i) || [''])[0];
+        // v2 (06/08/2026): them dang viet tat "U5/U7/U9" (= Ultra), Celeron,
+        // Pentium, Snapdragon co prefix - van con SP khong khop (ten qua da
+        // dang, VD hang MacBook/M-series it label ro) -> se duoc dien qua
+        // enrichment Part# thay the, day chi la best-effort tu ten.
+        (name.match(/\b(Celeron[,\s]*N?\d{4}|Pentium[,\s]*(Silver|Gold)?\s?N?\d{4,5}|Snapdragon\s?X\S*|i[3579]-?\d{4,5}[A-Z]{0,3}|Ultra\s?\d\s?\d{3}[A-Z]?|U[579]\s?\d{2,3}[A-Z]?|Core\s?\d\s?\d{2,3}[A-Z]?|R[3579]\s?\d{3,4}[A-Z]{0,3}|Ryzen\s?(AI\s?)?[3579]\s?\d{2,4}[A-Z]{0,3}|X1\s?\d{2}\s?\d{2,3}|M\d(\s?(Pro|Max|Ultra))?)\b/i) || [''])[0];
       // RAM từ compare (div.item-compare) là chính xác nhất
       // Màn hình từ spec listing
       const screen = parseSpec('Kích thước màn hình') || parseSpec('màn hình') || findSpec('inch') || '';
