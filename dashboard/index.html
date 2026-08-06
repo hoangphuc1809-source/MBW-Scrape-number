@@ -30,6 +30,7 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-se
 .badge.mbw{border-left:3px solid #60a5fa}
 .badge.fpt{border-left:3px solid #a78bfa}
 .badge.cps{border-left:3px solid #34d399}
+.badge.pv{border-left:3px solid #fbbf24}
 
 /* TABS */
 .tabs{background:var(--card);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto;gap:0}
@@ -93,6 +94,7 @@ html, body { height:100%; }
 .dlr-mbw{background:#fef08a;color:#854d0e}
 .dlr-fpt{background:#1e40af;color:#fff}
 .dlr-cps{background:#991b1b;color:#fff}
+.dlr-pv{background:#fed7aa;color:#9a3412}
 .dlr-key{background:#7c3aed;color:#fff}
 .prices{display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap}
 .p-old{color:var(--text2);text-decoration:line-through;font-size:12px}
@@ -467,7 +469,7 @@ tbody tr:hover{background:#fafafa}
 <div id="wfModal" class="hidden">
   <div class="wf-box">
     <h3>🔄 Trigger Scraper Run</h3>
-    <p>This will start a new scrape of <strong>MBW · FPT Retail · CellPhone S</strong> and update the Google Sheet.<br><br>The runner <strong>BARACK</strong> must be online. Estimated time: ~5 minutes.</p>
+    <p>This will start a new scrape of <strong>MBW · FPT Retail · CellPhone S · Phong Vu</strong> and update the Google Sheet.<br><br>The runner <strong>BARACK</strong> must be online. Estimated time: ~5 minutes.</p>
     <div id="wfResult"></div>
     <div class="wf-row">
       <button class="wf-btn-cancel" onclick="closeWfModal()">Cancel</button>
@@ -509,6 +511,7 @@ tbody tr:hover{background:#fafafa}
     <span class="badge mbw" id="bMBW">MBW –</span>
     <span class="badge fpt" id="bFPT">FPT –</span>
     <span class="badge cps" id="bCPS">CPS –</span>
+    <span class="badge pv" id="bPV">PV –</span>
     <button class="btn-refresh" id="btnRefresh" onclick="openWfModal()" title="Trigger scraper on GitHub Actions">
       <span class="spin-icon">🌐</span> Refresh from website
     </button>
@@ -562,6 +565,7 @@ tbody tr:hover{background:#fafafa}
       <option value="MBW">MBW</option>
       <option value="FPT Retail">FPT Retail</option>
       <option value="CellPhone S">CellPhone S</option>
+      <option value="Phong Vu">Phong Vu</option>
     </select>
     <select id="d_seg" multiple onchange="renderDrops()">
       <option value="">All Segments</option>
@@ -596,6 +600,7 @@ tbody tr:hover{background:#fafafa}
       <option value="MBW">MBW</option>
       <option value="FPT Retail">FPT Retail</option>
       <option value="CellPhone S">CellPhone S</option>
+      <option value="Phong Vu">Phong Vu</option>
     </select>
     <select id="as_seg" multiple onchange="renderAllSkus()">
       <option value="">All Segments</option>
@@ -747,7 +752,7 @@ let csvDates  = [];   // sorted desc: ["16/06/2026", "15/06/2026", ...]
 
 // ── FORMAT ──────────────────────────────────────────────
 const vnd = n => n?Number(n).toLocaleString('vi-VN')+'₫':'–';
-const dlrCls = d => d==='MBW'?'dlr-mbw':d==='FPT Retail'?'dlr-fpt':'dlr-cps';
+const dlrCls = d => d==='MBW'?'dlr-mbw':d==='FPT Retail'?'dlr-fpt':d==='Phong Vu'?'dlr-pv':'dlr-cps';
 const rnCls  = i => i===0?'rn1':i===1?'rn2':i===2?'rn3':'rno';
 const isBP   = p => p.gamingGroup !== 'Gaming';
 
@@ -758,6 +763,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bMBW').textContent = `MBW ${stats.mbw}`;
   document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
   document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
+  document.getElementById('bPV').textContent = `PV ${stats.pv}`;
   const _todayLbl = document.getElementById('todayLbl'); if(_todayLbl) _todayLbl.textContent = todayDate;
   const _prevLbl  = document.getElementById('prevLbl');  if(_prevLbl)  _prevLbl.textContent  = prevDate;
 
@@ -2039,6 +2045,7 @@ function buildDerivedData(rows) {
     mbw:    newAllToday.filter(p => p.dealer==='MBW').length,
     fpt:    newAllToday.filter(p => p.dealer==='FPT Retail').length,
     cps:    newAllToday.filter(p => p.dealer==='CellPhone S').length,
+    pv:     newAllToday.filter(p => p.dealer==='Phong Vu').length,
   };
 
   return { newToday, newPrev, newPrev2, newAllToday, newAllUnique, newDrops, newRises, newChanges, newStats, newLookup: lookup, newDates: [...dateSet].reverse() };
@@ -2110,6 +2117,7 @@ function applyNewData(derived, csv) {
   document.getElementById('bMBW').textContent = `MBW ${stats.mbw}`;
   document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
   document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
+  document.getElementById('bPV').textContent = `PV ${stats.pv}`;
   const _todayLbl2 = document.getElementById('todayLbl'); if(_todayLbl2) _todayLbl2.textContent = todayDate;
   const _prevLbl2  = document.getElementById('prevLbl');  if(_prevLbl2)  _prevLbl2.textContent  = prevDate;
 
@@ -2653,7 +2661,7 @@ function ppBuildGroups(){
         ram:         p.ram         || '—',
         ssd:         p.ssd         || '—',
         gpuTag:      p.gpuTag      || '',
-        byDealer: { MBW:[], 'FPT Retail':[], 'CellPhone S':[] },
+        byDealer: { MBW:[], 'FPT Retail':[], 'CellPhone S':[], 'Phong Vu':[] },
         allProducts: []
       };
     }
@@ -2677,9 +2685,9 @@ function ppSKUMap(groups){
 }
 
 // Dealer display names
-const PP_DEALER_KEYS = ['MBW','FPT Retail','CellPhone S'];
-const PP_DEALER_COLORS = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'};
-const PP_DEALER_SHORT = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'};
+const PP_DEALER_KEYS = ['MBW','FPT Retail','CellPhone S','Phong Vu'];
+const PP_DEALER_COLORS = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+const PP_DEALER_SHORT = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
 // ── Main render ──────────────────────────────────────────────────
 let _ppGroups = null;
@@ -2818,8 +2826,8 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
       const staleRowBg = p.isStale && !isSelected ? 'background:rgba(251,191,36,0.07)' : rowBg;
       rowIdx++;
 
-      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'}[p.dealer]||'#666';
-      const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'}[p.dealer]||p.dealer;
+      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'}[p.dealer]||'#666';
+      const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'}[p.dealer]||p.dealer;
 
       const p0 = p.todayPrice  || 0;
       const p1 = p.prevPrice   || 0;
@@ -3257,6 +3265,7 @@ function miRenderTrend(container) {
     {key:'MBW',        color:'#2563eb', label:'MBW'},
     {key:'FPT Retail', color:'#f97316', label:'FPT'},
     {key:'CellPhone S',color:'#16a34a', label:'CPS'},
+    {key:'Phong Vu',   color:'#f59e0b', label:'PV'},
   ];
   const normPN = s => (s||'').toLowerCase().replace(/[\s\-_]/g,'');
   const selNorm = selModel.toLowerCase();
@@ -3371,8 +3380,8 @@ function miRenderWeekly(container) {
   const riseCount  = changes.filter(c=>c.pct>0).length;
   const avgDrop    = drops.length ? (drops.reduce((s,c)=>s+c.pct,0)/drops.length).toFixed(1) : 0;
 
-  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'};
-  const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'};
+  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+  const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
   const mkRow = (c) => {
     const dc = dlrColor[c.dealer]||'#666';
@@ -3435,8 +3444,8 @@ function miRenderStock(container) {
   // Slow: sold = 0 or '' + been in market (has prevPrice)
   // Promo opportunity: disc% > 10% but sold still low
 
-  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'};
-  const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'};
+  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+  const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
   const parseSold = (s) => { const n = parseInt((s||'0').replace(/\D/g,'')); return isNaN(n)?0:n; };
   const parseDisc = (s) => { const n = parseFloat((s||'0').replace('%','')); return isNaN(n)?0:Math.abs(n); };
@@ -3509,6 +3518,7 @@ function ppPriceHistory(group) {
     { key: 'MBW',          color: '#2563eb', short: 'MBW' },
     { key: 'FPT Retail',   color: '#f97316', short: 'FPT' },
     { key: 'CellPhone S',  color: '#16a34a', short: 'CPS' },
+    { key: 'Phong Vu',     color: '#f59e0b', short: 'PV' },
   ];
 
   // Match rows theo Part# (col V = row[21]) — cách chính xác nhất vì
@@ -3665,7 +3675,7 @@ function ppPriceBar(mbw, fpt, cps){
 
 function ppEquivTable(g, selectedSKU, mbwRef){
   const rows = g.allProducts.slice();
-  const order = {'MBW':0,'FPT Retail':1,'CellPhone S':2};
+  const order = {'MBW':0,'FPT Retail':1,'CellPhone S':2,'Phong Vu':3};
   rows.sort((a,b) => (order[a.dealer]||9)-(order[b.dealer]||9) || a.todayPrice-b.todayPrice);
 
   if(!rows.length) return '<div class="pp-empty">Không có sản phẩm tương đương.</div>';
@@ -3758,8 +3768,8 @@ function ppRenderCompetitive(g, groups, vendorF) {
         : rowIdx%2===0 ? '' : 'background:#fafafa';
       rowIdx++;
 
-      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a'}[p.dealer]||'#666';
-      const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS'}[p.dealer]||p.dealer;
+      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'}[p.dealer]||'#666';
+      const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'}[p.dealer]||p.dealer;
 
       const priceFmt = (price, base) => {
         if (!price) return '<span style="color:#d1d5db">–</span>';
