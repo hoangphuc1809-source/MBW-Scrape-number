@@ -19,6 +19,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 06/08/2026: Job kiem tra truoc tien - cac may self-hosted (BARACK/MSI) co
+  # dang online khong. Neu KHONG co may nao online, scrape-fpt-online (Bright
+  # Data, chay tren cloud) se duoc dung thay scrape-fpt (self-hosted) — tranh
+  # viec job self-hosted cho vo han (khong co runner nhan job) den khi het
+  # timeout-minutes, lam nghen ca pipeline. Mac dinh khi API loi (khong ro
+  # trang thai thuc su) -> gia dinh ONLINE (an toan hon, vi tu choi nham sang
+  # Bright Data se ton tien khong can thiet; con tu choi nham sang self-hosted
+  # khi thuc su offline chi lam job do fail/timeout, khong ton tien).
+  check-runners:
+    name: Check may self-hosted (BARACK/MSI) online?
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      administration: read
+    outputs:
+      online: ${{ steps.check.outputs.online }}
+    steps:
+      - name: Kiem tra trang thai runner qua GitHub API
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RESULT=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runners" || echo "")
+          ONLINE_COUNT=$(echo "$RESULT" | jq '[.runners[]? | select(.status=="online")] | length' 2>/dev/null || echo "")
+          if [ -z "$ONLINE_COUNT" ]; then
+            echo "⚠ Khong doc duoc trang thai runner (loi API) — gia dinh ONLINE de an toan"
+            echo "online=true" >> "$GITHUB_OUTPUT"
+          elif [ "$ONLINE_COUNT" -gt 0 ]; then
+            echo "✅ Co $ONLINE_COUNT may self-hosted online"
+            echo "online=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "🔴 KHONG co may self-hosted nao online — FPT se dung Bright Data (online fallback)"
+            echo "online=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "--- Chi tiet ---"
+          echo "$RESULT" | jq '[.runners[]? | {name, status}]' 2>/dev/null || echo "$RESULT"
+
   # 30/07/2026 [v3.5.0]: tach MBW/CPS/FPT thanh 3 job scrape SONG SONG THAT
   # SU (khong con needs: tuan tu giua chung) de tiet kiem thoi gian tong —
   # truoc day scrape-fpt phai doi scrape-cloud xong moi chay, tong thoi gian
@@ -152,6 +190,8 @@ jobs:
   # chan IP), bat buoc self-hosted. Giu label chung 'self-hosted' de MSI va
   # BARACK deu nhan duoc - co che du phong co chu dich, DUNG ghim may cu the.
   scrape-fpt:
+    needs: check-runners
+    if: needs.check-runners.outputs.online == 'true'
     runs-on: self-hosted
     timeout-minutes: 90
     steps:
@@ -205,13 +245,75 @@ jobs:
             -d "text=${MSG}" \
             -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
+  # 06/08/2026: Fallback KHI khong co may self-hosted nao online — scrape FPT
+  # qua Bright Data Browser API (chay tren cloud, khong can may Phuc bat).
+  # CHI lay model/gia/tinh trang/link — KHONG parse CPU/RAM/GPU/... tu card
+  # (khong tiet kiem chi phi Bright Data - xem giai thich - nhung don gian
+  # code, va cac truong nay se duoc dien lai boi buoc enrichment tu tab
+  # "Part #" o job write-sheet nhu MBW/CPS/FPT deu dang lam). Ghi ra CUNG
+  # DINH DANG products-FPT.json nhu scrape-fpt tu host, de write-sheet doc
+  # gop binh thuong khong can sua logic combine.
+  scrape-fpt-online:
+    name: Scrape FPT (Bright Data - fallback khi may offline)
+    needs: check-runners
+    if: needs.check-runners.outputs.online == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+
+      - name: Scrape FPT qua Bright Data (chi luu file)
+        env:
+          BRIGHTDATA_BROWSER_WS: ${{ secrets.BRIGHTDATA_BROWSER_WS }}
+        run: node fpt_online_fallback.js
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-fpt-output
+          path: scrape-output/*.json
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Bao cao ve Telegram
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            exit 0
+          fi
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] FPT (Bright Data fallback - may self-hosted offline)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "text=${MSG}" \
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
+
   # Job DUY NHAT duoc ghi vao Google Sheet. Chi chay SAU KHI ca 3 job scrape
   # da xong (needs), va van chay du 1/2 job scrape bi fail (if: always()) —
   # ghi best-effort voi du lieu cua nhung dealer thanh cong, con hon khong
   # ghi gi (giu triet ly STOP-AND-STABILIZE tu v3.4.10: listing on dinh uu
   # tien hon la doi cho hoan hao).
   write-sheet:
-    needs: [scrape-mbw, scrape-cps, scrape-fpt]
+    needs: [scrape-mbw, scrape-cps, scrape-fpt, scrape-fpt-online]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 25
