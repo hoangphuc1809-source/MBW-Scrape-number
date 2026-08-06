@@ -247,7 +247,7 @@ const SHEET_NAME   = 'Daily SRP Tracking'; // v3.6.1: doi ten tab tu "RAW DATA" 
 // CHÍNH dealer mình phụ trách trong sheet hôm nay, không đụng tới dữ liệu
 // dealer khác do job song song ghi (tránh race condition khi cả 2 job
 // cùng đọc-sửa-ghi RAW DATA cùng lúc).
-const DEALER_KEY_TO_NAME = { MBW: 'MBW', FPT: 'FPT Retail', CPS: 'CellPhone S' };
+const DEALER_KEY_TO_NAME = { MBW: 'MBW', FPT: 'FPT Retail', CPS: 'CellPhone S', PV: 'Phong Vu' };
 const SCRAPE_DEALERS_RAW = (process.env.SCRAPE_DEALERS || 'MBW,FPT,CPS')
   .split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
 const SCRAPE_DEALERS = new Set(SCRAPE_DEALERS_RAW);
@@ -308,6 +308,18 @@ const MBW_REAL_HOST = 'www.thegioididong.com';
 const MBW_BASE = PROXY_HOST ? `${PROXY_HOST}/__proxy/mbw` : `https://${MBW_REAL_HOST}`;
 
 const MBW_URL = `${MBW_BASE}/laptop`;
+
+// PV (Phong Vu): dò cấu trúc trực tiếp qua desktop-commander trên BARACK
+// (06/08/2026) — KHÔNG bị chặn bot khi dùng Puppeteer thật (khác FPT).
+// Card thật dùng class ".product-card" — field lấy qua attribute/class rất
+// sạch (không cần regex đoán như MBW): a[sku], h3[title], .product-brand-name,
+// .att-product-detail-latest-price/-retail-price, và icon "/icon/CPU|GPU|RAM|
+// SSD|weight|Screen-Size.svg" + <span> liền sau. "413 sản phẩm" gồm 1 carousel
+// "Ưu đãi Laptop nổi bật" (~15-18 SP, không có spec chips, giữ nguyên field
+// rỗng — sẽ tự có specs qua enrichment Part# như các dealer khác) + lưới chính
+// load qua nút "Xem thêm sản phẩm" (không phải nút "Xem thêm" filter sidebar
+// hay "Xem thêm nội dung" phần tin tức — phải match text CHÍNH XÁC).
+const PV_URL = 'https://phongvu.vn/c/laptop';
 
 // FIX v3.4.9 [REVERT BUG15/v3.4.6]: v3.4.6 route CPS qua Cloudflare Worker
 // proxy để test giả thuyết "site chặn IP runner" — KẾT QUẢ: không chỉ không
@@ -1017,6 +1029,113 @@ async function scrapeMBW(page) {
     });
     return out;
   }, 'https://www.thegioididong.com');
+}
+
+// ── SCRAPER — Phong Vu (PV) ───────────────────────────────
+// Trang tổng /c/laptop, KHÔNG per-brand (giống MBW). Toàn bộ 6 field spec
+// (CPU/RAM/Storage/Screen/GPU/Weight) đã có SẴN trên listing card qua icon
+// + <span> liền sau — KHÔNG cần enrichSpecs()/detail page như FPT/CPS.
+const PV_MAX_CLICKS = 20; // thực tế ~10-11 click cho 413 SP (batch ~40/click) — cap gấp đôi làm lưới an toàn
+async function scrapePV(page) {
+  console.log('  [PV] Trang tổng /c/laptop');
+  try {
+    await page.goto(PV_URL, { waitUntil: 'networkidle2', timeout: 60000 });
+  } catch(e) {
+    console.log(`    ⚠ Load failed: ${e.message.substring(0,60)}`);
+    return [];
+  }
+  await sleep(2000);
+
+  // Load-more: match CHÍNH XÁC text "Xem thêm sản phẩm" (phân biệt với nút
+  // "Xem thêm" của filter sidebar Thương hiệu/RAM/SSD và "Xem thêm nội dung"
+  // của phần tin tức cuối trang — cả 2 đều chứa "Xem thêm" nên .includes() sẽ
+  // bấm sai nút).
+  let clicks = 0, stagnant = 0;
+  while (clicks < PV_MAX_CLICKS) {
+    const before = await evalWithTimeout(page.evaluate(() =>
+      document.querySelectorAll('.product-card').length
+    ), 8000, 0);
+    const clicked = await evalWithTimeout(page.evaluate(() => {
+      const els = [...document.querySelectorAll('div,a,button')].filter(el =>
+        el.textContent.trim() === 'Xem thêm sản phẩm'
+      );
+      const target = els[els.length - 1] || els[0];
+      if (!target || target.offsetParent === null) return false;
+      target.scrollIntoView({ block: 'center' });
+      target.click();
+      return true;
+    }), 10000, false);
+    if (!clicked) break;
+    await sleep(2200);
+    const after = await evalWithTimeout(page.evaluate(() =>
+      document.querySelectorAll('.product-card').length
+    ), 8000, before);
+    clicks++;
+    if (after === before) {
+      stagnant++;
+      if (stagnant >= 2) { console.log('    ⚠ Load-more không tăng SP 2 lần liên tiếp — dừng'); break; }
+    } else stagnant = 0;
+  }
+  if (clicks >= PV_MAX_CLICKS) console.log(`    ⚠ Đạt giới hạn ${PV_MAX_CLICKS} lần "Xem thêm sản phẩm" — dừng`);
+  if (clicks) console.log(`    → "Xem thêm sản phẩm": ${clicks} lần`);
+
+  const products = await evalWithTimeout(page.evaluate((BASE) => {
+    const out  = [];
+    const seen = new Set();
+    document.querySelectorAll('.product-card').forEach(card => {
+      const a = card.querySelector('a[sku]');
+      if (!a) return;
+      const sku = a.getAttribute('sku');
+      if (!sku || seen.has(sku)) return;
+      seen.add(sku);
+      let link = a.getAttribute('href') || '';
+      if (!link.startsWith('http')) link = BASE + link;
+      const name = card.querySelector('h3[title]')?.getAttribute('title') || '';
+      if (!name || name.length < 5) return;
+      const brand = card.querySelector('.product-brand-name a')?.textContent?.trim() || '';
+
+      // Giá: latest-price luôn có. retail-price CHỈ xuất hiện khi có giảm giá
+      // — không có nghĩa là SP không giảm giá, org=sale (đúng theo rule Phuc).
+      const salePrice = parseInt((card.querySelector('.att-product-detail-latest-price')?.textContent||'').replace(/\D/g,'')) || 0;
+      const origEl = card.querySelector('.att-product-detail-retail-price');
+      const origPrice = origEl ? (parseInt(origEl.textContent.replace(/\D/g,'')) || salePrice) : salePrice;
+      const discount = origEl ? (origEl.parentElement.querySelector('[color="red"]')?.textContent.trim() || '') : '';
+
+      // Spec: icon src chứa keyword + <span> liền sau trong cùng div wrapper.
+      // Carousel "Ưu đãi Laptop nổi bật" (~15-18 SP) không có block icon này
+      // → 6 field trả về rỗng, giữ nguyên SP (không loại bỏ) — sẽ có specs
+      // qua enrichment Part# giống các dealer khác.
+      const getSpec = (kw) => {
+        const img = [...card.querySelectorAll('img[src*="/icon/"]')].find(i =>
+          (i.getAttribute('src')||'').toLowerCase().includes(kw.toLowerCase())
+        );
+        return img && img.nextElementSibling ? img.nextElementSibling.textContent.trim() : '';
+      };
+      const cpu = getSpec('CPU'), gpu = getSpec('GPU'), ram = getSpec('RAM'),
+            storage = getSpec('SSD'), weight = getSpec('weight'), screen = getSpec('Screen');
+
+      // Stock status: CHƯA thấy mẫu SP hết hàng thật trong lúc dò (06/08/2026)
+      // — giữ safety net text-based giống CPS/MBW, chưa xác nhận được text
+      // OOS thật của PV. Theo dõi log lần chạy đầu để biết có cần chỉnh không.
+      const cardText = card.innerText || '';
+      let pvStatus;
+      if (/tạm hết hàng|hết hàng|out of stock/i.test(cardText)) pvStatus = 'Tạm hết hàng';
+      else if (/ngừng kinh doanh|ngừng bán/i.test(cardText)) pvStatus = 'Ngừng KD';
+      else if (!salePrice && !origPrice) pvStatus = 'Chưa rõ';
+      else pvStatus = 'Còn hàng';
+
+      out.push({
+        dealer: 'Phong Vu', name, brand,
+        cpu, ram, storage, screen, gpu, weight,
+        origPrice, salePrice, discount, sold: '', rating: '', link,
+        stockStatus: pvStatus,
+      });
+    });
+    return out;
+  }, 'https://phongvu.vn'), 15000, []);
+
+  console.log(`    → ${products.length} SP`);
+  return products;
 }
 
 // ── SCRAPER 2 — FPT Retail ────────────────────────────────
@@ -1889,6 +2008,32 @@ async function runScrapeMode() {
       }
     } else {
       console.log('\n═══ MBW ═══ (skip — không trong SCRAPE_DEALERS)');
+    }
+
+    // ── PV (Phong Vu) ── scrape 1 lần từ trang tổng /c/laptop
+    if (SCRAPE_DEALERS.has('PV')) {
+      console.log('\n═══ Phong Vu ═══');
+      try {
+        const pagePV = await browser.newPage();
+        await pagePV.setViewport({ width: 1280, height: 1200 });
+        await pagePV.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
+        const pvProducts = await scrapePV(pagePV);
+        console.log(`    → ${pvProducts.length} SP tổng PV`);
+        allProducts.push(...pvProducts);
+        await pagePV.close();
+
+        const todayLinksPV = new Set(pvProducts.map(p => p.link));
+        const missingCandidatesPV = await getMissingCandidates(sheets, 'Phong Vu', todayLinksPV);
+        if (missingCandidatesPV.length > 0) {
+          console.log(`    🔍 ${missingCandidatesPV.length} SP PV mất khỏi listing hôm nay — đang kiểm tra...`);
+          const missingCheckedPV = await checkMissingProducts(browser, 'Phong Vu', missingCandidatesPV, specCache);
+          allProducts.push(...missingCheckedPV);
+        }
+      } catch (e) {
+        console.log(`    💥 PV lỗi: ${e.message.substring(0,100)}`);
+      }
+    } else {
+      console.log('\n═══ Phong Vu ═══ (skip — không trong SCRAPE_DEALERS)');
     }
 
     // ── FPT ──
