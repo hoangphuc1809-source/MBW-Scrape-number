@@ -1227,7 +1227,7 @@ function renderAllSkus() {
   // thead sticky phải nằm NGAY DƯỚI filter-bar (cũng sticky top:0) — đo
   // chiều cao thật của filter-bar lúc render để tránh 2 lớp sticky đè lên
   // nhau (filter-bar có thể xuống 2 dòng trên màn hình hẹp, không hardcode).
-  const filterBarEl = document.querySelector('.filter-bar');
+  const filterBarEl = document.querySelector('#sec-allskus .filter-bar');
   const stickyTop = filterBarEl ? filterBarEl.offsetHeight : 0;
   const thStyle = `background:var(--card);border-bottom:2px solid var(--border);font-weight:700;font-size:11px;cursor:pointer;${NW};padding:8px 6px;position:sticky;top:${stickyTop}px;z-index:2`;
 
