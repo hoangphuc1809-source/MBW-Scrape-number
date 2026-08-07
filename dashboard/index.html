@@ -1843,6 +1843,24 @@ function normPN(s) {
   return (s || '').toString().toLowerCase().replace(/[\s\-_]+/g, '');
 }
 
+// Chuẩn hoá chữ hoa/thường tên hãng — data từ nhiều dealer/nhiều lần scrape
+// khác nhau ("HP" vs "Hp", "MacBook" vs "Macbook") gây trùng lặp trong dropdown
+// Vendor. Map cứng theo tên hãng đã biết; hãng lạ giữ nguyên dạng gặp đầu tiên
+// (viết Hoa chữ cái đầu mỗi từ) để tránh 2 dòng khác nhau cho cùng 1 hãng.
+const KNOWN_BRANDS = ['ASUS','MSI','HP','LG','Dell','Acer','Lenovo','Apple',
+  'MacBook','Samsung','Gigabyte','Huawei','Xiaomi','Microsoft'];
+const _brandCanonCache = {};
+function normBrand(b) {
+  const raw = (b || '').trim();
+  if (!raw) return '';
+  const key = raw.toLowerCase();
+  if (_brandCanonCache[key]) return _brandCanonCache[key];
+  const known = KNOWN_BRANDS.find(k => k.toLowerCase() === key);
+  const canon = known || (raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase());
+  _brandCanonCache[key] = canon;
+  return canon;
+}
+
 function buildDerivedData(rows) {
   // rows[0] = header, rows[1..] = data
   // Find the 2 most recent unique dates
@@ -1909,7 +1927,7 @@ function buildDerivedData(rows) {
       prevPrice:   prevPromo,
       dealer:      r[2]?.trim()  || '',   // col C: Dealers
       model:       model,                  // col D: SKU
-      brand:       r[9]?.trim()  || '',   // col J: Vendor
+      brand:       normBrand(r[9]),        // col J: Vendor (chuẩn hoá chữ hoa/thường)
       seriesGroup: seriesGroup,            // col K: Series Group (Gaming / B&P)
       segment:     r[11]?.trim() || '',   // col L: Segment (Vivobook/TUF/Katana...)
       cpuFamily:   r[12]?.trim() || '',   // col M: CPU Segment
@@ -1991,7 +2009,7 @@ function buildDerivedData(rows) {
       kmPrice:     promo,
       dealer:      r[2]?.trim()  || '',
       model,
-      brand:       r[9]?.trim()  || '',
+      brand:       normBrand(r[9]),
       seriesGroup,
       gamingGroup: seriesGroup,
       segment:     r[11]?.trim() || '',
@@ -3350,7 +3368,7 @@ function miRenderWeekly(container) {
       const key = dealer + '|' + (pn || model.toLowerCase());
       const price = parsePrice(row[5]) || parsePrice(row[4]);
       if (!price) continue;
-      if (!store[key]) store[key] = { prices:[], model, dealer, pn, brand: row[9]||'' };
+      if (!store[key]) store[key] = { prices:[], model, dealer, pn, brand: normBrand(row[9]) };
       store[key].prices.push(price);
     }
   };
