@@ -39,7 +39,7 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-se
 .tab.active{color:var(--accent);border-color:var(--accent)}
 
 /* MAIN */
-.main{padding:16px 20px;max-width:1600px;margin:0 auto}
+.main{padding:16px 20px;max-width:1900px;margin:0 auto}
 #mainWrapper.all-prices-mode{max-width:100vw !important;width:100% !important;padding:12px 8px !important;box-sizing:border-box;min-height:calc(100vh - 100px);}
 html,body{height:100%;}
 #mainWrapper.all-prices-mode #sec-all{display:flex;flex-direction:column;min-height:calc(100vh - 130px);}
@@ -117,14 +117,14 @@ html, body { height:100%; }
 .rank-hdr h3{font-size:13px;font-weight:700}
 .rank-hdr small{font-size:11px;opacity:.75}
 .tbl-wrap{overflow-x:auto}
-/* All SKUs: overflow-x:auto không kèm overflow-y khiến trình duyệt tự suy
-   overflow-y:auto (CSS spec) → .tbl-wrap trở thành scroll-container riêng,
-   nhưng vì không có max-height nên không có gì để "scroll" bên trong nó →
-   position:sticky trên thead mất tác dụng, header cuộn mất theo trang.
-   Fix: cho khung 1 chiều cao cố định + overflow-y:auto THẬT — thead sticky
-   sẽ bám đúng trong khung này. Banner đỏ "All SKUs — N products" nằm NGOÀI
-   khung này (sibling phía trên) nên luôn hiển thị, không cần sticky riêng. */
-#allSkusContainer .tbl-wrap{max-height:70vh;overflow-y:auto}
+/* All SKUs: cuộn theo TRANG (không đóng khung riêng) để giữ đúng cảm giác
+   zoom/tỷ lệ tự nhiên trên mobile — .tbl-wrap mặc định overflow-x:auto
+   không kèm overflow-y khiến browser tự suy overflow-y:auto (CSS spec),
+   biến nó thành scroll-container riêng làm position:sticky trên thead vô
+   tác dụng. Ghi đè overflow-x:visible CHỈ cho All SKUs (không đụng .tbl-wrap
+   ở nơi khác) để loại bỏ scroll-container này — sticky sẽ bám đúng theo
+   cuộn trang, giống filter bar đang hoạt động đúng sẵn. */
+#allSkusContainer .tbl-wrap{overflow-x:visible}
 table{width:100%;border-collapse:collapse}
 thead th{background:#f9fafb;padding:8px 11px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
 thead th:hover{background:#f0f2f5;color:var(--text)}
@@ -645,7 +645,7 @@ tbody tr:hover{background:#fafafa}
       ✕ Reset
     </button>
   </div>
-  <div id="allSkusContainer" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+  <div id="allSkusContainer">
     <table id="allSkusTable" style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr id="allSkusHead"></tr></thead>
       <tbody id="allSkusBody"></tbody>
@@ -1223,7 +1223,12 @@ function renderAllSkus() {
 
   // Sort indicator helper
   const si = col => _asSortCol===col ? (_asSortDir===1?' ↑':' ↓') : '';
-  const thStyle = `background:var(--card);border-bottom:2px solid var(--border);font-weight:700;font-size:11px;cursor:pointer;${NW};padding:8px 6px;position:sticky;top:0;z-index:2`;
+  // thead sticky phải nằm NGAY DƯỚI filter-bar (cũng sticky top:0) — đo
+  // chiều cao thật của filter-bar lúc render để tránh 2 lớp sticky đè lên
+  // nhau (filter-bar có thể xuống 2 dòng trên màn hình hẹp, không hardcode).
+  const filterBarEl = document.querySelector('.filter-bar');
+  const stickyTop = filterBarEl ? filterBarEl.offsetHeight : 0;
+  const thStyle = `background:var(--card);border-bottom:2px solid var(--border);font-weight:700;font-size:11px;cursor:pointer;${NW};padding:8px 6px;position:sticky;top:${stickyTop}px;z-index:2`;
 
   // Narrow col width for CPU/VGA/RAM/SSD
   const NARROW = 'width:72px;min-width:72px;max-width:72px';
@@ -1342,7 +1347,7 @@ function renderAllSkus() {
             ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px" title="Không thấy trong lần scrape gần nhất — có thể đã ngừng kinh doanh / hết hàng. Giá hiển thị là giá cũ nhất được ghi nhận.">⚠ No data since ${p.latestDate}</span>` : ''}
             ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">${discPct}% off SRP</span>` : ''}
           </td>
-          <td style="${L};padding:5px 4px;font-size:11px;${NW}">${p.brand||'–'}</td>
+          <td style="${L};padding:5px 4px;font-size:11px;${NW};color:${brandColor(p.brand)};font-weight:600">${p.brand||'–'}</td>
           <td style="${L};padding:5px 4px;font-size:11px;line-height:1.3;vertical-align:top;word-break:break-word">${cpuLabel}</td>
           <td style="${L};padding:5px 4px;vertical-align:top">${gpuLabel}</td>
           <td style="${C};padding:5px 4px;font-size:11px;${NW};vertical-align:top">${ramTxt}</td>
@@ -1858,6 +1863,20 @@ function normPN(s) {
 // khác nhau ("HP" vs "Hp", "MacBook" vs "Macbook") gây trùng lặp trong dropdown
 // Vendor. Map cứng theo tên hãng đã biết; hãng lạ giữ nguyên dạng gặp đầu tiên
 // (viết Hoa chữ cái đầu mỗi từ) để tránh 2 dòng khác nhau cho cùng 1 hãng.
+// Màu theo hãng cho cột Brand (rule Phuc, 07/08/2026) — hãng không có
+// trong map giữ màu chữ mặc định (var(--text2)).
+const BRAND_COLORS = {
+  'ASUS':     '#0d9488', // Cyan/Teal
+  'Lenovo':   '#f97316', // Cam
+  'Acer':     '#84cc16', // Xanh lá nhạt (Olive/Lime)
+  'MSI':      '#dc2626', // Đỏ
+  'HP':       '#2563eb', // Xanh dương
+  'Gigabyte': '#9ca3af', // Xám nhạt
+};
+function brandColor(b) {
+  return BRAND_COLORS[normBrand(b)] || 'var(--text2)';
+}
+
 const KNOWN_BRANDS = ['ASUS','MSI','HP','LG','Dell','Acer','Lenovo','Apple',
   'MacBook','Samsung','Gigabyte','Huawei','Xiaomi','Microsoft'];
 const _brandCanonCache = {};
