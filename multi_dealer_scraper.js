@@ -1190,9 +1190,19 @@ async function scrapeFPT(page, brand, specCache, startTime) {
     await sleep(2000);
   }
 
+  // Đọc tổng số "xxx kết quả" từ header trang để đối chiếu cuối cùng — phát
+  // hiện sớm nếu click-loop dừng sớm hơn thực tế (05/08/2026: 1 lần chạy chỉ
+  // ra 288/445 dù test tay đạt 445/445 — nghi máy bận/mạng chậm khiến nút
+  // "Xem thêm" chưa kịp render trong khoảng sleep cố định).
+  const headerTotal = await page.evaluate(() => {
+    const m = (document.body.innerText || '').match(/(\d+)\s*kết quả/i);
+    return m ? parseInt(m[1], 10) : null;
+  }).catch(() => null);
+
   // FPT Shop giới hạn ~15-20 SP/trang qua lazy-load cuộn — cần click nút
   // "Xem thêm sản phẩm" để load hết toàn bộ danh mục (giống MBW/CPS).
   let clicks = 0;
+  let noButtonRetries = 0;
   while (true) {
     const clicked = await page.evaluate(() => {
       // FPT button: "Xem thêm N kết quả" — match by text pattern /xem thêm \d+ kết quả/i
@@ -1226,7 +1236,21 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       }
       return false;
     }).catch(() => false);
-    if (!clicked) break;
+    if (!clicked) {
+      // Không tìm thấy nút — có thể DOM chưa kịp render (máy bận/mạng chậm)
+      // thay vì thực sự hết SP. Retry tối đa 2 lần với chờ lâu hơn trước khi
+      // kết luận xong, thay vì break ngay (nguyên nhân nghi vấn của vụ 288/445).
+      if (noButtonRetries < 2) {
+        noButtonRetries++;
+        console.log(`    ⏳ Không thấy nút "Xem thêm" — thử lại lần ${noButtonRetries}/2 (chờ lâu hơn)`);
+        await sleep(4000);
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {});
+        await sleep(2000);
+        continue;
+      }
+      break;
+    }
+    noButtonRetries = 0; // reset sau khi click thành công
     clicks++;
     await sleep(2000);
     // Simple scroll: KHÔNG dùng scrollToBottom() vì CDP timeout trên trang 400+ products
@@ -1299,6 +1323,9 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   }, 'https://fptshop.com.vn');
 
   console.log(`    → ${products.length} SP`);
+  if (headerTotal && products.length < headerTotal * 0.9) {
+    console.log(`    ⚠️ CẢNH BÁO: web nói "${headerTotal} kết quả" nhưng chỉ lấy được ${products.length} SP (${Math.round(products.length/headerTotal*100)}%) — có thể máy bận/mạng chậm, hoặc site đổi cấu trúc nút "Xem thêm". Cần theo dõi lần chạy sau.`);
+  }
   if (products.length === 0) {
     // Chẩn đoán: trang trả 0 SP có thể do (a) bị chặn/redirect sang trang
     // block, hoặc (b) selector "div.cardInfo" đã đổi. Log title + URL + đoạn
