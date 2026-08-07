@@ -1,10 +1,10 @@
-[2026-08-07T02:12:06.394Z] --- Bắt đầu reenrich-dashboard-csv.js ---
-[2026-08-07T02:12:06.628Z] Đọc data.csv hiện có: 23084 dòng.
-[2026-08-07T02:12:06.628Z] Đọc Part # (FORMULA render)...
-[2026-08-07T02:12:07.338Z]   10282 dòng
-[2026-08-07T02:12:07.338Z] Đọc Segment (FORMULA render)...
-[2026-08-07T02:12:07.547Z]   120 dòng
-[2026-08-07T02:12:07.548Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-08-07T02:12:07.572Z] Part# map: 3542 SKU
-[2026-08-07T02:12:07.686Z] Re-enrich xong: 22328/23084 dòng khớp Part # (loại 0 SP EOL).
-[2026-08-07T02:12:07.874Z] ✅ Đã ghi lại /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 23085 dòng (kể cả header), 7803 KB
+[2026-08-07T03:52:42.804Z] --- Bắt đầu reenrich-dashboard-csv.js ---
+[2026-08-07T03:52:43.130Z] Đọc data.csv hiện có: 23084 dòng.
+[2026-08-07T03:52:43.131Z] Đọc Part # (FORMULA render)...
+[2026-08-07T03:52:43.715Z]   10278 dòng
+[2026-08-07T03:52:43.715Z] Đọc Segment (FORMULA render)...
+[2026-08-07T03:52:44.176Z]   120 dòng
+[2026-08-07T03:52:44.177Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-08-07T03:52:44.215Z] Part# map: 3956 SKU
+[2026-08-07T03:52:44.362Z] Re-enrich xong: 23016/23084 dòng khớp Part # (loại 0 SP EOL).
+[2026-08-07T03:52:44.585Z] ✅ Đã ghi lại /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 23085 dòng (kể cả header), 7832 KB
