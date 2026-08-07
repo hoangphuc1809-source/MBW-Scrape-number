@@ -125,6 +125,9 @@ html, body { height:100%; }
    ở nơi khác) để loại bỏ scroll-container này — sticky sẽ bám đúng theo
    cuộn trang, giống filter bar đang hoạt động đúng sẵn. */
 #allSkusContainer .tbl-wrap{overflow-x:visible}
+/* .rank-wrap{overflow:hidden} (dùng để bo góc) CŨNG tạo scroll-container
+   chặn sticky giống .tbl-wrap trước đó — bỏ luôn overflow ở đây cho All SKUs. */
+#allSkusContainer .rank-wrap{overflow:visible}
 table{width:100%;border-collapse:collapse}
 thead th{background:#f9fafb;padding:8px 11px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
 thead th:hover{background:#f0f2f5;color:var(--text)}
