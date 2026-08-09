@@ -1227,12 +1227,16 @@ function renderAllSkus() {
 
   // Sort indicator helper
   const si = col => _asSortCol===col ? (_asSortDir===1?' ↑':' ↓') : '';
-  // thead sticky phải nằm NGAY DƯỚI filter-bar (cũng sticky top:0) — đo
-  // chiều cao thật của filter-bar lúc render để tránh 2 lớp sticky đè lên
-  // nhau (filter-bar có thể xuống 2 dòng trên màn hình hẹp, không hardcode).
-  const filterBarEl = document.querySelector('#sec-allskus .filter-bar');
-  const stickyTop = filterBarEl ? filterBarEl.offsetHeight : 0;
-  const thStyle = `background:var(--card);border-bottom:2px solid var(--border);font-weight:700;font-size:11px;cursor:pointer;${NW};padding:8px 6px;position:sticky;top:${stickyTop}px;z-index:2`;
+  // thead sticky phải nằm NGAY DƯỚI filter-bar (cũng sticky top:0).
+  // 09/08/2026: KHÔNG đo offsetHeight ở đây nữa — đo 1 lần lúc render này
+  // dễ bị đua với TomSelect (filter-bar còn là <select multiple> thô, cao
+  // hơn nhiều so với lúc TomSelect đã dựng xong dạng chip gọn), và giá trị
+  // px cứng đó cũng không tự cập nhật khi filter-bar đổi cao (resize/zoom
+  // làm filter-bar xuống 2 dòng) → header bị "kẹt" lệch xuống giữa bảng.
+  // Dùng biến CSS --as-sticky-top do ResizeObserver cập nhật liên tục
+  // (xem script "AS-STICKY-SYNC" phía dưới) để offset luôn đúng bất kể
+  // TomSelect init xong lúc nào hay filter-bar đổi chiều cao lúc nào.
+  const thStyle = `background:var(--card);border-bottom:2px solid var(--border);font-weight:700;font-size:11px;cursor:pointer;${NW};padding:8px 6px;position:sticky;top:var(--as-sticky-top,0px);z-index:2`;
 
   // Narrow col width for CPU/VGA/RAM/SSD
   const NARROW = 'width:72px;min-width:72px;max-width:72px';
@@ -2618,6 +2622,21 @@ async function checkLatestRun() {
   document.addEventListener('DOMContentLoaded', boot);
 })();
 
+// ── AS-STICKY-SYNC ───────────────────────────────────────────────
+// 09/08/2026: giữ header All SKUs (position:sticky;top:var(--as-sticky-top))
+// luôn bám đúng mép dưới filter-bar. Không đo 1 lần rồi hardcode px (dễ đo
+// trúng lúc filter-bar còn là <select multiple> thô, cao hơn — TomSelect
+// build xong dạng chip mới thu nhỏ lại — làm header bị kẹt lệch xuống giữa
+// bảng). ResizeObserver tự cập nhật bất kể TomSelect init xong lúc nào,
+// hay filter-bar đổi cao do resize/zoom/wrap 2 dòng.
+(function () {
+  const bar = document.querySelector('#sec-allskus .filter-bar');
+  if (!bar) return;
+  const apply = () => document.documentElement.style.setProperty('--as-sticky-top', bar.offsetHeight + 'px');
+  apply();
+  if ('ResizeObserver' in window) new ResizeObserver(apply).observe(bar);
+  else window.addEventListener('resize', apply);
+})();
 
 
 // ═══════════════════════════════════════════════════
