@@ -1348,7 +1348,7 @@ function renderAllSkus() {
         return `<tr style="${rowHighlight}">
           <td style="${C};padding:5px 4px;color:var(--text2);font-size:11px">${i+1}</td>
           <td style="${L};padding:5px 6px">
-            <div class="mname" style="font-size:12px;line-height:1.35">${p.model}${p.focusModel ? ' <span class="dlr dlr-key" style="font-size:9px;padding:1px 4px">⭐ Key Model</span>' : ''}</div>
+            <div class="mname" style="font-size:12px;line-height:1.35;max-width:440px;overflow-wrap:anywhere;word-break:break-word">${p.model}${p.focusModel ? ' <span class="dlr dlr-key" style="font-size:9px;padding:1px 4px">⭐ Key Model</span>' : ''}</div>
             <span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span>
             ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px" title="Không thấy trong lần scrape gần nhất — có thể đã ngừng kinh doanh / hết hàng. Giá hiển thị là giá cũ nhất được ghi nhận.">⚠ No data since ${p.latestDate}</span>` : ''}
             ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">${discPct}% off SRP</span>` : ''}
