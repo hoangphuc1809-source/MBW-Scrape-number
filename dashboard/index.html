@@ -155,6 +155,27 @@ tbody tr:hover{background:#fafafa}
   .alert-grid{grid-template-columns:1fr}
   .kpi-row{grid-template-columns:repeat(2,1fr)}
   .filter-bar{gap:6px}
+  /* 09/08/2026: bang All SKUs co ~11 cot, rong toi thieu ~900-1300px du
+     da rut gon cot Model — man hinh dien thoai (~380-430px) khong co cach
+     nao chua het. #allSkusContainer .tbl-wrap dung overflow-x:visible o
+     desktop (de sticky header bam theo scroll ca TRANG cho danh sach
+     1800+ dong), nhung tren mobile phan du bi tran thang ra ca TRANG web
+     (khong con la cuon rieng trong khung) — thay vi chi bang bi tran.
+     Tren man hinh hep, dung han che lai: cho bang tu cuon rieng (ca 2
+     chieu) trong 1 khung cao gioi han, sticky header luc nay bam theo
+     khung nay thay vi ca trang — giong cach #allPriceTable dang lam. */
+  #allSkusContainer .tbl-wrap{
+    overflow-x:auto;
+    overflow-y:auto;
+    max-height:75vh;
+    -webkit-overflow-scrolling:touch;
+    border-radius:var(--radius);
+  }
+  /* thead gio sticky theo KHUNG cuon rieng (.tbl-wrap o tren), khong con
+     theo trang nua — offset phai la 0, khong phai chieu cao filter-bar
+     (filter-bar nam ngoai khung nay, khong lien quan he truc toa do cuc
+     bo cua no). !important vi --as-sticky-top dang set qua inline style. */
+  #allSkusContainer thead th{ top:0 !important; }
 }
 
 /* ── LOGIN OVERLAY ── */
