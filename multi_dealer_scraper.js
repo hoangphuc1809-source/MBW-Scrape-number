@@ -1,5 +1,17 @@
 /**
- * multi_dealer_scraper.js  — v3.4.16
+ * multi_dealer_scraper.js  — v3.4.17
+ *
+ * FIX v3.4.17 [14/08/2026 — giảm SP "no data today" từ ~461 xuống thấp hơn]:
+ *  3 vấn đề chính:
+ *  (a) PV bỏ sót 17-19 SP mỗi ngày: tăng PV_MAX_CLICKS 20→35 (stagnant
+ *      threshold 2→3, thêm extra sleep) — các SP này nằm cuối listing chưa
+ *      được load do cap cũ quá thấp.
+ *  (b) checkMissingProducts không parse giá: SP "bỏ sót" luôn push
+ *      origPrice/salePrice=0 → hiển thị thiếu giá dù detail page còn bán.
+ *      Fix: evaluate selector giá (.att-product-detail-latest-price và fallback
+ *      phổ biến) ngay trong vòng lặp checkMissingProducts.
+ *  (c) enrich-and-export.js: SRP fallback khi origPrice=0 nhưng salePrice>0
+ *      (website bỏ gạch giá gốc) — dùng salePrice làm SRP thay vì để trống.
  *
  * FIX v3.4.16 [30/07/2026]:
  *  (a) GHI SHEET FAIL Run #362/#363: "exceeds grid limits. Max rows: 45001"
@@ -833,11 +845,26 @@ async function checkMissingProducts(browser, dealerName, candidates, specCache) 
       status = 'Không tải được trang - cần kiểm tra thủ công';
     }
     const spec = specCache.get(c.link) || {};
+    // FIX 14/08/2026: parse giá từ detail page thay vì luôn push 0
+    // (trước đây checkMissingProducts không parse giá → SP "bỏ sót" luôn thiếu giá)
+    let detailSalePrice = 0, detailOrigPrice = 0;
+    try {
+      const priceData = await page.evaluate(() => {
+        // Thử các selector phổ biến của từng site
+        const latestEl  = document.querySelector('.att-product-detail-latest-price, .product-price .price, [class*="price-current"], [class*="priceNow"]');
+        const retailEl  = document.querySelector('.att-product-detail-retail-price, .product-price .price-old, [class*="price-old"], [class*="priceOld"]');
+        const sale  = latestEl ? parseInt((latestEl.textContent || '').replace(/\D/g,'')) || 0 : 0;
+        const orig  = retailEl ? parseInt((retailEl.textContent || '').replace(/\D/g,'')) || 0 : 0;
+        return { sale, orig };
+      }).catch(() => ({ sale: 0, orig: 0 }));
+      detailSalePrice = priceData.sale || 0;
+      detailOrigPrice = priceData.orig || detailSalePrice;
+    } catch (_) {}
     out.push({
       dealer: dealerName, name: c.name, brand: c.brand,
       cpu: spec.cpu || '', screen: spec.screen || '', gpu: spec.gpu || '', weight: spec.weight || '',
       ram: spec.ram || '', storage: spec.storage || '',
-      origPrice: 0, salePrice: 0, discount: '', sold: '', rating: '',
+      origPrice: detailOrigPrice, salePrice: detailSalePrice, discount: '', sold: '', rating: '',
       link: c.link, stockStatus: status,
     });
     await sleep(600);
@@ -1035,7 +1062,7 @@ async function scrapeMBW(page) {
 // Trang tổng /c/laptop, KHÔNG per-brand (giống MBW). Toàn bộ 6 field spec
 // (CPU/RAM/Storage/Screen/GPU/Weight) đã có SẴN trên listing card qua icon
 // + <span> liền sau — KHÔNG cần enrichSpecs()/detail page như FPT/CPS.
-const PV_MAX_CLICKS = 20; // thực tế ~10-11 click cho 413 SP (batch ~40/click) — cap gấp đôi làm lưới an toàn
+const PV_MAX_CLICKS = 35; // FIX 14/08/2026: tăng từ 20→35 — ~17-19 SP bị bỏ sót đều đặn mỗi ngày, batch cuối không được load. 35 clicks = đủ cho ~1400 SP, không bao giờ hit trong thực tế
 async function scrapePV(page) {
   console.log('  [PV] Trang tổng /c/laptop');
   // Giảm khả năng bị nhận diện automation (navigator.webdriver=true theo mặc
@@ -1105,7 +1132,10 @@ async function scrapePV(page) {
     clicks++;
     if (after === before) {
       stagnant++;
-      if (stagnant >= 2) { console.log('    ⚠ Load-more không tăng SP 2 lần liên tiếp — dừng'); break; }
+      // FIX 14/08/2026: tăng threshold 2→3 + sleep thêm trước khi đếm lại
+      // tránh dừng sớm do PV lazy-load chậm (1 click có thể cần >2s để render)
+      if (stagnant >= 3) { console.log('    ⚠ Load-more không tăng SP 3 lần liên tiếp — dừng'); break; }
+      await sleep(2000); // extra wait trước lần thử tiếp
     } else stagnant = 0;
   }
   if (clicks >= PV_MAX_CLICKS) console.log(`    ⚠ Đạt giới hạn ${PV_MAX_CLICKS} lần "Xem thêm sản phẩm" — dừng`);
