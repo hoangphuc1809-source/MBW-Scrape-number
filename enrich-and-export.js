@@ -259,7 +259,12 @@ async function main() {
     const partNumber = (info && info.partNumber) || '';
     newRows.push([
       dateStr, timeStr, p.dealer, p.name,
-      p.origPrice || '', p.salePrice || '', p.discount || '',
+      // FIX 14/08/2026: SRP fallback — khi website bỏ gạch giá gốc, origPrice=0
+      // nhưng salePrice vẫn có → dùng salePrice làm SRP để không để trống cột SRP.
+      // origPrice=0 && salePrice>0: website bán 1 giá, không có KM hiển thị.
+      const srp   = p.origPrice || p.salePrice || '';
+      const promo = p.salePrice || '';
+      srp, promo, p.discount || '',
       p.sold || '', p.rating || '',
       (info && info.vendor) || p.brand || '',
       (info && info.seriesGroup) || '',
