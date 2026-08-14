@@ -1186,6 +1186,10 @@ function renderAllSkus() {
         return { today: 0, prev: p.todayPrice||p.kmPrice||0, prev2: p.prevPrice||0 };
       } else if (p.latestDate === prev2Date) {
         return { today: 0, prev: 0, prev2: p.todayPrice||p.kmPrice||0 };
+      } else {
+        // FIX 14/08/2026: stale cũ hơn prev2 → ẩn giá khỏi TẤT CẢ cột giá.
+        // Trước đây: giá cũ bị đặt vào cột "today" → user thấy giá cũ ở header hôm nay (misleading).
+        return { today: 0, prev: 0, prev2: 0 };
       }
     }
     return { today: p.todayPrice||p.kmPrice||0, prev: p.prevPrice||0, prev2: p.prev2Price||0 };
@@ -1337,11 +1341,12 @@ function renderAllSkus() {
             prev2 = p.todayPrice || p.kmPrice || 0;
             prev3 = p.prevPrice  || 0;
           } else {
-            // Older than prev2 or same as today — show in today col as-is
-            today = p.todayPrice || p.kmPrice || 0;
-            prev  = p.prevPrice  || 0;
-            prev2 = p.prev2Price || 0;
-            prev3 = p.prev3Price || 0;
+            // FIX 14/08/2026: stale cũ hơn prev2 → tất cả cột giá = 0 (hiện "–").
+            // Trước đây: giá cũ bị đẩy vào cột today → misleading (giá 07/08 hiện dưới header 14/08).
+            today = 0;
+            prev  = 0;
+            prev2 = 0;
+            prev3 = 0;
           }
         } else {
           today = p.todayPrice || p.kmPrice || 0;
