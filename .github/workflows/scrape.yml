@@ -1,13 +1,23 @@
 name: Multi-Dealer Laptop Scraper
 
 on:
-  # 30/07/2026: Bo han GitHub schedule: cron cua GitHub KHONG dam bao dung
-  # gio (GitHub tu nhan trong docs: "delayed during periods of high loads"),
-  # thuc te da thay tre 8 phut den gan 3 tieng cung ngay. Phuc chuyen sang
-  # dung 1 cron ben ngoai (may Phuc / cloud scheduler) goi thang API
-  # workflow_dispatch dung gio thay the. CHI DUNG 1 TRONG 2 CO CHE (schedule
-  # cua GitHub HOAC cron ben ngoai) — khong dung ca 2 cung luc de tranh trung
-  # gio gay 2 lan chay chong nhau (dung loai race condition da fix 28-29/07).
+  # 16/08/2026: QUAY LAI dung GitHub schedule (bo cron ben ngoai / bot rieng
+  # tren may MSI/BARACK - bot nay phu thuoc may phai bat + script khong loi,
+  # thuc te da fail thuong xuyen). GitHub schedule co nhuoc diem da biet: co
+  # the tre vai phut den vai gio vao gio cao diem, doi khi bi drop hang toan
+  # bo. Giam thieu bang 2 moc cron LECH NHAU vai phut cho MOI khung gio muc
+  # tieu (8h/11h/15h VN) - KHONG dung dung phut :00 (khung de bi nghen nhat
+  # theo docs GitHub) - chi can 1 trong 2 chay dung gio la du. Repo public
+  # nen Actions minutes mien phi khong gioi han, chay du 1 lan khong sao.
+  # concurrency group ben duoi da dam bao 2 lan chay gan nhau khong dung do
+  # (queue, khong chay song song - dung loai race condition da fix 28-29/07).
+  schedule:
+    - cron: '53 0 * * *'  # ~07:53 VN (truoc 8h VN)
+    - cron: '7 1 * * *'   # ~08:07 VN (sau 8h VN, du phong)
+    - cron: '55 3 * * *'  # ~10:55 VN (truoc 11h VN)
+    - cron: '9 4 * * *'   # ~11:09 VN (sau 11h VN, du phong)
+    - cron: '53 7 * * *'  # ~14:53 VN (truoc 15h VN)
+    - cron: '7 8 * * *'   # ~15:07 VN (sau 15h VN, du phong)
   workflow_dispatch:
     inputs:
       run_scrape:
@@ -38,7 +48,7 @@ jobs:
   # khi thuc su offline chi lam job do fail/timeout, khong ton tien).
   check-runners:
     name: Check may self-hosted (BARACK/MSI) online?
-    if: ${{ inputs.run_scrape }}
+    if: ${{ inputs.run_scrape || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     outputs:
@@ -84,7 +94,7 @@ jobs:
   # chay SAU KHI ca 3 job scrape da xong (needs), dam bao chi co 1 tien trinh
   # dung tuc dung vao Google Sheet tai bat ky thoi diem nao.
   scrape-mbw:
-    if: ${{ inputs.run_scrape }}
+    if: ${{ inputs.run_scrape || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -145,7 +155,7 @@ jobs:
             -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
   scrape-cps:
-    if: ${{ inputs.run_scrape }}
+    if: ${{ inputs.run_scrape || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -208,7 +218,7 @@ jobs:
   # HOAN TOAN case FPT - chuyen sang self-hosted thay vi cloud.
   scrape-pv:
     needs: check-runners
-    if: ${{ inputs.run_scrape && needs.check-runners.outputs.online == 'true' }}
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' }}
     runs-on: self-hosted
     timeout-minutes: 90
     steps:
@@ -267,7 +277,7 @@ jobs:
   # BARACK deu nhan duoc - co che du phong co chu dich, DUNG ghim may cu the.
   scrape-fpt:
     needs: check-runners
-    if: ${{ inputs.run_scrape && needs.check-runners.outputs.online == 'true' }}
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' }}
     runs-on: self-hosted
     timeout-minutes: 90
     steps:
@@ -332,7 +342,7 @@ jobs:
   scrape-fpt-online:
     name: Scrape FPT (Bright Data - fallback khi may offline)
     needs: check-runners
-    if: ${{ inputs.run_scrape && needs.check-runners.outputs.online == 'false' }}
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -390,7 +400,7 @@ jobs:
   # tien hon la doi cho hoan hao).
   write-sheet:
     needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-fpt, scrape-fpt-online]
-    if: ${{ always() && inputs.run_scrape }}
+    if: ${{ always() && (inputs.run_scrape || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
