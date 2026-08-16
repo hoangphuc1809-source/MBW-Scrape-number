@@ -1,23 +1,13 @@
 name: Multi-Dealer Laptop Scraper
 
 on:
-  # 16/08/2026: QUAY LAI dung GitHub schedule (bo cron ben ngoai / bot rieng
-  # tren may MSI/BARACK - bot nay phu thuoc may phai bat + script khong loi,
-  # thuc te da fail thuong xuyen). GitHub schedule co nhuoc diem da biet: co
-  # the tre vai phut den vai gio vao gio cao diem, doi khi bi drop hang toan
-  # bo. Giam thieu bang 2 moc cron LECH NHAU vai phut cho MOI khung gio muc
-  # tieu (8h/11h/15h VN) - KHONG dung dung phut :00 (khung de bi nghen nhat
-  # theo docs GitHub) - chi can 1 trong 2 chay dung gio la du. Repo public
-  # nen Actions minutes mien phi khong gioi han, chay du 1 lan khong sao.
-  # concurrency group ben duoi da dam bao 2 lan chay gan nhau khong dung do
-  # (queue, khong chay song song - dung loai race condition da fix 28-29/07).
-  schedule:
-    - cron: '53 0 * * *'  # ~07:53 VN (truoc 8h VN)
-    - cron: '7 1 * * *'   # ~08:07 VN (sau 8h VN, du phong)
-    - cron: '55 3 * * *'  # ~10:55 VN (truoc 11h VN)
-    - cron: '9 4 * * *'   # ~11:09 VN (sau 11h VN, du phong)
-    - cron: '53 7 * * *'  # ~14:53 VN (truoc 15h VN)
-    - cron: '7 8 * * *'   # ~15:07 VN (sau 15h VN, du phong)
+  # 16/08/2026: Bo GitHub schedule (khong tin cay - thuc te bi GitHub bo
+  # qua/tre nhieu vao gio cao diem, da test lai va van bi tre ~36 phut).
+  # Nguon trigger duy nhat gio la CRON TREN VPS RIENG (hermes-gateway, GCP
+  # e2-micro free tier, luon-on, khong phu thuoc may Windows nao) - script
+  # /home/hoang/trigger-scrape.sh goi workflow_dispatch API luc 01h/04h/08h
+  # UTC (= 8h/11h/15h VN) qua crontab. Dieu kien if cua cac job van check ca
+  # github.event_name == 'schedule' de du phong neu sau nay bat lai.
   workflow_dispatch:
     inputs:
       run_scrape:
