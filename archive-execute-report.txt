@@ -1,7 +1,7 @@
 === Archive RAW DATA (cửa sổ trượt) — THỰC THI ===
 RAW DATA giữ 15 ngày, RAW DATA ARCHIVE giữ thêm 15 ngày (tổng 30 ngày). Cũ hơn 30 ngày → XOÁ VĨNH VIỄN.
 Tab "Daily SRP Tracking": grid rowCount=68267
-Tab "RAW DATA ARCHIVE": grid rowCount=18748
+Tab "RAW DATA ARCHIVE": grid rowCount=20001
 
 Đang đọc RAW DATA...
    đọc Daily SRP Tracking 2-5001: 5000 dòng thô
@@ -12,31 +12,31 @@ Tab "RAW DATA ARCHIVE": grid rowCount=18748
    đọc Daily SRP Tracking 25002-30001: 5000 dòng thô
    đọc Daily SRP Tracking 30002-35001: 5000 dòng thô
    đọc Daily SRP Tracking 35002-40001: 5000 dòng thô
-   đọc Daily SRP Tracking 40002-45001: 3248 dòng thô
-   đọc Daily SRP Tracking 45002-50001: 0 dòng thô
-   đọc Daily SRP Tracking 50002-55001: 0 dòng thô
-   đọc Daily SRP Tracking 55002-60001: 0 dòng thô
+   đọc Daily SRP Tracking 40002-45001: 5000 dòng thô
+   đọc Daily SRP Tracking 45002-50001: 5000 dòng thô
+   đọc Daily SRP Tracking 50002-55001: 5000 dòng thô
+   đọc Daily SRP Tracking 55002-60001: 711 dòng thô
    đọc Daily SRP Tracking 60002-65001: 0 dòng thô
    đọc Daily SRP Tracking 65002-68267: 0 dòng thô
-→ 43248 dòng có dữ liệu thật trong RAW DATA
+→ 55711 dòng có dữ liệu thật trong RAW DATA
 
 Đang đọc RAW DATA ARCHIVE...
    đọc RAW DATA ARCHIVE 2-5001: 5000 dòng thô
    đọc RAW DATA ARCHIVE 5002-10001: 5000 dòng thô
    đọc RAW DATA ARCHIVE 10002-15001: 5000 dòng thô
-   đọc RAW DATA ARCHIVE 15002-18748: 3747 dòng thô
-→ 18747 dòng có dữ liệu thật trong RAW DATA ARCHIVE
+   đọc RAW DATA ARCHIVE 15002-20001: 5000 dòng thô
+→ 20000 dòng có dữ liệu thật trong RAW DATA ARCHIVE
 
-Ngưỡng RAW DATA (giữ nếu Ngày >=): 25/7/2026
-Ngưỡng tổng (xoá vĩnh viễn nếu Ngày <): 10/7/2026
+Ngưỡng RAW DATA (giữ nếu Ngày >=): 1/8/2026
+Ngưỡng tổng (xoá vĩnh viễn nếu Ngày <): 17/7/2026
 
 === KẾT QUẢ ===
-RAW DATA (giữ 15 ngày): 31533 dòng
-RAW DATA ARCHIVE (giữ thêm 15 ngày): 30462 dòng
-XOÁ VĨNH VIỄN (cũ hơn 30 ngày): 0 dòng
-Không parse được ngày (giữ lại trong RAW DATA để an toàn): 0
+RAW DATA (giữ 15 ngày): 25843 dòng
+RAW DATA ARCHIVE (giữ thêm 15 ngày): 43596 dòng
+XOÁ VĨNH VIỄN (cũ hơn 30 ngày): 6272 dòng
+Không parse được ngày (giữ lại trong RAW DATA để an toàn): 7
 
-Đang ghi lại RAW DATA ARCHIVE (30462 dòng)...
+Đang ghi lại RAW DATA ARCHIVE (43596 dòng)...
    ✓ Đã ghi RAW DATA ARCHIVE lô 0-5000
    ✓ Đã ghi RAW DATA ARCHIVE lô 5000-10000
    ✓ Đã ghi RAW DATA ARCHIVE lô 10000-15000
