@@ -1,28 +1,5 @@
 /**
- * multi_dealer_scraper.js  — v3.5.1
- *
- * FIX v3.5.1 [18/08/2026 — ROOT CAUSE của "560/1924 SP không có data hôm nay"]:
- *  Phân tích 14 ngày data.csv cho thấy 560 KHÔNG phải cùng một vấn đề mà là 3:
- *   (1) ~300 SKU đã chết từ 05-13/08 nhưng dashboard vẫn đếm → mẫu số ảo.
- *       Xử lý ở dashboard/index.html (đánh dấu Delisted sau 7 ngày vắng).
- *   (2) Phong Vu mất 45% coverage ĐỀU trên mọi hãng từ 14/08 (Acer 48→25,
- *       Asus 77→47, Lenovo 65→41...) — BUG THẬT, xem (a) bên dưới.
- *   (3) ~60 SKU dao động mỗi ngày do lazy-load — giảm bằng (b) và (c).
- *
- *  (a) scrapePV() load-more: `if (!clicked) break` với clicked lấy từ
- *      evalWithTimeout(..., false). evalWithTimeout nuốt CẢ timeout LẪN
- *      exception thành `false` → 1 lần evaluate chậm hoặc nút tạm ẩn giữa lúc
- *      PV re-render là dừng phân trang VĨNH VIỄN, không retry, không log.
- *      Fix: trả trạng thái 'clicked'|'gone'|'hidden'|'timeout' thay boolean;
- *      chỉ dừng khi nút thật sự vắng khỏi DOM 3 lần liên tiếp.
- *  (b) getMissingCandidates() dùng baseline = 3 ngày gần nhất thay vì 1 ngày.
- *      Baseline 1 ngày tạo hiệu ứng RATCHET: sót 1 lần là baseline tụt theo,
- *      SKU đó không bao giờ được truy lại. MISSING_CHECK_CAP 20→50.
- *  (c) checkCoverage(): so số SP với TRUNG VỊ 7 ngày (đọc dashboard/data.csv,
- *      không tốn Sheets API). Dưới 85% → MBW/PV tự retry 1 lần và giữ kết quả
- *      tốt hơn; mọi dealer đều ghi cảnh báo ra coverage-*.txt để job
- *      write-sheet gửi Telegram. Trước đây job "success" nên không ai biết
- *      PV rớt 45%, mất 4 ngày mới phát hiện thủ công.
+ * multi_dealer_scraper.js  — v3.4.17
  *
  * FIX v3.4.17 [14/08/2026 — giảm SP "no data today" từ ~461 xuống thấp hơn]:
  *  3 vấn đề chính:
@@ -787,69 +764,7 @@ async function enrichSpecs(products, specCache, fetchFn, page, startTime, deadli
 //   (b) SP vẫn còn bán bình thường trên web → XÁC NHẬN đây là lỗi scrape thật
 //       (vd: FPT B85LNPA 06/07 — web vẫn bán nhưng bị bỏ sót ở trang listing)
 //   (c) Trang lỗi/không tải được → cần soát lại thủ công
-// FIX 18/08/2026: nâng 20→50. Cap 20 quá thấp để phục hồi một sự cố lớn —
-// sự cố PV 14/08 mất 129 SKU thì với cap 20 phải mất ~7 ngày mới truy hết,
-// trong khi baseline cũ chỉ giữ 1 ngày nên chúng rơi khỏi danh sách trước đó.
-// Đánh đổi: mỗi SP phải ghé 1 trang chi tiết (~3s) → 50 SP ≈ +2.5 phút/dealer,
-// vẫn rất an toàn so với timeout-minutes: 90 của job.
-const MISSING_CHECK_CAP = 50; // giới hạn số SP check/lần/dealer để không kéo dài job
-
-// ── Kiểm tra sụt coverage (18/08/2026) ────────────────────────────────────
-// Bài học từ sự cố PV 14/08: scraper rớt 45% SP và KHÔNG AI BIẾT trong 4 ngày,
-// vì job vẫn "success" (không có exception) và Telegram vẫn báo OK. Số lượng
-// SP scrape được là tín hiệu sức khoẻ quan trọng nhất nhưng chưa từng được
-// kiểm tra. Giờ so số SP hôm nay với TRUNG VỊ 7 ngày gần nhất đọc từ
-// dashboard/data.csv (file này luôn có sẵn trong repo checkout, không tốn
-// thêm 1 lời gọi Sheets API nào).
-const COVERAGE_BASELINE_DAYS = 7;
-const COVERAGE_MIN_RATIO = 0.85; // dưới 85% median → cảnh báo
-const coverageWarnings = [];
-
-function coverageMedian(dealerName) {
-  try {
-    const csvPath = path.join(__dirname, 'dashboard', 'data.csv');
-    if (!fs.existsSync(csvPath)) return null;
-    const lines = fs.readFileSync(csvPath, 'utf8').split('\n');
-    const perDate = new Map();
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line) continue;
-      // Date là cột 1, Dealers là cột 3 — cả 2 đều không chứa dấu phẩy/quote
-      // nên tách thô bằng split(',') là đủ và nhanh (file ~10MB, 40k dòng).
-      const parts = line.split(',');
-      const date = parts[0], dealer = parts[2];
-      if (!date || dealer !== dealerName) continue;
-      perDate.set(date, (perDate.get(date) || 0) + 1);
-    }
-    const parseVN2 = (d) => { const [dd,mm,yy] = d.split('/').map(Number); return new Date(yy, mm-1, dd).getTime(); };
-    const dates = [...perDate.keys()].sort((a,b) => parseVN2(b) - parseVN2(a)).slice(0, COVERAGE_BASELINE_DAYS);
-    if (dates.length < 3) return null; // chưa đủ lịch sử để kết luận
-    const counts = dates.map(d => perDate.get(d)).sort((a,b) => a-b);
-    const mid = Math.floor(counts.length / 2);
-    return counts.length % 2 ? counts[mid] : Math.round((counts[mid-1] + counts[mid]) / 2);
-  } catch (e) {
-    console.log(`⚠ coverageMedian(${dealerName}) lỗi: ${e.message}`);
-    return null;
-  }
-}
-
-function checkCoverage(dealerName, count) {
-  const median = coverageMedian(dealerName);
-  if (median === null) {
-    console.log(`    ℹ [${dealerName}] chưa đủ lịch sử để so coverage`);
-    return { ok: true, median: null, ratio: null };
-  }
-  const ratio = median > 0 ? count / median : 1;
-  const pct = (ratio * 100).toFixed(0);
-  if (ratio < COVERAGE_MIN_RATIO) {
-    const msg = `[${dealerName}] SỤT COVERAGE: ${count} SP = ${pct}% của median 7 ngày (${median})`;
-    console.log(`    🔴 ${msg}`);
-    coverageWarnings.push(msg);
-    return { ok: false, median, ratio };
-  }
-  console.log(`    ✅ [${dealerName}] coverage ${count}/${median} = ${pct}% median 7 ngày`);
-  return { ok: true, median, ratio };
-}
+const MISSING_CHECK_CAP = 20; // giới hạn số SP check/lần/dealer để không kéo dài job
 
 async function getMissingCandidates(sheets, dealerName, todayLinks) {
   try {
@@ -870,27 +785,17 @@ async function getMissingCandidates(sheets, dealerName, todayLinks) {
       rows.filter(r => r[3] === dealerName && ['Ngừng kinh doanh','Hết hàng'].includes(r[18]))
           .map(r => r[17])
     );
-    // FIX 18/08/2026 [chống hiệu ứng RATCHET]: trước đây baseline chỉ là
-    // latestDate = ngày gần nhất có data của dealer. Vấn đề: nếu một lần chạy
-    // bị sót SP (VD sự cố PV 14/08 mất 129 SKU), thì ngay lần chạy kế tiếp
-    // baseline đã TỤT xuống đúng mức đã sót — 129 SKU đó không còn nằm trong
-    // danh sách candidate nữa nên KHÔNG BAO GIỜ được check lại, mất vĩnh viễn.
-    // Càng sót càng tụt, không có đường quay lại. Giờ baseline = HỢP của
-    // MISSING_BASELINE_DAYS ngày gần nhất → SP bị sót vẫn được truy lại nhiều
-    // ngày liền, đủ để một lần chạy khỏe kéo nó về.
-    const MISSING_BASELINE_DAYS = 3;
-    const dealerDates = [...new Set(
-      rows.filter(r => r[3] === dealerName && r[0]).map(r => r[0])
-    )].sort((a, b) => {
-      const da = parseVN(a), db = parseVN(b);
-      return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+    let latestDate = null, latestDt = null;
+    rows.forEach(r => {
+      if (r[3] !== dealerName || !r[0]) return;
+      const dt = parseVN(r[0]);
+      if (dt && (!latestDt || dt > latestDt)) { latestDt = dt; latestDate = r[0]; }
     });
-    if (dealerDates.length === 0) return [];
-    const baselineDates = new Set(dealerDates.slice(0, MISSING_BASELINE_DAYS));
+    if (!latestDate) return [];
     const candidates = [];
     const seen = new Set();
     rows.forEach(r => {
-      if (r[3] !== dealerName || !baselineDates.has(r[0])) return;
+      if (r[3] !== dealerName || r[0] !== latestDate) return;
       const link = r[17];
       if (!link || seen.has(link)) return;
       seen.add(link);
@@ -898,7 +803,6 @@ async function getMissingCandidates(sheets, dealerName, todayLinks) {
       if (confirmedGone.has(link)) return;
       candidates.push({ link, name: r[4] || '', brand: r[5] || '' });
     });
-    console.log(`    ℹ [${dealerName}] baseline = ${baselineDates.size} ngày gần nhất (${[...baselineDates].join(', ')}) → ${seen.size} SKU nền, ${candidates.length} SKU vắng hôm nay`);
     return candidates;
   } catch (e) {
     console.log(`⚠ getMissingCandidates(${dealerName}) lỗi: ${e.message}`);
@@ -1205,79 +1109,37 @@ async function scrapePV(page) {
   // "Xem thêm" của filter sidebar Thương hiệu/RAM/SSD và "Xem thêm nội dung"
   // của phần tin tức cuối trang — cả 2 đều chứa "Xem thêm" nên .includes() sẽ
   // bấm sai nút).
-  // FIX 18/08/2026 [ROOT CAUSE: PV mất ~45% coverage mọi hãng từ 14/08]:
-  // Vòng lặp cũ dùng `const clicked = await evalWithTimeout(..., false);
-  // if (!clicked) break;`. evalWithTimeout() nuốt CẢ timeout LẪN exception
-  // thành cùng 1 giá trị `false` → chỉ cần MỘT lần page.evaluate chậm >10s,
-  // hoặc nút tạm thời offsetParent=null giữa lúc PV re-render lại DOM, là
-  // vòng lặp dừng VĨNH VIỄN: không retry, không log, mất toàn bộ SP còn lại
-  // của trang. Vì listing PV là 1 trang tổng (không per-brand), dừng sớm làm
-  // rớt ĐỀU trên mọi hãng — đúng triệu chứng đã đo: Acer 48→25, Asus 77→47,
-  // Lenovo 65→41, Dell 29→15, MSI 25→12 kể từ 14/08 và không tự phục hồi.
-  //
-  // Fix: trả về TRẠNG THÁI ('clicked'|'gone'|'hidden'|'timeout') thay vì
-  // boolean, để phân biệt "nút thật sự đã hết" với "tạm thời không bấm được".
-  //  - 'gone'    (nút không còn trong DOM): cần xác nhận 3 lần liên tiếp mới dừng
-  //  - 'hidden'/'timeout': retry có chờ, tối đa 5 lần liên tiếp mới bỏ cuộc
-  //  - đếm card lỗi (=-1) KHÔNG tính là stagnant (trước đây bị tính nhầm)
-  let clicks = 0, stagnant = 0, softFail = 0, goneStreak = 0;
-  const countCards = () => evalWithTimeout(page.evaluate(() =>
-    document.querySelectorAll('.product-card').length
-  ), 8000, -1);
-
+  let clicks = 0, stagnant = 0;
   while (clicks < PV_MAX_CLICKS) {
-    const before = await countCards();
-    const state = await evalWithTimeout(page.evaluate(() => {
+    const before = await evalWithTimeout(page.evaluate(() =>
+      document.querySelectorAll('.product-card').length
+    ), 8000, 0);
+    const clicked = await evalWithTimeout(page.evaluate(() => {
       const els = [...document.querySelectorAll('div,a,button')].filter(el =>
         el.textContent.trim() === 'Xem thêm sản phẩm'
       );
-      if (els.length === 0) return 'gone';
-      const target = els[els.length - 1];
-      if (target.offsetParent === null) return 'hidden';
+      const target = els[els.length - 1] || els[0];
+      if (!target || target.offsetParent === null) return false;
       target.scrollIntoView({ block: 'center' });
       target.click();
-      return 'clicked';
-    }), 10000, 'timeout');
-
-    if (state !== 'clicked') {
-      if (state === 'gone') {
-        goneStreak++;
-        if (goneStreak >= 3) {
-          console.log(`    → Nút "Xem thêm sản phẩm" không còn trong DOM (xác nhận ${goneStreak} lần) — đã load hết`);
-          break;
-        }
-        console.log(`    · Nút biến mất (lần ${goneStreak}/3) — chờ 3s xác nhận lại`);
-      } else {
-        softFail++;
-        console.log(`    ⚠ Load-more state=${state} (lần ${softFail}/5) — CHỜ RỒI THỬ LẠI, không dừng vòng lặp`);
-        if (softFail >= 5) {
-          console.log(`    💥 5 lần liên tiếp không bấm được nút — dừng (mới ${before} card, có thể thiếu SP)`);
-          break;
-        }
-      }
-      await sleep(3000);
-      continue;
-    }
-    goneStreak = 0; softFail = 0;
-
+      return true;
+    }), 10000, false);
+    if (!clicked) break;
     await sleep(2200);
-    const after = await countCards();
+    const after = await evalWithTimeout(page.evaluate(() =>
+      document.querySelectorAll('.product-card').length
+    ), 8000, before);
     clicks++;
-    if (before < 0 || after < 0) {
-      // Không đếm được card (evaluate timeout) → KHÔNG kết luận gì, chờ tiếp.
-      console.log('    ⚠ Không đếm được số card lần này — bỏ qua, không tính stagnant');
-      await sleep(2000);
-      continue;
-    }
     if (after === before) {
       stagnant++;
-      if (stagnant >= 4) { console.log(`    ⚠ Load-more không tăng SP 4 lần liên tiếp (${after} card) — dừng`); break; }
-      await sleep(2500); // extra wait trước lần thử tiếp
+      // FIX 14/08/2026: tăng threshold 2→3 + sleep thêm trước khi đếm lại
+      // tránh dừng sớm do PV lazy-load chậm (1 click có thể cần >2s để render)
+      if (stagnant >= 3) { console.log('    ⚠ Load-more không tăng SP 3 lần liên tiếp — dừng'); break; }
+      await sleep(2000); // extra wait trước lần thử tiếp
     } else stagnant = 0;
   }
   if (clicks >= PV_MAX_CLICKS) console.log(`    ⚠ Đạt giới hạn ${PV_MAX_CLICKS} lần "Xem thêm sản phẩm" — dừng`);
-  const finalCards = await countCards();
-  console.log(`    → "Xem thêm sản phẩm": ${clicks} lần | ${finalCards} card trên trang`);
+  if (clicks) console.log(`    → "Xem thêm sản phẩm": ${clicks} lần`);
 
   const products = await evalWithTimeout(page.evaluate((BASE) => {
     const out  = [];
@@ -2216,30 +2078,10 @@ async function runScrapeMode() {
         const pageMBW = await browser.newPage();
         await pageMBW.setViewport({ width: 1280, height: 900 });
         await pageMBW.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-        let mbwProducts = await scrapeMBW(pageMBW);
+        const mbwProducts = await scrapeMBW(pageMBW);
         console.log(`    → ${mbwProducts.length} SP tổng MBW`);
-        await pageMBW.close();
-
-        // Cùng lý do như PV: MBW cũng là trang tổng, retry rẻ.
-        if (!checkCoverage('MBW', mbwProducts.length).ok) {
-          console.log('    🔁 Coverage MBW thấp bất thường — thử lại 1 lần với page mới...');
-          try {
-            const pageMBW2 = await browser.newPage();
-            await pageMBW2.setViewport({ width: 1280, height: 900 });
-            await pageMBW2.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-            const retryProducts = await scrapeMBW(pageMBW2);
-            await pageMBW2.close();
-            console.log(`    → Lần 2: ${retryProducts.length} SP (lần 1: ${mbwProducts.length})`);
-            if (retryProducts.length > mbwProducts.length) {
-              mbwProducts = retryProducts;
-              console.log('    ✅ Dùng kết quả lần 2 (nhiều SP hơn)');
-              checkCoverage('MBW', mbwProducts.length);
-            }
-          } catch (e2) {
-            console.log(`    ⚠ Retry MBW lỗi: ${e2.message.substring(0,80)} — giữ kết quả lần 1`);
-          }
-        }
         allProducts.push(...mbwProducts);
+        await pageMBW.close();
 
         // FIX #2: SP nào hôm qua có mà hôm nay không thấy trong listing nữa
         // → ghé trang chi tiết xác nhận Ngừng kinh doanh thay vì để im lặng mất tích
@@ -2264,32 +2106,10 @@ async function runScrapeMode() {
         const pagePV = await browser.newPage();
         await pagePV.setViewport({ width: 1280, height: 1200 });
         await pagePV.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-        let pvProducts = await scrapePV(pagePV);
+        const pvProducts = await scrapePV(pagePV);
         console.log(`    → ${pvProducts.length} SP tổng PV`);
-        await pagePV.close();
-
-        // 18/08/2026: PV là trang tổng 1 lần load (~2-3 phút) nên retry rất rẻ.
-        // Nếu lần đầu sụt dưới 85% median 7 ngày → gần như chắc chắn load-more
-        // gãy giữa chừng, thử lại 1 lần và GIỮ KẾT QUẢ TỐT HƠN.
-        if (!checkCoverage('Phong Vu', pvProducts.length).ok) {
-          console.log('    🔁 Coverage PV thấp bất thường — thử lại 1 lần với page mới...');
-          try {
-            const pagePV2 = await browser.newPage();
-            await pagePV2.setViewport({ width: 1280, height: 1200 });
-            await pagePV2.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36');
-            const retryProducts = await scrapePV(pagePV2);
-            await pagePV2.close();
-            console.log(`    → Lần 2: ${retryProducts.length} SP (lần 1: ${pvProducts.length})`);
-            if (retryProducts.length > pvProducts.length) {
-              pvProducts = retryProducts;
-              console.log('    ✅ Dùng kết quả lần 2 (nhiều SP hơn)');
-              checkCoverage('Phong Vu', pvProducts.length);
-            }
-          } catch (e2) {
-            console.log(`    ⚠ Retry PV lỗi: ${e2.message.substring(0,80)} — giữ kết quả lần 1`);
-          }
-        }
         allProducts.push(...pvProducts);
+        await pagePV.close();
 
         const todayLinksPV = new Set(pvProducts.map(p => p.link));
         const missingCandidatesPV = await getMissingCandidates(sheets, 'Phong Vu', todayLinksPV);
@@ -2421,18 +2241,6 @@ async function runScrapeMode() {
   console.log('\n📊 Kết quả:');
   Object.entries(byDealer).forEach(([d,c]) => console.log(`   ${d}: ${c} SP`));
   console.log(`   TỔNG: ${allProducts.length} SP`);
-
-  // 18/08/2026: kiểm tra coverage lần cuối cho MỌI dealer đã chạy trong job
-  // này (FPT/CPS chỉ CẢNH BÁO, không tự retry — 2 dealer đó scrape per-brand,
-  // chạy lại tốn 20-40 phút, rủi ro chạm timeout job cao hơn lợi ích).
-  console.log('\n🩺 Kiểm tra coverage so với median 7 ngày:');
-  coverageWarnings.length = 0; // đánh giá lại trên số cuối cùng, tránh trùng
-  Object.entries(byDealer).forEach(([d, c]) => { if (c > 0) checkCoverage(d, c); });
-  const missingDealers = Object.entries(byDealer)
-    .filter(([d, c]) => c === 0 && SCRAPE_DEALER_NAMES.has(d))
-    .map(([d]) => d);
-  missingDealers.forEach(d => coverageWarnings.push(`[${d}] 0 SP — scrape THẤT BẠI HOÀN TOÀN`));
-  if (coverageWarnings.length === 0) console.log('   ✅ Tất cả dealer đạt ngưỡng');
   console.log(`   Thời gian đã dùng: ${Math.round((Date.now()-startTime)/60000)} phút`);
 
   if (WRITE_MODE === 'file') {
@@ -2443,14 +2251,6 @@ async function runScrapeMode() {
     const outPath = path.join(OUTPUT_DIR, `products-${tag}.json`);
     fs.writeFileSync(outPath, JSON.stringify(allProducts));
     console.log(`\n💾 Đã lưu ${allProducts.length} SP ra ${outPath} (WRITE_MODE=file — chưa ghi Sheet, chờ job combine)`);
-    // Cảnh báo coverage ghi ra file .txt RIÊNG (KHÔNG phải .json — combine/
-    // enrich quét *.json rồi concat, thêm file json lạ sẽ làm hỏng dữ liệu).
-    // Job write-sheet gom các file này vào 1 tin Telegram duy nhất.
-    if (coverageWarnings.length > 0) {
-      const warnPath = path.join(OUTPUT_DIR, `coverage-${tag}.txt`);
-      fs.writeFileSync(warnPath, coverageWarnings.join('\n') + '\n');
-      console.log(`⚠ Đã ghi ${coverageWarnings.length} cảnh báo coverage ra ${warnPath}`);
-    }
   } else {
     console.log('\n📝 Ghi Sheets...');
     await writeToSheet(sheets, allProducts);

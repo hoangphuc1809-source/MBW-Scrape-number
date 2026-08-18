@@ -1237,11 +1237,9 @@ function renderAllSkus() {
   const cnt = document.getElementById('as_count');
   if (cnt) {
     const staleCount = data.filter(p=>p.isStale).length;
-    const delisted = window.__delistedCount || 0;
-    const delistedTxt = delisted > 0 ? ` · ${delisted} delisted >${window.__delistedDays || 7}d` : '';
     cnt.textContent = staleCount > 0
-      ? `${data.length} SKUs (${staleCount} no data today${delistedTxt})`
-      : `${data.length} SKUs${delistedTxt ? ' (' + delistedTxt.replace(' · ','') + ')' : ''}`;
+      ? `${data.length} SKUs (${staleCount} no data today)`
+      : `${data.length} SKUs`;
   }
 
   // determine if we have 3-day data
@@ -2056,24 +2054,6 @@ function buildDerivedData(rows) {
     }
   }
 
-  // FIX 18/08/2026 [con so "no data today" bi thoi phong]: truoc day MOI SKU
-  // tung xuat hien trong 35 ngay lich su deu duoc giu lai va dem vao "no data
-  // today" — ke ca SKU da bien mat khoi web tu 2 tuan truoc. Do dashboard hien
-  // 560/1924 "khong co data", trong khi thuc te chi ~130 SKU la bi scraper bo
-  // sot; ~300 SKU con lai la hang da ngung kinh doanh that (VD 167 SKU
-  // CellPhone S mat tu 05-06/08 do bo loc "Tam het hang", 129 SKU Phong Vu mat
-  // tu 14/08). Gop chung 2 nhom lam mat y nghia canh bao.
-  // Gio: SKU vang > DELISTED_AFTER_DAYS ngay lien tuc = Delisted, LOAI khoi
-  // tap SKU dang theo doi, dem rieng va hien rieng tren header.
-  const DELISTED_AFTER_DAYS = 7;
-  const _tp = (newToday || '').split('/');
-  const _todayMs = _tp.length === 3 ? new Date(+_tp[2], +_tp[1]-1, +_tp[0]).getTime() : Date.now();
-  const daysSinceDate = (d) => {
-    const p = (d || '').split('/');
-    if (p.length !== 3) return 0;
-    return Math.round((_todayMs - new Date(+p[2], +p[1]-1, +p[0]).getTime()) / 86400000);
-  };
-
   // Build stale product objects (same shape as allToday, but isStale=true, todayPrice=latestPrice)
   const staleProducts = Object.values(staleMap).map(({ row: r, date: latestDate }) => {
     const model = r[3]?.trim() || '';
@@ -2116,22 +2096,11 @@ function buildDerivedData(rows) {
       focusModel:  (r[22]?.trim() === 'Yes'),
       isStale:     true,
       latestDate,  // "dd/MM/yyyy" — the date this price was last seen
-      daysSince:   daysSinceDate(latestDate),
     };
   }).filter(Boolean);
 
-  // Tach 2 nhom: "vang tam thoi" (con theo doi, hien badge vang) va "delisted"
-  // (da bien mat >7 ngay — coi nhu ngung kinh doanh, khong theo doi nua).
-  const activeStale = staleProducts.filter(p => p.daysSince <= DELISTED_AFTER_DAYS);
-  const delistedCount = staleProducts.length - activeStale.length;
-  window.__delistedCount = delistedCount;
-  window.__delistedDays  = DELISTED_AFTER_DAYS;
-  if (delistedCount > 0) {
-    console.log(`[dashboard] ${delistedCount} SKU vang > ${DELISTED_AFTER_DAYS} ngay -> danh dau Delisted, loai khoi tap theo doi (con ${activeStale.length} SKU vang tam thoi)`);
-  }
-
-  // allUnique = today's products (fresh) + stale products (historical, chua delisted)
-  const newAllUnique = [...newAllToday, ...activeStale];
+  // allUnique = today's products (fresh) + stale products (historical)
+  const newAllUnique = [...newAllToday, ...staleProducts];
 
   // Build changes (price deltas > 0)
   const MBW_INFLATE = 5;

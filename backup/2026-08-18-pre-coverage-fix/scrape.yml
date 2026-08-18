@@ -119,9 +119,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scrape-mbw-output
-          path: |
-            scrape-output/*.json
-            scrape-output/*.txt
+          path: scrape-output/*.json
           if-no-files-found: ignore
           retention-days: 1
 
@@ -178,9 +176,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scrape-cps-output
-          path: |
-            scrape-output/*.json
-            scrape-output/*.txt
+          path: scrape-output/*.json
           if-no-files-found: ignore
           retention-days: 1
 
@@ -240,9 +236,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scrape-pv-output
-          path: |
-            scrape-output/*.json
-            scrape-output/*.txt
+          path: scrape-output/*.json
           if-no-files-found: ignore
           retention-days: 1
 
@@ -301,9 +295,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scrape-fpt-output
-          path: |
-            scrape-output/*.json
-            scrape-output/*.txt
+          path: scrape-output/*.json
           if-no-files-found: ignore
           retention-days: 1
 
@@ -367,9 +359,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scrape-fpt-output
-          path: |
-            scrape-output/*.json
-            scrape-output/*.txt
+          path: scrape-output/*.json
           if-no-files-found: ignore
           retention-days: 1
 
@@ -475,34 +465,6 @@ jobs:
           else
             echo "Khong co file nao thay doi, bo qua commit"
           fi
-
-      # 18/08/2026: canh bao SUT COVERAGE. Bai hoc tu su co PV 14/08 - scraper
-      # rot 45% SP nhung job van "success" nen Telegram van bao OK, mat 4 ngay
-      # moi phat hien. Buoc nay doc cac file coverage-*.txt do scraper ghi ra
-      # (khi so SP < 85% median 7 ngay) va gui 1 tin canh bao RIENG, tach khoi
-      # tin bao trang thai job de khong bi luot qua.
-      - name: Canh bao sut coverage (neu co)
-        if: always()
-        continue-on-error: true
-        shell: bash
-        env:
-          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
-          CHAT: ${{ secrets.OPS_CHAT_ID }}
-          RUN_NUMBER: ${{ github.run_number }}
-        run: |
-          WARN=$(cat scrape-artifacts/*/coverage-*.txt 2>/dev/null || true)
-          if [ -z "$WARN" ]; then
-            echo "Khong co canh bao coverage - tat ca dealer dat nguong"
-            exit 0
-          fi
-          echo "$WARN"
-          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then exit 0; fi
-          BODY=$(echo "$WARN" | sed 's/$/%0A/' | tr -d '\n')
-          MSG="[CANH BAO] SUT COVERAGE SCRAPE - run #${RUN_NUMBER}%0A%0A${BODY}%0AKiem tra log job scrape cua dealer tuong ung."
-          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
-            -d "chat_id=${CHAT}" \
-            -d "text=${MSG}" \
-            -o /dev/null -w "telegram: %{http_code}\n" || echo "Gui canh bao that bai"
 
       - name: Bao cao ve Telegram
         if: always()
