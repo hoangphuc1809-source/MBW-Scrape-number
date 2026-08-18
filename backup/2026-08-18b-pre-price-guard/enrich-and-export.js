@@ -297,57 +297,6 @@ async function main() {
     debugLog('Chưa có data.csv — tạo mới.');
   }
 
-  // 6b) FIX 18/08/2026 — CHẶN GIÁ BẤT THƯỜNG (lớp bảo vệ CHUNG).
-  // Sự cố cụ thể (6 SKU MBW bị ghi 1.590.000đ do parse trúng giá phụ kiện
-  // trong carousel "Sản phẩm liên quan") đã sửa tận gốc ở
-  // multi_dealer_scraper.js. Nhưng bài học chung là: MỘT selector sai ở bất
-  // kỳ dealer nào cũng có thể bơm giá rác vào dashboard mà không ai biết —
-  // đây đã là lần thứ hai. Nên chặn thêm ở đây, độc lập với scraper:
-  // so giá hôm nay với TRUNG VỊ của CHÍNH SKU đó trong 7 ngày gần nhất; lệch
-  // quá 55% thì bỏ giá (giữ dòng, để trống giá → dashboard hiện badge "no
-  // data since" thay vì vẽ mức giảm 93% sai sự thật).
-  // Ngưỡng 55% chọn có chủ đích: khuyến mãi laptop thực tế hiếm khi vượt
-  // 30-40%, nên 55% gần như chắc chắn là lỗi parse, không phải giá thật.
-  const PRICE_DEVIATION_MAX = 0.55;
-  const PRICE_HISTORY_DAYS = 7;
-  const histDates = [...new Set(existingRows.map(r => r[0]))]
-    .sort((a, b) => parseDMY(b) - parseDMY(a))
-    .slice(0, PRICE_HISTORY_DAYS);
-  const histSet = new Set(histDates);
-  const priceHistory = new Map(); // "dealer|sku" -> [giá...]
-  for (const r of existingRows) {
-    if (!histSet.has(r[0])) continue;
-    const p = parseInt(String(r[5] || r[4] || '').replace(/\D/g, '')) || 0;
-    if (!p) continue;
-    const k = `${r[2]}|${r[3]}`;
-    if (!priceHistory.has(k)) priceHistory.set(k, []);
-    priceHistory.get(k).push(p);
-  }
-  let outlierCount = 0;
-  for (const row of newRows) {
-    const today = parseInt(String(row[5] || row[4] || '').replace(/\D/g, '')) || 0;
-    if (!today) continue;
-    const hist = priceHistory.get(`${row[2]}|${row[3]}`);
-    if (!hist || hist.length < 3) continue; // chưa đủ lịch sử để kết luận
-    const sorted = [...hist].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    const median = sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-    if (!median) continue;
-    const dev = Math.abs(today - median) / median;
-    if (dev > PRICE_DEVIATION_MAX) {
-      outlierCount++;
-      if (outlierCount <= 15) {
-        debugLog(`  ⚠ Giá bất thường: ${row[2]} | ${String(row[3]).substring(0, 55)} — ${today.toLocaleString('vi')}đ vs trung vị ${median.toLocaleString('vi')}đ (lệch ${(dev * 100).toFixed(0)}%) → bỏ giá`);
-      }
-      row[4] = ''; row[5] = ''; row[6] = '';
-    }
-  }
-  if (outlierCount > 0) {
-    debugLog(`⚠ Đã loại giá của ${outlierCount} dòng vì lệch > ${PRICE_DEVIATION_MAX * 100}% so với trung vị ${PRICE_HISTORY_DAYS} ngày của chính SKU đó${outlierCount > 15 ? ' (chỉ log 15 dòng đầu)' : ''}`);
-  } else {
-    debugLog(`✅ Không có giá bất thường (kiểm tra ${newRows.length} dòng vs trung vị ${PRICE_HISTORY_DAYS} ngày)`);
-  }
-
   let allRows = existingRows.concat(newRows);
   const uniqueDates = [...new Set(allRows.map(r => r[0]))];
   uniqueDates.sort((a, b) => parseDMY(a) - parseDMY(b));

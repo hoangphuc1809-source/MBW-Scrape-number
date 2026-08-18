@@ -896,12 +896,7 @@ async function getMissingCandidates(sheets, dealerName, todayLinks) {
       seen.add(link);
       if (todayLinks.has(link)) return;
       if (confirmedGone.has(link)) return;
-      candidates.push({
-        link, name: r[4] || '', brand: r[5] || '',
-        // 18/08/2026: mang theo giá đã biết để checkMissingProducts đối chiếu
-        // — cột 12 = origPrice (SRP), cột 13 = salePrice.
-        prevPrice: parseInt(String(r[13] || r[12] || '').replace(/\D/g, '')) || 0,
-      });
+      candidates.push({ link, name: r[4] || '', brand: r[5] || '' });
     });
     console.log(`    ℹ [${dealerName}] baseline = ${baselineDates.size} ngày gần nhất (${[...baselineDates].join(', ')}) → ${seen.size} SKU nền, ${candidates.length} SKU vắng hôm nay`);
     return candidates;
@@ -946,56 +941,21 @@ async function checkMissingProducts(browser, dealerName, candidates, specCache) 
       status = 'Không tải được trang - cần kiểm tra thủ công';
     }
     const spec = specCache.get(c.link) || {};
-    // FIX 18/08/2026 [giá rác 1.590.000đ trên dashboard]: bản 14/08 parse giá
-    // từ detail page bằng querySelector với selector RẤT RỘNG
-    // ([class*="price-current"]...) và lấy phần tử ĐẦU TIÊN trên trang. Với
-    // trang "Ngừng kinh doanh" của MBW, khối giá chính không tồn tại nên nó
-    // rơi trúng giá của SẢN PHẨM PHỤ KIỆN trong carousel "Sản phẩm liên quan"
-    // → 6 SKU laptop 18-25 triệu bị ghi 1.590.000đ, dashboard hiện giảm 93%.
-    // Ba lớp chặn:
-    //  (1) CHỈ parse giá khi SP thực sự còn bán (status "bị bỏ sót"). SP đã
-    //      Ngừng kinh doanh/Hết hàng thì theo định nghĩa KHÔNG có giá bán —
-    //      để trống, dashboard sẽ hiện badge "no data since" như mong muốn.
-    //  (2) Giới hạn phạm vi tìm trong container chi tiết SP, và bỏ selector
-    //      [class*="price-current"] trần (quá rộng, khớp cả widget khác).
-    //  (3) Sanity: giá laptop < 3 triệu là vô lý; lệch > 50% so với giá đã
-    //      biết gần nhất cũng loại — thà thiếu giá còn hơn giá sai.
+    // FIX 14/08/2026: parse giá từ detail page thay vì luôn push 0
+    // (trước đây checkMissingProducts không parse giá → SP "bỏ sót" luôn thiếu giá)
     let detailSalePrice = 0, detailOrigPrice = 0;
-    const stillSelling = status.startsWith('Còn hàng - bị bỏ sót');
-    if (stillSelling) {
-      try {
-        const priceData = await page.evaluate(() => {
-          const scope =
-            document.querySelector('[class*="product-detail"], [class*="productDetail"], #product-detail, main') ||
-            document.body;
-          const pick = (sels) => {
-            for (const s of sels) {
-              const el = scope.querySelector(s);
-              if (!el) continue;
-              const v = parseInt((el.textContent || '').replace(/\D/g, '')) || 0;
-              if (v > 0) return v;
-            }
-            return 0;
-          };
-          const sale = pick(['.att-product-detail-latest-price', '.product-price .price', '[class*="priceNow"]']);
-          const orig = pick(['.att-product-detail-retail-price', '.product-price .price-old', '[class*="price-old"]', '[class*="priceOld"]']);
-          return { sale, orig };
-        }).catch(() => ({ sale: 0, orig: 0 }));
-
-        const MIN_PLAUSIBLE = 3000000; // 3 triệu — dưới ngưỡng này chắc chắn không phải giá laptop
-        let sale = priceData.sale >= MIN_PLAUSIBLE ? priceData.sale : 0;
-        let orig = priceData.orig >= MIN_PLAUSIBLE ? priceData.orig : 0;
-        if (sale && c.prevPrice) {
-          const dev = Math.abs(sale - c.prevPrice) / c.prevPrice;
-          if (dev > 0.5) {
-            console.log(`      ⚠ Bỏ giá bất thường ${sale.toLocaleString('vi')}đ (lệch ${(dev*100).toFixed(0)}% so với ${c.prevPrice.toLocaleString('vi')}đ đã biết) — ${c.name.substring(0,45)}`);
-            sale = 0; orig = 0;
-          }
-        }
-        detailSalePrice = sale;
-        detailOrigPrice = orig || sale;
-      } catch (_) {}
-    }
+    try {
+      const priceData = await page.evaluate(() => {
+        // Thử các selector phổ biến của từng site
+        const latestEl  = document.querySelector('.att-product-detail-latest-price, .product-price .price, [class*="price-current"], [class*="priceNow"]');
+        const retailEl  = document.querySelector('.att-product-detail-retail-price, .product-price .price-old, [class*="price-old"], [class*="priceOld"]');
+        const sale  = latestEl ? parseInt((latestEl.textContent || '').replace(/\D/g,'')) || 0 : 0;
+        const orig  = retailEl ? parseInt((retailEl.textContent || '').replace(/\D/g,'')) || 0 : 0;
+        return { sale, orig };
+      }).catch(() => ({ sale: 0, orig: 0 }));
+      detailSalePrice = priceData.sale || 0;
+      detailOrigPrice = priceData.orig || detailSalePrice;
+    } catch (_) {}
     out.push({
       dealer: dealerName, name: c.name, brand: c.brand,
       cpu: spec.cpu || '', screen: spec.screen || '', gpu: spec.gpu || '', weight: spec.weight || '',
