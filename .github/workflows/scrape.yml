@@ -8,19 +8,9 @@ on:
   # /home/hoang/trigger-scrape.sh goi workflow_dispatch API luc 01h/04h/08h
   # UTC (= 8h/11h/15h VN) qua crontab. Dieu kien if cua cac job van check ca
   # github.event_name == 'schedule' de du phong neu sau nay bat lai.
-  # 22/08/2026: BAT LAI GitHub schedule lam NGUON DU PHONG. Ly do: tu
-  # 20/08 VPS hermes-gateway bi doi timezone sang Asia/Ho_Chi_Minh nen
-  # crontab (viet theo gio UTC) ban luc 1h/4h/8h VN thay vi 8h/11h/15h VN
-  # -> mat hoan toan 2 slot 11h va 15h. Schedule cua GitHub tuy tre ~15-40
-  # phut nhung van tot hon khong chay. Repo la PUBLIC nen Actions minutes
-  # mien phi, chay du khong ton chi phi; concurrency group ben duoi chan
-  # 2 run chong nhau. Khi da sua crontab tren VPS thi co the bo block nay
-  # (hoac giu lai lam backup - chi ton them vai run thua moi ngay).
-  schedule:
-    - cron: '0 1 * * *'   # 08:00 VN
-    - cron: '0 4 * * *'   # 11:00 VN
-    - cron: '0 8 * * *'   # 15:00 VN
-
+  # 22/08/2026: Da sua crontab tren VPS (them CRON_TZ=Asia/Ho_Chi_Minh +
+  # doi gio thanh 8,11,15) nen KHONG bat lai GitHub schedule - de tranh moi
+  # slot chay 2 lan (cron VPS + schedule) gay trung alert Telegram.
   workflow_dispatch:
     inputs:
       run_scrape:
