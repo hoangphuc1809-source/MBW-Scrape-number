@@ -1,12 +1,12 @@
-[2026-08-22T01:16:15.741Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-22T01:16:15.749Z] Đọc được 1737 SP từ 4 file artifact (scrape-artifacts)
-[2026-08-22T01:16:15.749Z] Đọc Part # (FORMULA render)...
-[2026-08-22T01:16:16.120Z]   10276 dòng
-[2026-08-22T01:16:16.120Z] Đọc Segment (FORMULA render)...
-[2026-08-22T01:16:16.251Z]   120 dòng
-[2026-08-22T01:16:16.252Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-08-22T01:16:16.284Z] Part# map: 3993 SKU
-[2026-08-22T01:16:16.289Z] Tính xong 1571 dòng enriched (loại 166 SP EOL)
-[2026-08-22T01:16:16.727Z] data.csv cũ: 35391 dòng, giữ lại 35391 dòng (loại dòng 22/08/2026 nếu có, sẽ thêm bản mới)
-[2026-08-22T01:16:16.802Z] ✅ Không có giá bất thường (kiểm tra 1571 dòng vs trung vị 7 ngày)
-[2026-08-22T01:16:17.185Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 36963 dòng (kể cả header), 12509 KB
+[2026-08-22T08:19:55.279Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-22T08:19:55.289Z] Đọc được 1854 SP từ 4 file artifact (scrape-artifacts)
+[2026-08-22T08:19:55.289Z] Đọc Part # (FORMULA render)...
+[2026-08-22T08:19:55.975Z]   10276 dòng
+[2026-08-22T08:19:55.975Z] Đọc Segment (FORMULA render)...
+[2026-08-22T08:19:56.103Z]   120 dòng
+[2026-08-22T08:19:56.104Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-08-22T08:19:56.137Z] Part# map: 3993 SKU
+[2026-08-22T08:19:56.142Z] Tính xong 1688 dòng enriched (loại 166 SP EOL)
+[2026-08-22T08:19:56.594Z] data.csv cũ: 36962 dòng, giữ lại 35391 dòng (loại dòng 22/08/2026 nếu có, sẽ thêm bản mới)
+[2026-08-22T08:19:56.662Z] ✅ Không có giá bất thường (kiểm tra 1688 dòng vs trung vị 7 ngày)
+[2026-08-22T08:19:57.058Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 37080 dòng (kể cả header), 12547 KB
