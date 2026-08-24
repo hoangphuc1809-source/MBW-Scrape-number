@@ -2120,6 +2120,10 @@ async function writeToSheet(sheets, allProducts) {
   // Segment, CPU, RAM, SSD, Screen, GPU, V-RAM, Part #, Focus Model) —
   // tinh bang CODE, khong con formula. Chay sau khi ghi xong A:S de dam bao
   // enrichment khop dung voi du lieu vua ghi (existingRows + newRows).
+  // FIX 24/08/2026: cho API hoi quota sau khi ghi 14+ lo (69k dong) — tranh
+  // 404 gia do rate limit (da gap run 08:00 UTC 24/08/2026, 3 tab deu 404).
+  console.log('   ⏳ Chờ 10s cho Google Sheets API hồi quota sau khi ghi...');
+  await new Promise(r => setTimeout(r, 10000));
   try {
     console.log('🔎 Đang tra cứu Part # để enrich cột T→AE...');
     const { partMap, segmentRefs } = await buildPartLookupMap(sheets);
@@ -2157,24 +2161,29 @@ async function writeToSheet(sheets, allProducts) {
   }
 
   // v3.6: doi tu T1/U1 sang AG1/AH1 — nhuong T cho cot "Status" enrichment
-  await withRetry(() => sheets.spreadsheets.values.update({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!AG1`,  // AG1: FPT mapping version (truoc day o T1)
-    valueInputOption: 'RAW',
-    requestBody: { values: [[FPT_MAPPING_VERSION]] },
-  }), { label: 'update AG1 mapping version' });
+  // FIX 24/08/2026: wrap trong try-catch — AG1/AH1 la metadata phu, KHONG
+  // dang de crash fatal ca pipeline chi vi khong ghi duoc 2 o nay. Da gap
+  // loi 404 gia do rate limit sau 14 lo ghi (run 08:00 UTC 24/08/2026).
+  try {
+    await withRetry(() => sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!AG1`,  // AG1: FPT mapping version (truoc day o T1)
+      valueInputOption: 'RAW',
+      requestBody: { values: [[FPT_MAPPING_VERSION]] },
+    }), { label: 'update AG1 mapping version' });
 
-  // FIX #1: ghi health note vào AH1 — mở sheet lên là thấy ngay lần chạy gần nhất
-  // có bị tụt số lượng SP bất thường không, khỏi phải mò log GitHub Actions
-  const healthNote = healthNotes.length > 0
-    ? `[${dateStr} ${timeStr}] ${healthNotes.join(' | ')}`
-    : `[${dateStr} ${timeStr}] ✅ OK — số lượng SP bình thường`;
-  await withRetry(() => sheets.spreadsheets.values.update({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!AH1`,  // AH1: Scrape health note (truoc day o U1)
-    valueInputOption: 'RAW',
-    requestBody: { values: [[healthNote]] },
-  }), { label: 'update AH1 health note' });
+    const healthNote = healthNotes.length > 0
+      ? `[${dateStr} ${timeStr}] ${healthNotes.join(' | ')}`
+      : `[${dateStr} ${timeStr}] ✅ OK — số lượng SP bình thường`;
+    await withRetry(() => sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!AH1`,  // AH1: Scrape health note (truoc day o U1)
+      valueInputOption: 'RAW',
+      requestBody: { values: [[healthNote]] },
+    }), { label: 'update AH1 health note' });
+  } catch (e) {
+    console.log(`   ⚠ AG1/AH1 metadata lỗi (bỏ qua, data A:AE vẫn OK): ${e.message}`);
+  }
 
   const missingSpecs = newRows.filter(r => !r[6] && !r[7]).length;
   console.log(`✅ Ghi ${newRows.length} dòng mới | Giữ ${existingRows.length} dòng cũ`);
