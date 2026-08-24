@@ -1,0 +1,57 @@
+
+> multi-dealer-laptop-scraper@1.0.0 start
+> node multi_dealer_scraper.js
+
+🔗 COMBINE MODE — gộp kết quả từ các job scrape song song, ghi Sheet 1 lần duy nhất
+📂 Đọc artifact từ: scrape-artifacts
+   📄 scrape-artifacts/scrape-cps-output/products-CPS.json: 670 SP
+   📄 scrape-artifacts/scrape-fpt-output/products-FPT.json: 444 SP
+   📄 scrape-artifacts/scrape-mbw-output/products-MBW.json: 70 SP
+   📄 scrape-artifacts/scrape-pv-output/products-PV.json: 257 SP
+
+📊 Tổng hợp từ 4 file:
+   MBW: 70 SP
+   FPT Retail: 444 SP
+   CellPhone S: 670 SP
+   Phong Vu: 257 SP
+   TỔNG: 1441 SP
+
+📝 Ghi Sheets...
+
+🚨 CẢNH BÁO SỐ LƯỢNG SP GIẢM BẤT THƯỜNG:
+   ⚠ MBW: 70 SP hôm nay vs 442 SP ngày 23/08/2026 (giảm 84%) — kiểm tra xem có bị dừng sớm khi load "Xem thêm" không
+   📤 Đã ghi lô 1: dòng 2–5001 (5000 dòng)
+   📤 Đã ghi lô 2: dòng 5002–10001 (5000 dòng)
+   📤 Đã ghi lô 3: dòng 10002–15001 (5000 dòng)
+   📤 Đã ghi lô 4: dòng 15002–20001 (5000 dòng)
+   📤 Đã ghi lô 5: dòng 20002–25001 (5000 dòng)
+   📤 Đã ghi lô 6: dòng 25002–30001 (5000 dòng)
+   📤 Đã ghi lô 7: dòng 30002–35001 (5000 dòng)
+   📤 Đã ghi lô 8: dòng 35002–40001 (5000 dòng)
+   📤 Đã ghi lô 9: dòng 40002–45001 (5000 dòng)
+   📤 Đã ghi lô 10: dòng 45002–50001 (5000 dòng)
+   📤 Đã ghi lô 11: dòng 50002–55001 (5000 dòng)
+   📤 Đã ghi lô 12: dòng 55002–60001 (5000 dòng)
+   📤 Đã ghi lô 13: dòng 60002–65001 (5000 dòng)
+   📤 Đã ghi lô 14: dòng 65002–69444 (4443 dòng)
+🔎 Đang tra cứu Part # để enrich cột T→AE...
+   📋 Đã đọc 3993 Product Name từ "Part #" (tra theo tên cột, không theo vị trí cố định)
+   ⚠ [đọc header Segment] lỗi lần 1/3 (code 404): Requested entity was not found.
+   ⏳ Chờ 2s rồi thử lại...
+   ⚠ [đọc header Segment] lỗi lần 2/3 (code 404): Requested entity was not found.
+   ⏳ Chờ 4s rồi thử lại...
+   ⚠ [đọc header Segment] lỗi lần 3/3 (code 404): Requested entity was not found.
+   ⚠ Enrich T→AE lỗi (bỏ qua, không ảnh hưởng A:S): Requested entity was not found.
+   ⚠ [update AG1 mapping version] lỗi lần 1/3 (code 404): Requested entity was not found.
+   ⏳ Chờ 2s rồi thử lại...
+   ⚠ [update AG1 mapping version] lỗi lần 2/3 (code 404): Requested entity was not found.
+   ⏳ Chờ 4s rồi thử lại...
+   ⚠ [update AG1 mapping version] lỗi lần 3/3 (code 404): Requested entity was not found.
+💥 Fatal (combine mode): Error: Requested entity was not found.
+    at Gaxios._request (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/gaxios/build/src/gaxios.js:142:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async JWT.requestAsync (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
+    at async withRetry (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/multi_dealer_scraper.js:1781:14)
+    at async writeToSheet (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/multi_dealer_scraper.js:2160:3)
+    at async runCombineMode (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/multi_dealer_scraper.js:2564:3)
+   API response data: {"error":{"code":404,"message":"Requested entity was not found.","errors":[{"message":"Requested entity was not found.","domain":"global","reason":"notFound"}],"status":"NOT_FOUND"}}
