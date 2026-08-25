@@ -1,9 +1,12 @@
-[2026-08-24T08:23:09.280Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-24T08:23:09.287Z] Đọc được 1441 SP từ 4 file artifact (scrape-artifacts)
-[2026-08-24T08:23:09.288Z] Đọc Part # (FORMULA render)...
-[2026-08-24T08:23:09.658Z] 💥 Lỗi: Error: Requested entity was not found.
-    at Gaxios._request (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/gaxios/build/src/gaxios.js:142:23)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at async JWT.requestAsync (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/node_modules/google-auth-library/build/src/auth/oauth2client.js:429:18)
-    at async readTabFormula (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/enrich-and-export.js:112:15)
-    at async main (/home/runner/work/MBW-Scrape-number/MBW-Scrape-number/enrich-and-export.js:154:20)
+[2026-08-25T01:17:34.375Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-25T01:17:34.380Z] Đọc được 1133 SP từ 3 file artifact (scrape-artifacts)
+[2026-08-25T01:17:34.380Z] Đọc Part # (FORMULA render)...
+[2026-08-25T01:17:35.098Z]   10276 dòng
+[2026-08-25T01:17:35.098Z] Đọc Segment (FORMULA render)...
+[2026-08-25T01:17:35.439Z]   120 dòng
+[2026-08-25T01:17:35.440Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-08-25T01:17:35.466Z] Part# map: 3993 SKU
+[2026-08-25T01:17:35.467Z] Tính xong 968 dòng enriched (loại 165 SP EOL)
+[2026-08-25T01:17:35.853Z] data.csv cũ: 40269 dòng, giữ lại 40269 dòng (loại dòng 25/08/2026 nếu có, sẽ thêm bản mới)
+[2026-08-25T01:17:35.924Z] ✅ Không có giá bất thường (kiểm tra 968 dòng vs trung vị 7 ngày)
+[2026-08-25T01:17:36.405Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 41238 dòng (kể cả header), 13962 KB
