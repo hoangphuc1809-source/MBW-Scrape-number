@@ -1260,6 +1260,24 @@ async function scrapePV(page) {
   //  - 'gone'    (nút không còn trong DOM): cần xác nhận 3 lần liên tiếp mới dừng
   //  - 'hidden'/'timeout': retry có chờ, tối đa 5 lần liên tiếp mới bỏ cuộc
   //  - đếm card lỗi (=-1) KHÔNG tính là stagnant (trước đây bị tính nhầm)
+  // FIX 26/08/2026 [PV dung som tren BARACK, mat ~127 SP/ngay]:
+  // Do truc tiep 26/08: trang PV co 404 card / 384 SKU. Nhung log 3 lan chay
+  // that tren BARACK deu dung o "stagnant 4 lan lien tiep":
+  //   run #503 (25/08 08:02): 260 card, 6 click
+  //   run #504 (26/08 01:04): 220 card, 5 click
+  //   run #505 (26/08 04:04): 220 card, 5 click
+  // Trong khi cung code + cung hang so chay tren MSI (may nhanh hon, do bang
+  // A/B test) lai di het 404 card / 384 SKU, dung vi "het nut".
+  // => Khong phai het SP ma la card CHUA KIP RENDER trong 2200ms tren BARACK.
+  //    Bug phu thuoc toc do may, nen chi lo ra o may cham.
+  // Hau qua kep: vua mat SP, vua ton them ~4 phut moi lan chay cho buoc
+  // recovery di kiem tra 50 SP "mat khoi listing" (log: "50 LOI SCRAPE THAT
+  // (van con ban)") — chinh la nhung SP chua kip render.
+  // Dung bo 3 hang so da kiem chung o pv_online_fallback.js (run #510: 384 SP).
+  const PV_AFTER_CLICK_MS = 4500;   // truoc: 2200
+  const PV_STAGNANT_LIMIT = 6;      // truoc: 4
+  const PV_STAGNANT_WAIT_MS = 5000; // truoc: 2500
+
   let clicks = 0, stagnant = 0, softFail = 0, goneStreak = 0;
   const countCards = () => evalWithTimeout(page.evaluate(() =>
     document.querySelectorAll('.product-card').length
@@ -1300,7 +1318,7 @@ async function scrapePV(page) {
     }
     goneStreak = 0; softFail = 0;
 
-    await sleep(2200);
+    await sleep(PV_AFTER_CLICK_MS);
     const after = await countCards();
     clicks++;
     if (before < 0 || after < 0) {
@@ -1311,8 +1329,9 @@ async function scrapePV(page) {
     }
     if (after === before) {
       stagnant++;
-      if (stagnant >= 4) { console.log(`    ⚠ Load-more không tăng SP 4 lần liên tiếp (${after} card) — dừng`); break; }
-      await sleep(2500); // extra wait trước lần thử tiếp
+      if (stagnant >= PV_STAGNANT_LIMIT) { console.log(`    ⚠ Load-more không tăng SP ${PV_STAGNANT_LIMIT} lần liên tiếp (${after} card) — dừng`); break; }
+      console.log(`    · Chưa tăng SP (${after} card, lần ${stagnant}/${PV_STAGNANT_LIMIT}) — chờ ${PV_STAGNANT_WAIT_MS}ms rồi thử tiếp`);
+      await sleep(PV_STAGNANT_WAIT_MS); // extra wait trước lần thử tiếp
     } else stagnant = 0;
   }
   if (clicks >= PV_MAX_CLICKS) console.log(`    ⚠ Đạt giới hạn ${PV_MAX_CLICKS} lần "Xem thêm sản phẩm" — dừng`);
@@ -1487,7 +1506,7 @@ async function scrapeFPT(page, brand, specCache, startTime) {
       if (n.includes('hp ') || n.includes('pavilion') || n.includes('envy') || n.includes('spectre') || n.includes('omen') || n.includes('elitebook') || n.includes('probook') || n.includes('victus')) return 'HP';
       if (n.includes('lenovo') || n.includes('ideapad') || n.includes('thinkpad') || n.includes('legion') || n.includes('yoga') || n.includes('loq')) return 'Lenovo';
       if (n.includes('samsung') || n.includes('galaxy book')) return 'Samsung';
-      if (n.includes('macbook') || n.includes('apple')) return 'MacBook';
+      if (n.includes('macbook') || n.includes('apple')) return 'Apple';
       if (n.includes('gigabyte') || n.includes('aorus')) return 'Gigabyte';
       if (n.includes('lg ') || n.includes('gram')) return 'LG';
       if (n.includes('huawei') || n.includes('matebook')) return 'Huawei';
