@@ -1,12 +1,13 @@
-[2026-08-26T08:22:47.898Z] --- Bắt đầu enrich-and-export.js ---
-[2026-08-26T08:22:47.905Z] Đọc được 1714 SP từ 4 file artifact (scrape-artifacts)
-[2026-08-26T08:22:47.905Z] Đọc Part # (FORMULA render)...
-[2026-08-26T08:22:48.364Z]   10276 dòng
-[2026-08-26T08:22:48.364Z] Đọc Segment (FORMULA render)...
-[2026-08-26T08:22:48.512Z]   120 dòng
-[2026-08-26T08:22:48.513Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-08-26T08:22:48.543Z] Part# map: 3993 SKU
-[2026-08-26T08:22:48.548Z] Tính xong 1557 dòng enriched (loại 157 SP EOL)
-[2026-08-26T08:22:48.976Z] data.csv cũ: 43208 dòng, giữ lại 41922 dòng (loại dòng 26/08/2026 nếu có, sẽ thêm bản mới)
-[2026-08-26T08:22:49.028Z] ✅ Không có giá bất thường (kiểm tra 1557 dòng vs trung vị 7 ngày)
-[2026-08-26T08:22:49.646Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 43480 dòng (kể cả header), 14731 KB
+[2026-08-26T10:17:59.596Z] --- Bắt đầu enrich-and-export.js ---
+[2026-08-26T10:17:59.604Z] Đọc được 1673 SP từ 4 file artifact (scrape-artifacts)
+[2026-08-26T10:17:59.604Z] Đọc Part # (FORMULA render)...
+[2026-08-26T10:18:00.075Z]   10276 dòng
+[2026-08-26T10:18:00.075Z] Đọc Segment (FORMULA render)...
+[2026-08-26T10:18:00.172Z]   120 dòng
+[2026-08-26T10:18:00.173Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-08-26T10:18:00.206Z] Part# map: 3993 SKU
+[2026-08-26T10:18:00.207Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Macbook","Colorful","Lg","Masstel","Singpc"]
+[2026-08-26T10:18:00.212Z] Tính xong 1510 dòng enriched (loại 163 SP EOL)
+[2026-08-26T10:18:00.697Z] data.csv cũ: 43479 dòng, giữ lại 41922 dòng (loại dòng 26/08/2026 nếu có, sẽ thêm bản mới)
+[2026-08-26T10:18:00.753Z] ✅ Không có giá bất thường (kiểm tra 1510 dòng vs trung vị 7 ngày)
+[2026-08-26T10:18:01.187Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 43433 dòng (kể cả header), 14704 KB
