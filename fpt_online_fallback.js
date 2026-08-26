@@ -44,7 +44,7 @@ function detectBrand(name) {
   if (n.includes('hp ') || n.includes('pavilion') || n.includes('envy') || n.includes('spectre') || n.includes('omen') || n.includes('elitebook') || n.includes('probook') || n.includes('victus')) return 'HP';
   if (n.includes('lenovo') || n.includes('ideapad') || n.includes('thinkpad') || n.includes('legion') || n.includes('yoga') || n.includes('loq')) return 'Lenovo';
   if (n.includes('samsung') || n.includes('galaxy book')) return 'Samsung';
-  if (n.includes('macbook') || n.includes('apple')) return 'MacBook';
+  if (n.includes('macbook') || n.includes('apple')) return 'Apple';
   if (n.includes('gigabyte') || n.includes('aorus')) return 'Gigabyte';
   if (n.includes('lg ') || n.includes('gram')) return 'LG';
   if (n.includes('huawei') || n.includes('matebook')) return 'Huawei';
