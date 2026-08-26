@@ -34,6 +34,22 @@ const PV_URL = 'https://phongvu.vn/c/laptop';
 const PV_MAX_CLICKS = 35; // giong multi_dealer_scraper.js dong 1201
 const OUTPUT_DIR = process.env.OUTPUT_DIR || './scrape-output';
 
+// FIX 26/08/2026 [run #509: PV fallback chi ra 207 SP vs 296 ban self-hosted]:
+// Vong lap dung sau 7 lan click (gioi han 35) vi guard stagnant>=4 — KHONG
+// phai het SP ma la card chua kip render trong thoi gian cho. Ca job chi mat
+// 70s, trong khi FPT mat 183s -> dung som ro rang.
+//
+// Ly do: cac hang so sleep cua scrapePV() duoc tinh cho trinh duyet chay CUC
+// BO tren may Phuc. Qua Bright Data trinh duyet nam o remote, moi vong
+// evaluate + render deu cong them do tre mang. Logic thi chuyen nguyen van
+// duoc, nhung HANG SO THOI GIAN thi khong.
+//
+// Chi noi long o file fallback nay, KHONG dung vao multi_dealer_scraper.js
+// (ban self-hosted dang chay tot voi hang so cu).
+const AFTER_CLICK_MS = 4500;   // scrapePV dung 2200
+const STAGNANT_LIMIT = 6;      // scrapePV dung 4
+const STAGNANT_WAIT_MS = 5000; // scrapePV dung 2500
+
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 // Bao ve moi page.evaluate bang timeout rieng — copy y tuong tu
@@ -107,7 +123,7 @@ async function scrapePvListing(page) {
     }
     goneStreak = 0; softFail = 0;
 
-    await sleep(2200);
+    await sleep(AFTER_CLICK_MS);
     const after = await countCards();
     clicks++;
     if (before < 0 || after < 0) {
@@ -117,11 +133,12 @@ async function scrapePvListing(page) {
     }
     if (after === before) {
       stagnant++;
-      if (stagnant >= 4) {
-        console.log(`    ⚠ Load-more không tăng SP 4 lần liên tiếp (${after} card) — dừng`);
+      if (stagnant >= STAGNANT_LIMIT) {
+        console.log(`    ⚠ Load-more không tăng SP ${STAGNANT_LIMIT} lần liên tiếp (${after} card) — dừng`);
         break;
       }
-      await sleep(2500);
+      console.log(`    · Chưa tăng SP (${after} card, lần ${stagnant}/${STAGNANT_LIMIT}) — chờ ${STAGNANT_WAIT_MS}ms rồi thử tiếp`);
+      await sleep(STAGNANT_WAIT_MS);
     } else stagnant = 0;
   }
   if (clicks >= PV_MAX_CLICKS) console.log(`    ⚠ Đạt giới hạn ${PV_MAX_CLICKS} lần click — dừng`);
