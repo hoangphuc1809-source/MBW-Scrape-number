@@ -27,20 +27,29 @@ const OUTPUT_DIR = process.env.OUTPUT_DIR || './scrape-output';
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-// Giong detectBrand() trong multi_dealer_scraper.js — giu dong bo neu sua 1
-// trong 2 noi thi nen sua ca hai.
+// FIX 26/08/2026: ham nay TRUOC DAY duoc goi ben trong page.evaluate() ->
+// ReferenceError "detectBrand is not defined" (browser context khong thay
+// scope cua Node) -> path fallback luon tra 0 SP (run #499, #500). Nay brand
+// duoc gan o Node SAU khi evaluate tra ve (xem scrapeFptListing).
+//
+// Noi dung ham COPY NGUYEN VAN tu detectBrand() inline trong
+// multi_dealer_scraper.js (scrapeFPT, ~dong 1475) de output fallback trung
+// khop 100% voi output self-hosted. Sua 1 trong 2 noi thi phai sua ca hai.
 function detectBrand(name) {
   const n = (name || '').toLowerCase();
   if (n.includes('msi')) return 'MSI';
-  if (n.includes('asus') || n.includes('vivobook') || n.includes('zenbook') || n.includes('rog') || n.includes('tuf') || n.includes('expertbook') || n.includes('proart')) return 'Asus';
+  if (n.includes('asus') || n.includes('vivobook') || n.includes('zenbook') || n.includes('rog') || n.includes('tuf')) return 'Asus';
   if (n.includes('acer') || n.includes('aspire') || n.includes('predator') || n.includes('nitro') || n.includes('swift')) return 'Acer';
-  if (n.includes('hp ') || n.startsWith('hp')) return 'HP';
-  if (n.includes('dell') || n.includes('inspiron') || n.includes('vostro') || n.includes('latitude') || n.includes('xps')) return 'Dell';
-  if (n.includes('lenovo') || n.includes('thinkpad') || n.includes('thinkbook') || n.includes('ideapad') || n.includes('legion') || n.includes('yoga') || n.includes('loq')) return 'Lenovo';
+  if (n.includes('dell') || n.includes('inspiron') || n.includes('xps') || n.includes('alienware') || n.includes('latitude') || n.includes('vostro')) return 'Dell';
+  if (n.includes('hp ') || n.includes('pavilion') || n.includes('envy') || n.includes('spectre') || n.includes('omen') || n.includes('elitebook') || n.includes('probook') || n.includes('victus')) return 'HP';
+  if (n.includes('lenovo') || n.includes('ideapad') || n.includes('thinkpad') || n.includes('legion') || n.includes('yoga') || n.includes('loq')) return 'Lenovo';
+  if (n.includes('samsung') || n.includes('galaxy book')) return 'Samsung';
   if (n.includes('macbook') || n.includes('apple')) return 'MacBook';
   if (n.includes('gigabyte') || n.includes('aorus')) return 'Gigabyte';
-  if (n.includes('samsung')) return 'Samsung';
-  return 'Khác';
+  if (n.includes('lg ') || n.includes('gram')) return 'LG';
+  if (n.includes('huawei') || n.includes('matebook')) return 'Huawei';
+  if (n.includes('microsoft') || n.includes('surface')) return 'Microsoft';
+  return 'Other';
 }
 
 async function scrapeFptListing(page) {
@@ -108,7 +117,9 @@ async function scrapeFptListing(page) {
       else if (!salePrice && !origPrice) stockStatus = 'Chưa rõ';
       else stockStatus = 'Còn hàng';
       out.push({
-        dealer: 'FPT Retail', name, brand: detectBrand(name),
+        // brand de rong o day — gan lai o Node sau khi evaluate tra ve
+        // (callback nay chay trong browser context, khong thay detectBrand).
+        dealer: 'FPT Retail', name, brand: '',
         // TAM RONG - dien lai boi enrichment tu Part# o job write-sheet.
         cpu: '', ram: '', storage: '', screen: '', gpu: '', weight: '',
         origPrice, salePrice, discount, sold: '', rating: '', link,
@@ -117,6 +128,9 @@ async function scrapeFptListing(page) {
     });
     return out;
   }, 'https://fptshop.com.vn');
+
+  // Gan brand o Node scope (detectBrand khong ton tai trong browser context).
+  products.forEach((p) => { p.brand = detectBrand(p.name); });
 
   return { products, clicks };
 }
