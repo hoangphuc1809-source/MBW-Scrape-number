@@ -1468,6 +1468,12 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   }
   if (clicks) console.log(`    → Xem thêm: ${clicks} lần`);
 
+  // FIX 26/08/2026: dem so card THAT SU co trong DOM de phan biet 2 truong hop
+  // hoan toan khac nhau ma canh bao cu gop lam mot (xem ngay duoi).
+  const cardsInDom = await page.evaluate(
+    () => document.querySelectorAll('div.cardInfo').length
+  ).catch(() => 0);
+
   const products = await page.evaluate((BASE) => {
     const out  = [];
     const seen = new Set();
@@ -1531,8 +1537,25 @@ async function scrapeFPT(page, brand, specCache, startTime) {
   }, 'https://fptshop.com.vn');
 
   console.log(`    → ${products.length} SP`);
-  if (headerTotal && products.length < headerTotal * 0.9) {
-    console.log(`    ⚠️ CẢNH BÁO: web nói "${headerTotal} kết quả" nhưng chỉ lấy được ${products.length} SP (${Math.round(products.length/headerTotal*100)}%) — có thể máy bận/mạng chậm, hoặc site đổi cấu trúc nút "Xem thêm". Cần theo dõi lần chạy sau.`);
+
+  // FIX 26/08/2026 [canh bao "chi lay duoc 81%" la BAO DONG GIA]:
+  // Canh bao cu so products.length voi headerTotal ("418 ket qua"). Nhung
+  // headerTotal dem O SAN PHAM tren trang, con products.length dem URL DUY
+  // NHAT sau dedup — hai don vi khac nhau. Da do bang test truc tiep tren
+  // trang FPT (26/08/2026, 2 lan chay doc lap):
+  //   - lan 1: 418 card trong DOM -> 312 link duy nhat
+  //   - lan 2: 417 card trong DOM -> 333 link duy nhat, 83 nhom trung
+  //   - trong 83 nhom trung: 83 nhom CUNG TEN + CUNG GIA, 0 nhom bien the
+  // Ket luan: FPT tu render lap card, scraper KHONG mat SKU nao. Canh bao cu
+  // keu moi ngay -> ai cung quen bo qua -> mot su co that se bi bo lot.
+  //
+  // Canh bao moi so headerTotal voi SO CARD TRONG DOM (dung don vi) — chi keu
+  // khi that su load thieu card (nut "Xem the" dung som / site doi cau truc).
+  const dupSkipped = cardsInDom - products.length;
+  if (headerTotal && cardsInDom && cardsInDom < headerTotal * 0.9) {
+    console.log(`    ⚠️ CẢNH BÁO THẬT: web nói "${headerTotal} kết quả" nhưng DOM chỉ có ${cardsInDom} card (${Math.round(cardsInDom/headerTotal*100)}%) — click "Xem thêm" dừng sớm hoặc site đổi cấu trúc. Cần kiểm tra.`);
+  } else if (dupSkipped > 0) {
+    console.log(`    ℹ️ FPT render lặp ${dupSkipped} card (${cardsInDom} card trong DOM → ${products.length} SP duy nhất) — bình thường, không mất dữ liệu.`);
   }
   if (products.length === 0) {
     // Chẩn đoán: trang trả 0 SP có thể do (a) bị chặn/redirect sang trang
