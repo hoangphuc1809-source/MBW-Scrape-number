@@ -20,17 +20,26 @@ const HEADERS = ['Ngày', 'Giờ', 'STT', 'Hãng', 'Tên Model', 'Giá (đã hi�
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
+// FIX 26/08/2026: COPY NGUYEN VAN tu detectBrand() inline trong
+// multi_dealer_scraper.js (scrapeFPT, ~dong 1475) de tab FPT_TEST cho brand
+// giong het production. Ban cu tra 'Apple'/'Khac' va thieu Gigabyte, Samsung,
+// Huawei, Microsoft, cac model HP/Dell. Sua 1 trong 3 noi (file nay,
+// multi_dealer_scraper.js, fpt_online_fallback.js) thi phai sua ca ba.
 function detectBrand(name) {
   const n = (name || '').toLowerCase();
   if (n.includes('msi')) return 'MSI';
   if (n.includes('asus') || n.includes('vivobook') || n.includes('zenbook') || n.includes('rog') || n.includes('tuf')) return 'Asus';
   if (n.includes('acer') || n.includes('aspire') || n.includes('predator') || n.includes('nitro') || n.includes('swift')) return 'Acer';
-  if (n.includes('hp ') || n.startsWith('hp')) return 'HP';
-  if (n.includes('dell') || n.includes('inspiron') || n.includes('vostro') || n.includes('latitude') || n.includes('xps')) return 'Dell';
-  if (n.includes('lenovo') || n.includes('thinkpad') || n.includes('ideapad') || n.includes('legion')) return 'Lenovo';
-  if (n.includes('macbook') || n.includes('apple')) return 'Apple';
-  if (n.includes('lg gram') || n.includes('lg ')) return 'LG';
-  return 'Khác';
+  if (n.includes('dell') || n.includes('inspiron') || n.includes('xps') || n.includes('alienware') || n.includes('latitude') || n.includes('vostro')) return 'Dell';
+  if (n.includes('hp ') || n.includes('pavilion') || n.includes('envy') || n.includes('spectre') || n.includes('omen') || n.includes('elitebook') || n.includes('probook') || n.includes('victus')) return 'HP';
+  if (n.includes('lenovo') || n.includes('ideapad') || n.includes('thinkpad') || n.includes('legion') || n.includes('yoga') || n.includes('loq')) return 'Lenovo';
+  if (n.includes('samsung') || n.includes('galaxy book')) return 'Samsung';
+  if (n.includes('macbook') || n.includes('apple')) return 'MacBook';
+  if (n.includes('gigabyte') || n.includes('aorus')) return 'Gigabyte';
+  if (n.includes('lg ') || n.includes('gram')) return 'LG';
+  if (n.includes('huawei') || n.includes('matebook')) return 'Huawei';
+  if (n.includes('microsoft') || n.includes('surface')) return 'Microsoft';
+  return 'Other';
 }
 
 async function scrapeListing(page) {
