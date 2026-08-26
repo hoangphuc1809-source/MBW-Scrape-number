@@ -1,0 +1,59 @@
+name: PROBE - Teko API tu IP cloud
+
+# File TAM de tra loi 1 cau hoi duy nhat: API discovery.tekoapis.com (backend
+# cua Phong Vu) co bi chan khi goi tu IP cloud khong? Trang HTML phongvu.vn
+# thi BI chan (Cloudflare bot-challenge) nen PV phai chay self-hosted. Neu API
+# KHONG bi chan thi co the bo hoan toan self-hosted cho PV.
+# Xoa file nay sau khi co ket qua.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Goi Teko API tu ubuntu-latest
+        run: |
+          cat > probe.js << 'EOF'
+          const https = require('https');
+          function call(page, pageSize) {
+            const body = JSON.stringify({
+              terminalId: 4, page, pageSize, slug: '/c/laptop', filter: {},
+              sorting: { sort: 'SORT_BY_CREATED_AT', order: 'ORDER_BY_DESCENDING' },
+              returnFilterable: [], isNeedFeaturedProducts: false,
+            });
+            return new Promise((resolve) => {
+              const t0 = Date.now();
+              const req = https.request({
+                hostname: 'discovery.tekoapis.com', path: '/api/v2/search-skus-v2', method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+              }, (res) => {
+                let d = '';
+                res.on('data', (c) => { d += c; });
+                res.on('end', () => resolve({ status: res.statusCode, len: d.length, ms: Date.now() - t0, text: d }));
+              });
+              req.on('error', (e) => resolve({ status: 'ERR', err: e.message }));
+              req.write(body); req.end();
+            });
+          }
+          (async () => {
+            const r = await call(1, 40);
+            console.log(`status=${r.status} len=${r.len} ${r.ms}ms ${r.err || ''}`);
+            if (r.status !== 200) { console.log('=> BI CHAN tu IP cloud'); console.log(String(r.text).substring(0,500)); process.exit(0); }
+            const j = JSON.parse(r.text);
+            console.log(`=> KHONG BI CHAN. total=${j.data.total} products=${j.data.products.length}`);
+            let all = new Set(); const t0 = Date.now();
+            for (let p = 1; p <= 12; p++) {
+              const rr = await call(p, 100);
+              if (rr.status !== 200) { console.log(`page ${p}: status=${rr.status} - dung`); break; }
+              const jj = JSON.parse(rr.text);
+              jj.data.products.forEach((x) => all.add(x.sku));
+              console.log(`page ${p}: ${jj.data.products.length} SP | cong don ${all.size} | ${rr.ms}ms`);
+              if (jj.data.products.length === 0) break;
+            }
+            console.log(`TONG tu cloud: ${all.size} SKU trong ${Math.round((Date.now()-t0)/1000)}s`);
+          })();
+          EOF
+          node probe.js
