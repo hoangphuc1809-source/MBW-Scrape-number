@@ -206,6 +206,18 @@ async function main() {
   }
 
   const partMap = new Map();
+  // FIX 26/08/2026 [Vendor "MacBook" vs "Macbook" tach thanh 2 nhom]:
+  // Cot Vendor lay tu tab "Part #" khi khop ten SP, nhung khi SP CHUA co
+  // trong tab Part# thi rot ve p.brand do scraper tu suy ra (detectBrand).
+  // Hai nguon nay dung chinh ta khac nhau -> vd "MacBook Air 15 M2 2023"
+  // (Part# rong) ra Vendor "MacBook" trong khi 46 SP MacBook khac ra
+  // "Macbook" => dashboard hien 2 vendor rieng. Xay ra deu moi ngay 22-26/08.
+  //
+  // Sua tan goc thay vi dien tay Part# cho 1 SKU: gom TU DIEN Vendor chuan
+  // tu chinh tab Part# (nguon su that duy nhat), roi ep p.brand ve dung
+  // chinh ta do khi khop khong phan biet hoa/thuong. Tu dong dung cho moi
+  // brand khac trong tuong lai, khong hardcode danh sach.
+  const vendorCanon = new Map(); // vendor viet thuong -> vendor dung chinh ta trong Part#
   for (let i = 1; i < partRows.length; i++) {
     const r = partRows[i];
     const name = iName !== undefined ? r[iName] : undefined;
@@ -228,6 +240,11 @@ async function main() {
     const focusRaw = iFocus !== undefined ? r[iFocus] : '';
     const focusModel = (focusRaw && !isFormula(focusRaw)) ? String(focusRaw) : 'No';
 
+    const vendorRaw = String((iVendor !== undefined && r[iVendor]) || '').trim();
+    if (vendorRaw && !vendorCanon.has(vendorRaw.toLowerCase())) {
+      vendorCanon.set(vendorRaw.toLowerCase(), vendorRaw);
+    }
+
     partMap.set(String(name), {
       vendor: (iVendor !== undefined && r[iVendor]) || '',
       partNumber: (iPartNo !== undefined && r[iPartNo]) || '',
@@ -243,6 +260,15 @@ async function main() {
     });
   }
   debugLog(`Part# map: ${partMap.size} SKU`);
+  debugLog(`Vendor chuan tu Part#: ${vendorCanon.size} gia tri -> ${JSON.stringify([...vendorCanon.values()])}`);
+
+  // Ep brand do scraper suy ra ve dung chinh ta cua tab Part#. Neu khong khop
+  // gia tri nao (brand hoan toan moi) thi giu nguyen — khong bia them.
+  const canonVendor = (brand) => {
+    const b = String(brand || '').trim();
+    if (!b) return '';
+    return vendorCanon.get(b.toLowerCase()) || b;
+  };
 
   // 5) Tính enrichment, loại EOL
   const today = new Date();
@@ -266,7 +292,7 @@ async function main() {
       dateStr, timeStr, p.dealer, p.name,
       srp, promo, p.discount || '',
       p.sold || '', p.rating || '',
-      (info && info.vendor) || p.brand || '',
+      (info && info.vendor) || canonVendor(p.brand) || '',
       (info && info.seriesGroup) || '',
       (info && info.segment) || '',
       (info && info.cpuSegment) || '',
