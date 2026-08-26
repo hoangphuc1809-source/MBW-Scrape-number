@@ -234,9 +234,84 @@ jobs:
   # latest) - trang tra ve 0 SP (page challenge thay vi content thuc).
   # Cung code nay chay OK tren may nha/office VN (BARACK, 400 SP). Giong
   # HOAN TOAN case FPT - chuyen sang self-hosted thay vi cloud.
-  scrape-pv:
+  # 26/08/2026: PV chuyen sang goi API JSON cua Teko (backend that su cua
+  # phongvu.vn) thay vi dieu khien trinh duyet. Trang HTML bi Cloudflare chan IP
+  # cloud, nhung API thi KHONG — da do bang workflow probe tren ubuntu-latest.
+  #
+  # So voi scrapePV() qua Puppeteer:
+  #   - 3 giay thay vi ~138s + ~4 phut recovery
+  #   - khong phu thuoc toc do may (bug 26/08: BARACK cham -> 220/404 card)
+  #   - co `total` do API khai bao de doi chieu, khong phai doan
+  #   - het hien tuong 43 dong ma moi ngay: buoc recovery tra link luu tu ngay
+  #     truoc (promo id cu) roi them dong TRUNG SP nhung KHONG co gia -> PV hien
+  #     433 dong trong khi so that la 384
+  #
+  # Da doi chieu voi du lieu DOM ghi vao Sheet ngay 26/08: 384/384 SP khop link,
+  # 0 SP chi co trong API, 0 lech gia.
+  #
+  # RUI RO: API noi bo, Teko co the doi schema/them auth bat ky luc nao. Vi vay
+  # 2 job duoi (scrape-pv self-hosted va scrape-pv-online Bright Data) van giu
+  # nguyen lam duong lui, chi chay khi job nay KHONG success.
+  scrape-pv-api:
+    name: Scrape PV (Teko API - khong can trinh duyet)
     needs: check-runners
-    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' && !inputs.force_fallback }}
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && !inputs.force_fallback }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+
+      - name: Lay PV qua Teko API (chi luu file)
+        run: node pv_api.js
+
+      # CHI upload khi thanh cong: neu that bai ma van upload artifact rong thi
+      # se dung ten voi artifact cua job du phong -> upload-artifact@v4 bao loi.
+      - name: Upload artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-pv-output
+          path: |
+            scrape-output/*.json
+            scrape-output/*.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Bao cao ve Telegram
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            exit 0
+          fi
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] Phong Vu (Teko API)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "text=${MSG}" \
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
+
+  # Duong lui 1: API hong + co may self-hosted online.
+  scrape-pv:
+    needs: [check-runners, scrape-pv-api]
+    if: ${{ always() && (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' && !inputs.force_fallback && needs.scrape-pv-api.result != 'success' }}
     runs-on: self-hosted
     timeout-minutes: 90
     steps:
@@ -422,10 +497,11 @@ jobs:
   # la PV mat trang du lieu (da xay ra that o run #507: dashboard/data.csv
   # ngay 26/08 khong con dong "Phong Vu" nao). PV bi Cloudflare bot-challenge
   # chan IP cloud y het FPT — cung cach giai quyet.
+  # Duong lui 2: API hong + khong may nao online (hoac dang ep test fallback).
   scrape-pv-online:
     name: Scrape PV (Bright Data - fallback khi may offline)
-    needs: check-runners
-    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && (needs.check-runners.outputs.online == 'false' || inputs.force_fallback) }}
+    needs: [check-runners, scrape-pv-api]
+    if: ${{ always() && (inputs.run_scrape || github.event_name == 'schedule') && (needs.check-runners.outputs.online == 'false' || inputs.force_fallback) && needs.scrape-pv-api.result != 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -484,7 +560,7 @@ jobs:
   # ghi gi (giu triet ly STOP-AND-STABILIZE tu v3.4.10: listing on dinh uu
   # tien hon la doi cho hoan hao).
   write-sheet:
-    needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-fpt, scrape-fpt-online, scrape-pv-online]
+    needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-pv-api, scrape-fpt, scrape-fpt-online, scrape-pv-online]
     if: ${{ always() && (inputs.run_scrape || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
