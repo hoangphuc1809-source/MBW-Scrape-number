@@ -30,6 +30,18 @@ concurrency:
   group: scrape-pipeline
   cancel-in-progress: false
 
+# 26/08/2026: Ep MUI GIO VIET NAM cho toan bo workflow.
+# Van de: cac job ghi du lieu (write-sheet) chay tren ubuntu-latest = UTC, nen
+# cot "Time" trong tab "Daily SRP Tracking" va cot "Hour" trong dashboard/data.csv
+# bi ghi theo gio UTC (vd 04:41 thay vi 11:41 VN). Nguyen nhan: ham format o
+# multi_dealer_scraper.js (dong 456/459) va enrich-and-export.js (dong 50/53)
+# dung d.getDate()/d.getHours() — tuc GIO LOCAL CUA RUNNER.
+# Node doc bien moi truong TZ nen dat o day la sua ca 2 script cung luc, khong
+# phai sua dong code JS nao. Cac runner self-hosted (BARACK/MSI) von da o gio
+# VN nen khong bi anh huong.
+env:
+  TZ: Asia/Ho_Chi_Minh
+
 jobs:
   # 06/08/2026: Job kiem tra truoc tien - cac may self-hosted (BARACK/MSI) co
   # dang online khong. Neu KHONG co may nao online, scrape-fpt-online (Bright
