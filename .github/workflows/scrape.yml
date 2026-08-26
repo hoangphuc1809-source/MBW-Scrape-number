@@ -21,6 +21,15 @@ on:
         description: 'CHI re-enrich dashboard/data.csv tu Part# moi nhat (khong scrape, ~30-60s) - dung khi vua sua Part#'
         type: boolean
         default: false
+      # 26/08/2026: nhanh Bright Data truoc day CHI chay duoc khi ca 2 may
+      # self-hosted cung off -> khong the test neu khong tat may. Do do bug
+      # "detectBrand is not defined" song sot 20 ngay ma khong ai biet (run
+      # #499/#500 fail, phat hien tinh co). Input nay cho phep ep chay nhanh
+      # fallback bat ky luc nao de kiem thu.
+      force_fallback:
+        description: 'TEST: ep chay nhanh Bright Data (FPT+PV) du may self-hosted dang online - binh thuong de FALSE'
+        type: boolean
+        default: false
 
 # Chan 2 LAN CHAY (workflow run) chong nhau — van giu nguyen tu ban fix
 # truoc, vi neu 2 lan trigger trung gio thi van co the co 2 bo "3 job song
@@ -227,7 +236,7 @@ jobs:
   # HOAN TOAN case FPT - chuyen sang self-hosted thay vi cloud.
   scrape-pv:
     needs: check-runners
-    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' }}
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' && !inputs.force_fallback }}
     runs-on: self-hosted
     timeout-minutes: 90
     steps:
@@ -288,7 +297,7 @@ jobs:
   # BARACK deu nhan duoc - co che du phong co chu dich, DUNG ghim may cu the.
   scrape-fpt:
     needs: check-runners
-    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' }}
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'true' && !inputs.force_fallback }}
     runs-on: self-hosted
     timeout-minutes: 90
     steps:
@@ -355,7 +364,7 @@ jobs:
   scrape-fpt-online:
     name: Scrape FPT (Bright Data - fallback khi may offline)
     needs: check-runners
-    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && needs.check-runners.outputs.online == 'false' }}
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && (needs.check-runners.outputs.online == 'false' || inputs.force_fallback) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -408,13 +417,74 @@ jobs:
             -d "text=${MSG}" \
             -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
+  # 26/08/2026: fallback Bright Data cho Phong Vu — song song voi
+  # scrape-fpt-online. Truoc do CHI FPT co fallback, nen ngay nao ca 2 may off
+  # la PV mat trang du lieu (da xay ra that o run #507: dashboard/data.csv
+  # ngay 26/08 khong con dong "Phong Vu" nao). PV bi Cloudflare bot-challenge
+  # chan IP cloud y het FPT — cung cach giai quyet.
+  scrape-pv-online:
+    name: Scrape PV (Bright Data - fallback khi may offline)
+    needs: check-runners
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && (needs.check-runners.outputs.online == 'false' || inputs.force_fallback) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+
+      - name: Scrape PV qua Bright Data (chi luu file)
+        env:
+          BRIGHTDATA_BROWSER_WS: ${{ secrets.BRIGHTDATA_BROWSER_WS }}
+        run: node pv_online_fallback.js
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-pv-output
+          path: |
+            scrape-output/*.json
+            scrape-output/*.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Bao cao ve Telegram
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            exit 0
+          fi
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] Phong Vu (Bright Data fallback - may self-hosted offline)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "text=${MSG}" \
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
+
   # Job DUY NHAT duoc ghi vao Google Sheet. Chi chay SAU KHI ca 3 job scrape
   # da xong (needs), va van chay du 1/2 job scrape bi fail (if: always()) —
   # ghi best-effort voi du lieu cua nhung dealer thanh cong, con hon khong
   # ghi gi (giu triet ly STOP-AND-STABILIZE tu v3.4.10: listing on dinh uu
   # tien hon la doi cho hoan hao).
   write-sheet:
-    needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-fpt, scrape-fpt-online]
+    needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-fpt, scrape-fpt-online, scrape-pv-online]
     if: ${{ always() && (inputs.run_scrape || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
