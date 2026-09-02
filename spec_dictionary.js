@@ -54,8 +54,13 @@ const K = {
 
     let m = t.match(/\b(RTX|GTX|GT|RX)\s*(\d{3,4})\s*(Ti|XT|Super|M)?\b/i);
     if (m) {
-      const sfx = m[3] ? ' ' + (m[3].length === 1 ? m[3].toUpperCase()
-                                                  : m[3][0].toUpperCase() + m[3].slice(1).toLowerCase()) : '';
+      // Hau to "M" viet DINH LIEN ("GTX 960M"), con Ti/XT/Super thi tach ra
+      // ("RTX 5070 Ti"). Day la cach NVIDIA/AMD viet.
+      let sfx = '';
+      if (m[3]) {
+        const s3 = m[3].toUpperCase();
+        sfx = s3 === 'M' ? 'M' : ' ' + s3[0] + m[3].slice(1).toLowerCase();
+      }
       return `${m[1].toUpperCase()} ${m[2]}${sfx}`;
     }
     // MX550 / MX570A — hau to chu cai phai bat duoc, khong thi ra "MX 570" sai
@@ -66,7 +71,8 @@ const K = {
     if (m) return `AMD Radeon RX Vega ${m[1]}`;
     m = t.match(/\bRadeon\s+(?:RX\s+)?(?:Graphics\s+)?Vega\s+(\d+)\b/i);
     if (m) return `AMD Radeon Vega ${m[1]}`;
-    m = t.match(/\bRadeon\s+(\d{3,4}[A-Z])\b/i);
+    // Model co the co hoac khong co chu cai cuoi: 680M, 8060S, va ca 520.
+    m = t.match(/\bRadeon\s+(\d{3,4}[A-Z]?)\b/i);
     if (m) return `AMD Radeon ${m[1].toUpperCase()}`;
 
     m = t.match(/\bUHD\s*(?:Graphics)?\s*(\d{3})?\b/i);
@@ -74,7 +80,9 @@ const K = {
     m = t.match(/\bHD\s*(?:Graphics)?\s*(\d{3})\b/i);
     if (m) return `Intel HD Graphics ${m[1]}`;
     if (/\bIris\s*Xe\b/i.test(t))        return 'Intel Iris Xe Graphics';
-    if (/\bArc\b/i.test(t))              return 'Intel Arc Graphics';
+    // Arc co the kem model: "Intel Arc Graphics 140V" — giu lai.
+    m = t.match(/\bArc\s*(?:Graphics)?\s*(\d{3}[A-Z]?)?\b/i);
+    if (m) return `Intel Arc Graphics${m[1] ? ' ' + m[1].toUpperCase() : ''}`;
     if (/\bIntel\s+Graphics\b/i.test(t)) return 'Intel Graphics';
 
     if (/\bRadeon\b/i.test(t))           return 'AMD Radeon Graphics';

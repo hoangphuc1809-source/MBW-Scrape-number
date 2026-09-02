@@ -72,7 +72,15 @@ async function main() {
                         why: 'chuỗi thiếu mã số hoặc bị cắt cụt' });
         continue;
       }
-      if (n.cpu !== cpu) problems.push({ line, col: 'CPU', now: cpu, should: n.cpu, why: 'khác dạng chuẩn' });
+      if (n.cpu !== cpu) {
+        // Hai chuoi nhin GIONG HET nhau tren man hinh nhung khac nhau -> o do
+        // chua khoang trang la (non-breaking space) hoac tab. Phai bao rieng,
+        // neu khong Phuc se tuong may bao sai.
+        const why = n.cpu.replace(/\s/g, '') === cpu.replace(/\s/g, '')
+          ? 'có ký tự trắng lạ (nhìn giống nhau nhưng khác)'
+          : 'khác dạng chuẩn';
+        problems.push({ line, col: 'CPU', now: cpu, should: n.cpu, why });
+      }
       if (iSeg >= 0) {
         const seg = String(row[iSeg] || '').trim();
         if (seg && seg !== n.segment) problems.push({ line, col: 'CPU Segment', now: seg, should: n.segment, why: 'không khớp CPU cùng dòng' });
