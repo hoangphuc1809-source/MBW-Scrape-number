@@ -58,11 +58,12 @@ const FULL_RULES = [
     },
   },
   {
-    // Ryzen doi cu VA dong 100/200 series (ma 3 chu so: Ryzen 7 260,
-    // Ryzen 5 150, Ryzen 7 170). Toi thieu 3 chu so — chan "Ryzen 5 40"
-    // (nguon An Phat cat cut) lot vao.
+    // Ryzen: ma so 2-4 chu so. AMD co that ca "Ryzen 5 40", "Ryzen 7 170"
+    // (dong 40/100/200 series) lan "Ryzen 7 7735HS" (dong cu 4 chu so).
+    // Ban dau em cho 2 chu so la chuoi bi cat cut nen loai — SAI. Phuc xac
+    // nhan 02/09 day la ten that.
     name: 'ryzen',
-    re: /\b(?:AMD\s+)?(?:Ryz+en|R)\s*([3579])\s*[- ]?(\d{3,4})\s*([A-Z]{1,3})?\b/i,
+    re: /\b(?:AMD\s+)?(?:Ryz+en|R)\s*([3579])\s*[- ]?(\d{2,4})\s*([A-Z]{1,3})?\b/i,
     build: m => ({
       cpu: `Ryzen ${m[1]} ${m[2]}${m[3] ? m[3].toUpperCase() : ''}`,
       segment: `Ryzen ${m[1]}`,

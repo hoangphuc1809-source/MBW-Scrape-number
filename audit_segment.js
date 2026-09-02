@@ -1,15 +1,24 @@
-// audit_segment.js — doc tab "Segment" trong Retail Price Tracking, doi chieu
-// tung dong voi bo luat chuan hoa, in ra dong nao sai quy luat.
+// audit_segment.js — kiem tra tab "Segment" trong Retail Price Tracking.
 //
-// CHI DOC. Scope la spreadsheets.readonly — khong the ghi vao Sheet du co loi
-// lap trinh. Phuc tu sua tay sau khi xem bao cao.
+// TRIET LY (sua 02/09 sau khi Phuc gop y): tab Segment la CHUAN, do Phuc da
+// chuan hoa ~99%. Bo luat trong spec_normalize.js KHONG phai thuoc do dung/sai
+// — no chi lam mot viec: ANH XA chuoi lon xon tu cac retailer VE cac gia tri
+// co san trong tab nay.
 //
-// Tab "Segment" gom nhieu KHOI cach nhau bang cot trong:
-//   B:D  Brand | Segment | Series Group
-//   F:H  CPU Segment | CPU | CPU Platform
-//   J    GPU
-// Script tu do vi tri khoi bang header thay vi hardcode chu cai cot, de sau
-// nay Phuc chen them cot ma khong lam hong.
+// Vi vay audit KHONG con bao "khac dang chuan" khi luat dung lai ten khac cach
+// Phuc viet. Truoc do em lam vay va no sai huong: bao 496 o "phai sua" trong
+// khi phan lon chi la luat cua em viet khac, chu du lieu khong sai.
+//
+// Gio chi bao 4 loai — deu la van de THAT du lay tab nay lam chuan:
+//   1. TRUNG LAP: hai cach viet cua CUNG mot con chip/GPU cung ton tai trong
+//      tab. Bat buoc phai bo mot, neu khong tra cuu se ra hai ket qua khac nhau.
+//   2. LECH TRONG CUNG DONG: CPU Segment hoac Platform khong khop voi CPU.
+//   3. O RAC: "#N/A", "Dang cap nhat", "Graphics", o trong.
+//   4. KHONG ANH XA DUOC: luat khong nhan ra gia tri nay, nghia la du lieu
+//      scraper se KHONG BAO GIO khop vao dong do -> dong do vo dung.
+//      Day la loi CUA LUAT, khong phai cua Phuc; bao ra de em di sua luat.
+//
+// CHI DOC: scope spreadsheets.readonly.
 const fs = require('fs');
 const { google } = require('googleapis');
 const { normalizeCpu } = require('./spec_normalize.js');
@@ -18,110 +27,123 @@ const { K, cpuPlatform } = require('./spec_dictionary.js');
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const TAB = process.env.SEGMENT_TAB || 'Segment';
 
+// O khong mang thong tin — khong phai gia tri chuan.
+const JUNK = /^(#N\/A|#REF!|#VALUE!|n\/a|na|-|--|\?+|đang cập nhật|dang cap nhat|graphics|integrated graphics|intel|amd|apple|nvidia)$/i;
+
 async function main() {
-  const credsPath = '/tmp/creds.json';
-  fs.writeFileSync(credsPath, process.env.GOOGLE_CREDENTIALS);
+  fs.writeFileSync('/tmp/creds.json', process.env.GOOGLE_CREDENTIALS);
   const auth = new google.auth.GoogleAuth({
-    keyFile: credsPath,
+    keyFile: '/tmp/creds.json',
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   });
   const sheets = google.sheets({ version: 'v4', auth: await auth.getClient() });
-
   const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `'${TAB}'!A1:Z2000`,
+    spreadsheetId: SPREADSHEET_ID, range: `'${TAB}'!A1:Z2000`,
   });
   const rows = res.data.values || [];
   if (!rows.length) { console.log('Tab rong hoac khong doc duoc.'); return; }
 
   const header = rows[0].map(h => String(h || '').trim());
-  console.log('Header:', header.map((h, i) => h ? `[${i}] ${h}` : null).filter(Boolean).join('  '));
-
-  // Tab co NHIEU khoi lap lai (CPU/GPU xuat hien o vai cum cot khac nhau), va
-  // header co loi chinh ta thuc te: "CPU Flatform" thay vi "CPU Platform".
-  // Nen tim TAT CA cot khop, khong phai cot dau tien, va chap nhan viet sai.
-  const allCols = (...names) => header.map((h, i) => {
-    const low = h.toLowerCase().replace(/\s+/g, ' ');
-    return names.some(n => low === n.toLowerCase()) ? i : -1;
-  }).filter(i => i >= 0);
-
-  const cpuCols  = allCols('CPU');
-  const segCols  = allCols('CPU Segment');
+  // Tab co nhieu khoi CPU/GPU lap lai, va header viet "CPU Flatform" (thieu P).
+  const allCols = (...names) => header.map((h, i) =>
+    names.some(n => h.toLowerCase().replace(/\s+/g, ' ') === n.toLowerCase()) ? i : -1).filter(i => i >= 0);
+  const cpuCols = allCols('CPU'), segCols = allCols('CPU Segment');
   const platCols = allCols('CPU Platform', 'CPU Flatform', 'CPU Flatfrom');
-  const gpuCols  = allCols('GPU', 'Card đồ họa');
-  console.log(`\nCot tim thay: CPU=[${cpuCols}]  CPU Segment=[${segCols}]  Platform=[${platCols}]  GPU=[${gpuCols}]`);
+  const gpuCols = allCols('GPU', 'Card đồ họa');
+  console.log(`Cot: CPU=[${cpuCols}] Segment=[${segCols}] Platform=[${platCols}] GPU=[${gpuCols}]\n`);
 
-  // Ghep CPU voi Segment/Platform gan no nhat ve phia trai trong cung khoi.
-  const nearest = (cols, target) => {
-    const left = cols.filter(c => Math.abs(c - target) <= 3);
-    return left.length ? left.reduce((a, b) => Math.abs(a - target) < Math.abs(b - target) ? a : b) : -1;
+  const nearest = (cols, t) => {
+    const c = cols.filter(x => Math.abs(x - t) <= 3);
+    return c.length ? c.reduce((a, b) => Math.abs(a - t) < Math.abs(b - t) ? a : b) : -1;
   };
 
   const problems = [];
+  const seenCpu = new Map();   // key con chip -> [cach viet]
+  const seenGpu = new Map();
+
   for (let r = 1; r < rows.length; r++) {
-    const row = rows[r] || [];
-    const line = r + 1;                       // so dong that trong Sheet
+    const row = rows[r] || [], line = r + 1;
 
     for (const iCpu of cpuCols) {
       const cpu = String(row[iCpu] || '').trim();
       if (!cpu) continue;
-      const iSeg = nearest(segCols, iCpu), iPlat = nearest(platCols, iCpu);
-      const n = normalizeCpu(cpu);
-      if (n.confidence !== 'full') {
-        problems.push({ line, col: 'CPU', now: cpu, should: '(máy không nhận ra)',
-                        why: 'chuỗi thiếu mã số hoặc bị cắt cụt' });
+      if (JUNK.test(cpu) || /đang cập nhật/i.test(cpu)) {
+        problems.push({ kind: 'Ô rác', line, col: 'CPU', now: cpu, note: 'không phải tên chip' });
         continue;
       }
-      if (n.cpu !== cpu) {
-        // Hai chuoi nhin GIONG HET nhau tren man hinh nhung khac nhau -> o do
-        // chua khoang trang la (non-breaking space) hoac tab. Phai bao rieng,
-        // neu khong Phuc se tuong may bao sai.
-        const why = n.cpu.replace(/\s/g, '') === cpu.replace(/\s/g, '')
-          ? 'có ký tự trắng lạ (nhìn giống nhau nhưng khác)'
-          : 'khác dạng chuẩn';
-        problems.push({ line, col: 'CPU', now: cpu, should: n.cpu, why });
+      const n = normalizeCpu(cpu);
+      if (n.confidence !== 'full') {
+        problems.push({ kind: 'Luật chưa nhận ra', line, col: 'CPU', now: cpu,
+                        note: 'dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật' });
+        continue;
       }
+      // Trung lap: hai cach viet cua cung mot con chip
+      if (!seenCpu.has(n.cpu)) seenCpu.set(n.cpu, new Map());
+      seenCpu.get(n.cpu).set(cpu, line);
+
+      const iSeg = nearest(segCols, iCpu), iPlat = nearest(platCols, iCpu);
       if (iSeg >= 0) {
         const seg = String(row[iSeg] || '').trim();
-        if (seg && seg !== n.segment) problems.push({ line, col: 'CPU Segment', now: seg, should: n.segment, why: 'không khớp CPU cùng dòng' });
-        else if (!seg) problems.push({ line, col: 'CPU Segment', now: '(trống)', should: n.segment, why: 'thiếu' });
+        if (!seg) problems.push({ kind: 'Thiếu', line, col: 'CPU Segment', now: '(trống)', note: `CPU là "${cpu}"` });
+        else if (seg !== n.segment && seg.replace(/\s+/g, ' ') !== n.segment) {
+          problems.push({ kind: 'Lệch trong cùng dòng', line, col: 'CPU Segment', now: seg,
+                          note: `CPU là "${cpu}" -> segment phải là "${n.segment}"` });
+        }
       }
       if (iPlat >= 0) {
-        const plat = String(row[iPlat] || '').trim();
-        const pShould = cpuPlatform(n.cpu);
-        if (plat && pShould && plat !== pShould) problems.push({ line, col: 'CPU Platform', now: plat, should: pShould, why: 'sai hãng' });
+        const plat = String(row[iPlat] || '').trim(), should = cpuPlatform(n.cpu);
+        if (plat && should && plat !== should) {
+          problems.push({ kind: 'Lệch trong cùng dòng', line, col: 'CPU Platform', now: plat,
+                          note: `CPU là "${cpu}" -> hãng phải là "${should}"` });
+        }
       }
     }
 
     for (const iGpu of gpuCols) {
       const gpu = String(row[iGpu] || '').trim();
       if (!gpu) continue;
-      const g = K.gpu(gpu);
-      if (!g) problems.push({ line, col: 'GPU', now: gpu, should: '(máy không nhận ra)', why: 'không khớp mẫu nào' });
-      else if (g !== gpu) {
-        // Neu chi khac nhau o ky tu trang la o dang chua khoang trang la
-        // (non-breaking space) — bao rieng vi nhin bang mat khong thay.
-        const why = g.replace(/\s/g, '') === gpu.replace(/\s/g, '')
-          ? 'có ký tự trắng lạ (nhìn giống nhau nhưng khác)'
-          : 'khác dạng chuẩn';
-        problems.push({ line, col: 'GPU', now: gpu, should: g, why });
+      if (JUNK.test(gpu) || /đang cập nhật/i.test(gpu)) {
+        problems.push({ kind: 'Ô rác', line, col: 'GPU', now: gpu, note: 'không phải tên GPU' });
+        continue;
       }
+      const g = K.gpu(gpu);
+      if (!g) {
+        problems.push({ kind: 'Luật chưa nhận ra', line, col: 'GPU', now: gpu,
+                        note: 'dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật' });
+        continue;
+      }
+      if (!seenGpu.has(g)) seenGpu.set(g, new Map());
+      seenGpu.get(g).set(gpu, line);
     }
   }
 
-  console.log(`\n===== ${problems.length} DONG SAI QUY LUAT =====\n`);
-  const byCol = {};
-  problems.forEach(p => { byCol[p.col] = (byCol[p.col] || 0) + 1; });
-  Object.entries(byCol).forEach(([c, n]) => console.log(`  ${c.padEnd(14)} ${n}`));
+  // Trung lap trong chinh tab
+  for (const [label, seen] of [['CPU', seenCpu], ['GPU', seenGpu]]) {
+    for (const [key, variants] of seen) {
+      if (variants.size <= 1) continue;
+      const list = [...variants.entries()].map(([v, l]) => `"${v}" (dòng ${l})`).join('  vs  ');
+      problems.push({ kind: 'Trùng lặp', line: [...variants.values()][0], col: label, now: list,
+                      note: 'cùng một thứ nhưng hai cách viết — phải bỏ bớt một' });
+    }
+  }
+
+  const byKind = {};
+  problems.forEach(p => { byKind[p.kind] = (byKind[p.kind] || 0) + 1; });
+  console.log(`===== ${problems.length} VAN DE =====`);
+  Object.entries(byKind).forEach(([k, n]) => console.log(`  ${k.padEnd(22)} ${n}`));
   console.log('');
-  for (const p of problems) {
-    console.log(`  dòng ${String(p.line).padStart(4)} | ${p.col.padEnd(13)} | "${p.now}"  ->  "${p.should}"   (${p.why})`);
+  const order = ['Trùng lặp', 'Lệch trong cùng dòng', 'Thiếu', 'Ô rác', 'Luật chưa nhận ra'];
+  for (const kind of order) {
+    const g = problems.filter(p => p.kind === kind);
+    if (!g.length) continue;
+    console.log(`\n--- ${kind} (${g.length}) ---`);
+    g.slice(0, 60).forEach(p => console.log(`  dòng ${String(p.line).padStart(4)} | ${p.col.padEnd(13)} | ${p.now}\n${' '.repeat(24)}${p.note}`));
+    if (g.length > 60) console.log(`  ... còn ${g.length - 60} dòng nữa, xem file`);
   }
 
   fs.mkdirSync('segment-audit', { recursive: true });
-  const tsv = ['Dòng\tCột\tGiá trị hiện tại\tĐề xuất\tLý do',
-    ...problems.map(p => [p.line, p.col, p.now, p.should, p.why].join('\t'))].join('\n');
-  fs.writeFileSync('segment-audit/segment-audit.tsv', tsv, 'utf8');
+  fs.writeFileSync('segment-audit/segment-audit.tsv',
+    ['Loại\tDòng\tCột\tGiá trị\tGhi chú', ...problems.map(p => [p.kind, p.line, p.col, p.now, p.note].join('\t'))].join('\n'), 'utf8');
   console.log(`\nDa ghi segment-audit/segment-audit.tsv (${problems.length} dong)`);
 }
 
