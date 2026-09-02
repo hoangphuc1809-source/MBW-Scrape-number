@@ -76,7 +76,11 @@ const FULL_RULES = [
     // Ban dau em cho 2 chu so la chuoi bi cat cut nen loai — SAI. Phuc xac
     // nhan 02/09 day la ten that.
     name: 'ryzen',
-    re: /\b(?:AMD\s+)?(?:Ryz+en|R)\s*([3579])\s*[- ]?(\d{2,4})\s*([A-Z]{1,3})?\b/i,
+    // KHONG cho khoang trang truoc hau to. Truoc do dung \s*([A-Z]{1,3})? nen
+    // "Ryzen 7 260 - Max Turbo: 4.75 GHz" bi doc thanh "Ryzen 7 260MAX" —
+    // nuot chu Max cua cum "Max Turbo". Hau to that luon dinh lien ma so
+    // (7735HS, 370HX), nen bo \s* la du.
+    re: /\b(?:AMD\s+)?(?:Ryz+en|R)\s*([3579])\s*[- ]?(\d{2,4})([A-Z]{1,3})?\b/i,
     build: m => ({
       cpu: `Ryzen ${m[1]} ${m[2]}${m[3] ? m[3].toUpperCase() : ''}`,
       segment: `Ryzen ${m[1]}`,
