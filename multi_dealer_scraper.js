@@ -253,6 +253,9 @@ const { google }   = require('googleapis');
 const fs           = require('fs');
 const path         = require('path');
 const os           = require('os');
+// Chuan hoa spec cho dong khong khop tab Part # — them 02/09/2026.
+const { normalizeCpu } = require('./spec_normalize.js');
+const { K }            = require('./spec_dictionary.js');
 
 // ── FIX v3.4.2 [BUG12] ────────────────────────────────────
 // Puppeteer tự khởi tạo "isolated world" ngầm cho MỌI frame con mới xuất
@@ -1998,7 +2001,31 @@ function enrichOneRow(row, partMap, segmentRefs) {
   const modelName = (row[4] || '').trim(); // cot E = Model Name
   const info = partMap.get(modelName);
   const { segment, seriesGroup } = matchSegment(modelName, segmentRefs);
-  if (!info) return ['', seriesGroup, segment, '', '', '', '', '', '', '', '', ''];
+
+  if (!info) {
+    // KHONG khop tab Part #. Truoc day tra ve RONG HET cho T:AE, nen Sheet
+    // trong o dung nhung dong ma dashboard lai co gia tri — hai noi lech nhau.
+    // Gio dien bang chinh chuoi tho da chuan hoa (cot G/H/I/J/K cua A:S).
+    //
+    // Luon giu chuoi tho lam lop cuoi: luat khong doc duoc thi de nguyen,
+    // KHONG de trong. Mat du lieu te hon hien thi xau.
+    const rawCpu = (row[6] || '').trim();
+    const n = normalizeCpu(rawCpu);
+    return [
+      '',                                              // Status
+      seriesGroup,
+      segment,
+      n.segment || '',                                 // CPU Segment
+      (n.confidence === 'full' ? n.cpu : '') || rawCpu, // CPU
+      K.ram(row[7] || '') || (row[7] || ''),           // RAM
+      K.ssd(row[8] || '') || (row[8] || ''),           // SSD
+      (row[9] || '').trim(),                           // Screen
+      K.gpu(row[10] || '') || (row[10] || ''),         // GPU
+      '',                                              // V-RAM
+      '',                                              // Part #
+      '',                                              // Focus Model
+    ];
+  }
   return [
     info.status, seriesGroup, segment, info.cpuSegment, info.cpu,
     info.ram, info.ssd, info.screen, info.gpu, info.vram, info.partNumber,

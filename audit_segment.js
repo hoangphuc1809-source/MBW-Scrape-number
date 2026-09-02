@@ -239,9 +239,18 @@ async function main() {
   }
   // Khu trung: cung dong + cung cot + cung dich thi chi can sua mot lan
   const uniq = [...new Set(fix)];
-  fs.writeFileSync('segment-audit/segment-fixlist.tsv',
-    ['Dòng\tCột\tGiá trị hiện tại\tSửa thành\tLoại', ...uniq].join('\n'), 'utf8');
-  console.log(`Da ghi segment-audit/segment-fixlist.tsv (${uniq.length} o can sua, co dich ro rang)`);
+  // Xuat .csv CO BOM (\uFEFF) chu khong phai .tsv: Phuc bao khong mo duoc file
+  // .tsv — Excel khong tu nhan duoi nay, va thieu BOM thi tieng Viet thanh
+  // ky tu loi. .csv + BOM thi nhap doi la mo duoc ngay.
+  const csvEsc = v => {
+    const s = String(v == null ? '' : v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const csvRows = [['Dòng', 'Cột', 'Giá trị hiện tại', 'Sửa thành', 'Loại'],
+    ...uniq.map(l => l.split('\t'))];
+  fs.writeFileSync('segment-audit/segment-fixlist.csv',
+    '\uFEFF' + csvRows.map(r => r.map(csvEsc).join(',')).join('\r\n'), 'utf8');
+  console.log(`Da ghi segment-audit/segment-fixlist.csv (${uniq.length} o can sua, co dich ro rang)`);
 }
 
 main().catch(e => { console.error('LOI:', e.message); process.exit(1); });
