@@ -160,12 +160,20 @@ const PARTIAL_RULES = [
   { re: /\b(Celeron|Pentium|Athlon)\b/i,                         seg: m => CAP(m[1]) },
 ];
 
+// Ten kien truc Intel/AMD hay bi chen GIUA dong chip va ma so:
+//   "Intel Core i5 Tiger Lake - 1135G7"      -> Core i5 1135G7
+//   "Intel Core Ultra 5 Arrow Lake, 225H"    -> Core Ultra 5 225H
+//   "Intel Pentium Silver N6000"             -> Pentium N6000
+// Regex doi ma so ngay sau bac nen truot het. Cat bo truoc khi doi chieu.
+const CODENAMES = /\b(Tiger|Raptor|Alder|Arrow|Meteor|Lunar|Panther|Twin|Ice|Kaby|Comet|Whiskey|Coffee|Rocket|Amber|Jasper|Elkhart|Gemini|Apollo)\s*-?\s*Lake\b|\bKabylake\b|\b(Silver|Gold|Plus)\b(?=\s*[-,]?\s*[A-Z]?\d)|\bProcessor\b/gi;
+
 function normalizeCpu(raw) {
   // Chuan hoa dau ngan cach TRUOC khi doi chieu: nguon viet "Celeron, N4500",
   // "Intel Core i7 - 10510U", "Ryzen 3-30", "Core 3, N350" — dau phay va dau
   // gach roi lam regex truot du chuoi hoan toan doc duoc.
   const s = String(raw || '')
     .replace(/[\u2122\u00AE\u00A9]/g, ' ')
+    .replace(CODENAMES, ' ')
     .replace(/\s*,\s*/g, ' ')
     .replace(/\s+-\s+/g, ' ')
     .replace(/\s+/g, ' ')
