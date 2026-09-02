@@ -52,17 +52,21 @@ const K = {
   gpu: s => {
     const t = String(s).replace(/[\u2122\u00AE\u00A9]/g, ' ').replace(/\s+/g, ' ').trim();
 
-    let m = t.match(/\b(RTX|GTX|GT|RX)\s*(\d{3,4})\s*(Ti|XT|Super|M)?\b/i);
+    // RX 560X, GTX 1650 Ti, GT 740M — hau to gom ca X va Max-Q
+    let m = t.match(/\b(RTX|GTX|GT|RX)\s*(\d{3,4})\s*(Ti|XT|Super|M|X)?\b/i);
     if (m) {
-      // Hau to "M" viet DINH LIEN ("GTX 960M"), con Ti/XT/Super thi tach ra
-      // ("RTX 5070 Ti"). Day la cach NVIDIA/AMD viet.
+      // Hau to "M"/"X" viet DINH LIEN ("GTX 960M", "RX 560X"), con
+      // Ti/XT/Super thi tach ra ("RTX 5070 Ti"). Day la cach NVIDIA/AMD viet.
       let sfx = '';
       if (m[3]) {
         const s3 = m[3].toUpperCase();
-        sfx = s3 === 'M' ? 'M' : ' ' + s3[0] + m[3].slice(1).toLowerCase();
+        sfx = (s3 === 'M' || s3 === 'X') ? s3 : ' ' + s3[0] + m[3].slice(1).toLowerCase();
       }
       return `${m[1].toUpperCase()} ${m[2]}${sfx}`;
     }
+    // GeForce doi cu khong co tien to: "GeForce 940MX"
+    m = t.match(/\bGeForce\s+(\d{3})(MX|M)?\b/i);
+    if (m) return `GeForce ${m[1]}${m[2] ? m[2].toUpperCase() : ''}`;
     // MX550 / MX570A — hau to chu cai phai bat duoc, khong thi ra "MX 570" sai
     m = t.match(/\bMX\s*(\d{3})([A-Z])?\b/i);
     if (m) return `MX ${m[1]}${m[2] ? m[2].toUpperCase() : ''}`;
@@ -77,8 +81,8 @@ const K = {
 
     m = t.match(/\bUHD\s*(?:Graphics)?\s*(\d{3})?\b/i);
     if (m) return `Intel UHD Graphics${m[1] ? ' ' + m[1] : ''}`;
-    m = t.match(/\bHD\s*(?:Graphics)?\s*(\d{3})\b/i);
-    if (m) return `Intel HD Graphics ${m[1]}`;
+    m = t.match(/\bHD\s*(?:Graphics)?\s*(\d{3})?\b/i);
+    if (m) return `Intel HD Graphics${m[1] ? ' ' + m[1] : ''}`;
     if (/\bIris\s*Xe\b/i.test(t))        return 'Intel Iris Xe Graphics';
     // Arc co the kem model: "Intel Arc Graphics 140V" — giu lai.
     m = t.match(/\bArc\s*(?:Graphics)?\s*(\d{3}[A-Z]?)?\b/i);

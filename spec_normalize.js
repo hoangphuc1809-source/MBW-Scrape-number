@@ -45,13 +45,16 @@ const FULL_RULES = [
     build: m => ({ cpu: `Ryzen AI Max+ ${m[2]}`, segment: 'Ryzen AI Max+' }),
   },
   {
-    // "Ryzen AI 9 HX PRO 375", "Ryzen 9 AI HX 370", "Ryzen AI 7 350"
+    // "Ryzen AI 9 HX PRO 375", "Ryzen AI 9 PRO 375HX", "Ryzen AI 9 370HX"
+    // — hau to co the dung TRUOC hoac SAU ma so, phai bat ca hai.
     name: 'ryzen-ai',
-    re: /\bRyzen\s*(?:AI\s*)?([3579])\s*(?:AI\s*)?((?:HX|PRO)(?:\s+(?:HX|PRO))?)?\s*[- ]?(\d{3})\b/i,
+    re: /\bRyzen\s*(?:AI\s*)?([3579])\s*(?:AI\s*)?((?:HX|PRO)(?:\s+(?:HX|PRO))?)?\s*[- ]?(\d{3})\s*((?:HX|PRO)?)\b/i,
     guard: s => /\bAI\b/i.test(s),
     build: m => {
-      const sfx = m[2] ? m[2].toUpperCase().replace(/\s+/g, ' ') + ' ' : '';
-      return { cpu: `Ryzen AI ${m[1]} ${sfx}${m[3]}`, segment: `Ryzen AI ${m[1]}` };
+      const pre = (m[2] || '').toUpperCase().replace(/\s+/g, ' ').trim();
+      const post = (m[4] || '').toUpperCase();
+      const sfx = [pre, post].filter(Boolean).join(' ');
+      return { cpu: `Ryzen AI ${m[1]} ${sfx ? sfx + ' ' : ''}${m[3]}`, segment: `Ryzen AI ${m[1]}` };
     },
   },
   {
@@ -133,7 +136,15 @@ const PARTIAL_RULES = [
 ];
 
 function normalizeCpu(raw) {
-  const s = String(raw || '').replace(/[™®©]/g, ' ').replace(/\s+/g, ' ').trim();
+  // Chuan hoa dau ngan cach TRUOC khi doi chieu: nguon viet "Celeron, N4500",
+  // "Intel Core i7 - 10510U", "Ryzen 3-30", "Core 3, N350" — dau phay va dau
+  // gach roi lam regex truot du chuoi hoan toan doc duoc.
+  const s = String(raw || '')
+    .replace(/[\u2122\u00AE\u00A9]/g, ' ')
+    .replace(/\s*,\s*/g, ' ')
+    .replace(/\s+-\s+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!s) return { cpu: '', segment: '', rule: null, confidence: 'empty', raw: s };
 
   for (const r of FULL_RULES) {
