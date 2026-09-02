@@ -52,15 +52,17 @@ const K = {
   gpu: s => {
     const t = String(s).replace(/[\u2122\u00AE\u00A9]/g, ' ').replace(/\s+/g, ' ').trim();
 
-    // RX 560X, GTX 1650 Ti, GT 740M — hau to gom ca X va Max-Q
+    // RX 560X, RTX 5070Ti, GTX 1650Ti, GT 740M
     let m = t.match(/\b(RTX|GTX|GT|RX)\s*(\d{3,4})\s*(Ti|XT|Super|M|X)?\b/i);
     if (m) {
-      // Hau to "M"/"X" viet DINH LIEN ("GTX 960M", "RX 560X"), con
-      // Ti/XT/Super thi tach ra ("RTX 5070 Ti"). Day la cach NVIDIA/AMD viet.
+      // Quy uoc Phuc chot 02/09: hau to viet DINH LIEN ma so — "RTX 5070Ti",
+      // khong phai "RTX 5070 Ti". Ap dung cho Ti/XT/M/X.
+      // Rieng "Super" giu khoang trang vi no la mot tu, khong phai hau to
+      // hai ky tu — neu Phuc muon dinh lien luon thi sua mot dong o day.
       let sfx = '';
       if (m[3]) {
         const s3 = m[3].toUpperCase();
-        sfx = (s3 === 'M' || s3 === 'X') ? s3 : ' ' + s3[0] + m[3].slice(1).toLowerCase();
+        sfx = s3 === 'SUPER' ? ' Super' : (s3 === 'TI' ? 'Ti' : s3);
       }
       return `${m[1].toUpperCase()} ${m[2]}${sfx}`;
     }
