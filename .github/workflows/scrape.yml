@@ -554,13 +554,79 @@ jobs:
             -d "text=${MSG}" \
             -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
 
+  # An Phat (anphatpc.com.vn) — 02/09/2026.
+  # API JSON noi bo, ~937 SP trong ~30s, khong can trinh duyet -> chay tren
+  # ubuntu-latest, khong ton runner self-hosted. KHONG co duong lui Puppeteer:
+  # neu API hong thi job fail va write-sheet van ghi cac dealer khac binh thuong
+  # (An Phat chi la dealer tham chieu, khong phai nguon so lieu chinh).
+  scrape-apc:
+    name: Scrape An Phat (API noi bo)
+    needs: check-runners
+    if: ${{ (inputs.run_scrape || github.event_name == 'schedule') && !inputs.force_fallback }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+
+      # Chua xac nhan An Phat co chan IP datacenter hay khong (test 02/09 chay
+      # tu IP nha, khong phai IP cloud). Neu log bao EMPTY_BODY hoac status 403
+      # thi bo comment dong MBW_PROXY_HOST duoi day de di qua Cloudflare Worker
+      # (/__proxy/apc) — worker da duoc them target 'apc'.
+      - name: Lay An Phat qua API (chi luu file)
+        env:
+          OUTPUT_DIR: scrape-output
+          # MBW_PROXY_HOST: ${{ secrets.MBW_PROXY_HOST }}
+        run: node apc_api.js
+
+      - name: Upload artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-apc-output
+          path: |
+            scrape-output/*.json
+            scrape-output/*.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Bao cao ve Telegram
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            exit 0
+          fi
+          if [ "$JOB_STATUS" = "success" ]; then ICON="OK"; else ICON="FAIL"; fi
+          MSG="[$ICON] An Phat (API)%0Atrang thai: ${JOB_STATUS}%0Arun #${RUN_NUMBER}"
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            -d "text=${MSG}" \
+            -o /dev/null -w "telegram: %{http_code}\n" || echo "Bao cao that bai nhung khong sao"
+
   # Job DUY NHAT duoc ghi vao Google Sheet. Chi chay SAU KHI ca 3 job scrape
   # da xong (needs), va van chay du 1/2 job scrape bi fail (if: always()) —
   # ghi best-effort voi du lieu cua nhung dealer thanh cong, con hon khong
   # ghi gi (giu triet ly STOP-AND-STABILIZE tu v3.4.10: listing on dinh uu
   # tien hon la doi cho hoan hao).
   write-sheet:
-    needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-pv-api, scrape-fpt, scrape-fpt-online, scrape-pv-online]
+    needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-pv-api, scrape-fpt, scrape-fpt-online, scrape-pv-online, scrape-apc]
     if: ${{ always() && (inputs.run_scrape || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -587,7 +653,7 @@ jobs:
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          SCRAPE_DEALERS: MBW,FPT,CPS,PV
+          SCRAPE_DEALERS: MBW,FPT,CPS,PV,APC
           COMBINE_MODE: 'true'
           COMBINE_INPUT_DIR: scrape-artifacts
         shell: bash

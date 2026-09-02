@@ -282,7 +282,11 @@ const SHEET_NAME   = 'Daily SRP Tracking'; // v3.6.1: doi ten tab tu "RAW DATA" 
 // CHÍNH dealer mình phụ trách trong sheet hôm nay, không đụng tới dữ liệu
 // dealer khác do job song song ghi (tránh race condition khi cả 2 job
 // cùng đọc-sửa-ghi RAW DATA cùng lúc).
-const DEALER_KEY_TO_NAME = { MBW: 'MBW', FPT: 'FPT Retail', CPS: 'CellPhone S', PV: 'Phong Vu' };
+// APC (An Phat) khong co nhanh scrape bang Puppeteer trong file nay — no chi
+// ton tai duoi dang apc_api.js (job rieng, ghi products-APC.json). Van dang ky
+// o day de: (a) writeToSheet biet duoc phep xoa dong cu cua 'An Phat',
+// (b) checkCoverage/byDealer dem duoc no trong COMBINE_MODE.
+const DEALER_KEY_TO_NAME = { MBW: 'MBW', FPT: 'FPT Retail', CPS: 'CellPhone S', PV: 'Phong Vu', APC: 'An Phat' };
 const SCRAPE_DEALERS_RAW = (process.env.SCRAPE_DEALERS || 'MBW,FPT,CPS')
   .split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
 const SCRAPE_DEALERS = new Set(SCRAPE_DEALERS_RAW);
@@ -2507,7 +2511,7 @@ async function runScrapeMode() {
     await browser.close();
   }
 
-  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0, 'Phong Vu':0 };
+  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0, 'Phong Vu':0, 'An Phat':0 };
   allProducts.forEach(p => { if (p.dealer in byDealer) byDealer[p.dealer]++; });
   console.log('\n📊 Kết quả:');
   Object.entries(byDealer).forEach(([d,c]) => console.log(`   ${d}: ${c} SP`));
@@ -2605,7 +2609,7 @@ async function runCombineMode() {
     process.exit(1);
   }
 
-  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0, 'Phong Vu':0 };
+  const byDealer = { MBW:0, 'FPT Retail':0, 'CellPhone S':0, 'Phong Vu':0, 'An Phat':0 };
   allProducts.forEach(p => { if (p.dealer in byDealer) byDealer[p.dealer]++; });
   console.log(`\n📊 Tổng hợp từ ${files.length} file:`);
   Object.entries(byDealer).forEach(([d,c]) => console.log(`   ${d}: ${c} SP`));

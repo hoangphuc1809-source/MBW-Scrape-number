@@ -15,6 +15,7 @@ const TARGETS = {
   mbw: 'www.thegioididong.com',
   fpt: 'fptshop.com.vn',
   cps: 'cellphones.com.vn',
+  apc: 'www.anphatpc.com.vn',
 };
 
 const DEFAULT_TARGET_HOST = TARGETS.mbw; // backward-compat fallback
