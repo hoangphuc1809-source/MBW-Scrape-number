@@ -1,93 +1,96 @@
-﻿// build_dictionary.js â€” dung bo tu dien chuan tu chinh du lieu Phuc da go.
+// spec_dictionary.js — gom nhom cac bien the cua cung mot thu ve dang chuan.
 //
-// NGUYEN TAC: khong bia quy uoc moi. Voi moi nhom bien the cua CUNG mot thu,
-// chon dang viet MA PHUC DA DUNG NHIEU NHAT lam dang chuan. Neu Phuc khong
-// thich dang do, sua 1 o trong tab tu dien la xong â€” khong dong vao code.
-
+// NGUYEN TAC: khong bia quy uoc moi. Rut moi chuoi ve "dinh danh" cua vat the
+// that (con chip nao, bao nhieu GB), roi dung lai ten theo mot khuon duy nhat.
 const { normalizeCpu } = require('./spec_normalize.js');
 
-// ---- KEY: rut moi chuoi ve "dinh danh" cua vat the that ----
 const K = {
   cpu: s => { const r = normalizeCpu(s); return r.confidence === 'full' ? r.cpu : null; },
 
   cpuSegment: s => { const r = normalizeCpu(s); return r.segment || null; },
 
-  // RAM â€” quy uoc Phuc chot 02/09:
-  //   co thong tin so thanh  -> "DDR5 16GB x 1"   (dung luong MOI THANH x so thanh)
-  //   khong co thong tin     -> "DDR5 16GB"
-  //   khong ro loai DDR      -> "16GB"
-  // Doc "16 GB (2 thanh 8 GB) DDR5" = 2 thanh 8GB -> "DDR5 8GB x 2".
-  // Lay dung luong MOI THANH chu khong phai tong, vi "16GB x 2" se bi hieu
-  // nham thanh 32GB.
+  // RAM — quy uoc chot 02/09:
+  //   biet so thanh  -> "DDR5 16GB x 1"  (dung luong MOI THANH x so thanh)
+  //   khong biet     -> "DDR5 16GB"
+  //   khong ro DDR   -> "16GB"
+  // "16 GB (2 thanh 8 GB) DDR5" = 2 thanh 8GB -> "DDR5 8GB x 2".
+  // Lay dung luong MOI THANH chu khong phai tong: "16GB x 2" se bi doc thanh 32GB.
   ram: s => {
     const raw = String(s);
-    const type = (raw.match(/\bLPDDR\d[A-Z]*|\bDDR\d\b/i) || [''])[0]
-      .toUpperCase().replace(/\s+/g, '');
-
-    // Truong hop co mo ta so thanh: "(2 thanh 8 GB)" / "(1 thanh 16 GB)"
+    const type = (raw.match(/\bLPDDR\d[A-Z]*|\bDDR\d\b/i) || [''])[0].toUpperCase().replace(/\s+/g, '');
     const sticks = raw.match(/\(\s*(\d+)\s*thanh\s*(\d+)\s*GB/i);
-    if (sticks) {
-      const n = sticks[1], per = sticks[2];
-      return `${type ? type + ' ' : ''}${per}GB x ${n}`;
-    }
-    // Dang "16GB*1" hoac "8GB x 2"
+    if (sticks) return `${type ? type + ' ' : ''}${sticks[2]}GB x ${sticks[1]}`;
     const star = raw.match(/(\d+)\s*GB\s*[*x]\s*(\d+)\b/i);
     if (star) return `${type ? type + ' ' : ''}${star[1]}GB x ${star[2]}`;
-
-    // Khong co thong tin so thanh -> chi dung luong (bo ngoac & menh de nang cap)
     const t = raw.replace(/\([^)]*\)/g, ' ')
-      .replace(/(nÃ¢ng\s*cáº¥p|tá»‘i\s*Ä‘a|up\s*to|max|há»—\s*trá»£|lÃªn\s*Ä‘áº¿n)[\s\S]*$/i, ' ');
+      .replace(/(nâng\s*cấp|tối\s*đa|up\s*to|max|hỗ\s*trợ|lên\s*đến)[\s\S]*$/i, ' ');
     const m = t.match(/(\d+)\s*GB/i);
-    if (!m) return null;
-    return `${type ? type + ' ' : ''}${m[1]}GB`;
+    return m ? `${type ? type + ' ' : ''}${m[1]}GB` : null;
   },
 
   // SSD: dung luong THAT, khong phai dung luong nang cap toi da.
-  // BAY: "512GB PCIe NVMe SSD (NÃ¢ng cáº¥p tá»‘i Ä‘a 2TB)" â€” neu quet TB truoc thi
-  // ra 2TB, sai hoan toan. Phai cat bo ngoac + menh de nang cap TRUOC, roi lay
-  // dung luong XUAT HIEN DAU TIEN.
+  // BAY: "512GB PCIe NVMe SSD (Nang cap toi da 2TB)" — quet TB truoc thi ra
+  // 2TB, sai hoan toan. Phai cat ngoac + menh de nang cap TRUOC.
   ssd: s => {
-    let t = String(s)
-      .replace(/\([^)]*\)/g, ' ')                                  // bo moi thu trong ngoac
-      .replace(/(nÃ¢ng\s*cáº¥p|tá»‘i\s*Ä‘a|up\s*to|max|há»—\s*trá»£|lÃªn\s*Ä‘áº¿n)[\s\S]*$/i, ' ');
+    const t = String(s).replace(/\([^)]*\)/g, ' ')
+      .replace(/(nâng\s*cấp|tối\s*đa|up\s*to|max|hỗ\s*trợ|lên\s*đến)[\s\S]*$/i, ' ');
     const m = t.match(/(\d+)\s*(TB|GB)/i);
     if (m) {
-      const n = parseInt(m[1], 10);
-      const unit = m[2].toUpperCase();
-      if (unit === 'GB' && n >= 1024) return `${n / 1024}TB`;       // 1024GB -> 1TB
+      const n = parseInt(m[1], 10), unit = m[2].toUpperCase();
+      if (unit === 'GB' && n >= 1024) return `${n / 1024}TB`;
       return `${n}${unit}`;
     }
-    const m2 = t.match(/SSD\s*(\d{3,4})\b/i);                       // "SSD 512" thieu don vi
+    const m2 = t.match(/SSD\s*(\d{3,4})\b/i);
     return m2 ? `${m2[1]}GB` : null;
   },
 
+  // GPU. Nguyen tac: GIU LAI model, khong gom ve ten chung chung.
+  // "Intel UHD Graphics 620" KHAC "Intel UHD Graphics"; "Radeon RX Vega 10"
+  // KHAC "Radeon Graphics". Ban dau gom het -> mat thong tin.
+  // Chuoi liet ke 2 GPU ("MX570A 2GB GDDR6 / Intel Iris Xe Graphics") thi lay
+  // GPU ROI truoc, vi do moi la con quyet dinh hieu nang.
   gpu: s => {
-    const t = String(s).replace(/[â„¢Â®Â©]/g, ' ');
-    let m = t.match(/\b(RTX|GTX|RX)\s*(\d{4})\s*(Ti|XT|Super)?\b/i);
-    if (m) return `${m[1].toUpperCase()} ${m[2]}${m[3] ? ' ' + m[3][0].toUpperCase() + m[3].slice(1).toLowerCase() : ''}`;
-    m = t.match(/\bMX\s*(\d{3})\b/i);          if (m) return `MX ${m[1]}`;
-    // Radeon CO model (680M, 840M, 8060S) la GPU KHAC voi Radeon tich hop
-    // chung chung â€” phai giu lai model, khong duoc gom het lam mot.
+    const t = String(s).replace(/[\u2122\u00AE\u00A9]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    let m = t.match(/\b(RTX|GTX|GT|RX)\s*(\d{3,4})\s*(Ti|XT|Super|M)?\b/i);
+    if (m) {
+      const sfx = m[3] ? ' ' + (m[3].length === 1 ? m[3].toUpperCase()
+                                                  : m[3][0].toUpperCase() + m[3].slice(1).toLowerCase()) : '';
+      return `${m[1].toUpperCase()} ${m[2]}${sfx}`;
+    }
+    // MX550 / MX570A — hau to chu cai phai bat duoc, khong thi ra "MX 570" sai
+    m = t.match(/\bMX\s*(\d{3})([A-Z])?\b/i);
+    if (m) return `MX ${m[1]}${m[2] ? m[2].toUpperCase() : ''}`;
+
+    m = t.match(/\bRadeon\s+RX\s+Vega\s+(\d+)\b/i);
+    if (m) return `AMD Radeon RX Vega ${m[1]}`;
+    m = t.match(/\bRadeon\s+(?:RX\s+)?(?:Graphics\s+)?Vega\s+(\d+)\b/i);
+    if (m) return `AMD Radeon Vega ${m[1]}`;
     m = t.match(/\bRadeon\s+(\d{3,4}[A-Z])\b/i);
     if (m) return `AMD Radeon ${m[1].toUpperCase()}`;
-    if (/\bIntel\s+Arc\b/i.test(t))            return 'Intel Arc Graphics';
-    if (/\bIris\s*Xe\b/i.test(t))              return 'Intel Iris Xe';
-    if (/\bUHD\b/i.test(t))                    return 'Intel UHD Graphics';
-    if (/\bIntel\s+Graphics\b/i.test(t))       return 'Intel Graphics';
-    if (/\bRadeon\b/i.test(t))                 return 'AMD Radeon Graphics';
-    if (/\bAdreno\b/i.test(t))                 return 'Qualcomm Adreno';
+
+    m = t.match(/\bUHD\s*(?:Graphics)?\s*(\d{3})?\b/i);
+    if (m) return `Intel UHD Graphics${m[1] ? ' ' + m[1] : ''}`;
+    m = t.match(/\bHD\s*(?:Graphics)?\s*(\d{3})\b/i);
+    if (m) return `Intel HD Graphics ${m[1]}`;
+    if (/\bIris\s*Xe\b/i.test(t))        return 'Intel Iris Xe Graphics';
+    if (/\bArc\b/i.test(t))              return 'Intel Arc Graphics';
+    if (/\bIntel\s+Graphics\b/i.test(t)) return 'Intel Graphics';
+
+    if (/\bRadeon\b/i.test(t))           return 'AMD Radeon Graphics';
+    if (/\bAdreno\b/i.test(t))           return 'Qualcomm Adreno';
     return null;
   },
 
   vram: s => { const m = String(s).match(/(\d+)\s*G/i); return m ? `${m[1]}GB` : null; },
 };
 
-// Gom nhom: key -> {bien the: so lan}. Dang chuan = bien the pho bien nhat.
+// Gom nhom: key -> {bien the: so lan}.
 function buildGroups(values, keyFn) {
   const g = new Map();
   for (const [raw, n] of values) {
     const k = keyFn(raw);
-    if (!k) { // khong nhan dang duoc -> hang doi cho nguoi xem
+    if (!k) {
       if (!g.has('@UNKNOWN')) g.set('@UNKNOWN', new Map());
       g.get('@UNKNOWN').set(raw, n);
       continue;
@@ -98,15 +101,11 @@ function buildGroups(values, keyFn) {
   return g;
 }
 
-function pickCanonical(variants, key) {
-  // DANG CHUAN = chinh cai KEY may dung lai ("Core Ultra 7 255H", "16GB",
-  // "RTX 5060"). KHONG lay bien the pho bien nhat: "M5 10" xuat hien 507 lan
-  // nhung "Apple M5" moi la dang dung.
-  // Key da la dang chuan cho moi truong, nen tra thang ve.
-  return key;
-}
+// DANG CHUAN = chinh cai KEY may dung lai. KHONG lay bien the pho bien nhat:
+// "M5 10" xuat hien 507 lan nhung "Apple M5" moi la dang dung.
+function pickCanonical(variants, key) { return key; }
 
-// Hang san xuat CPU â€” khop cot "CPU Platform" san co trong tab Segment.
+// Hang san xuat CPU — khop cot "CPU Platform" trong tab Segment.
 function cpuPlatform(canonical) {
   if (/^Core\b|^Celeron|^Pentium/i.test(canonical)) return 'Intel';
   if (/^Ryzen|^Athlon/i.test(canonical)) return 'AMD';

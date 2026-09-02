@@ -37,39 +37,67 @@ async function main() {
   const header = rows[0].map(h => String(h || '').trim());
   console.log('Header:', header.map((h, i) => h ? `[${i}] ${h}` : null).filter(Boolean).join('  '));
 
-  const col = name => header.findIndex(h => h.toLowerCase() === name.toLowerCase());
-  const iSeg = col('CPU Segment'), iCpu = col('CPU'), iPlat = col('CPU Platform'), iGpu = col('GPU');
-  console.log(`\nVi tri cot: CPU Segment=${iSeg}  CPU=${iCpu}  Platform=${iPlat}  GPU=${iGpu}`);
+  // Tab co NHIEU khoi lap lai (CPU/GPU xuat hien o vai cum cot khac nhau), va
+  // header co loi chinh ta thuc te: "CPU Flatform" thay vi "CPU Platform".
+  // Nen tim TAT CA cot khop, khong phai cot dau tien, va chap nhan viet sai.
+  const allCols = (...names) => header.map((h, i) => {
+    const low = h.toLowerCase().replace(/\s+/g, ' ');
+    return names.some(n => low === n.toLowerCase()) ? i : -1;
+  }).filter(i => i >= 0);
+
+  const cpuCols  = allCols('CPU');
+  const segCols  = allCols('CPU Segment');
+  const platCols = allCols('CPU Platform', 'CPU Flatform', 'CPU Flatfrom');
+  const gpuCols  = allCols('GPU', 'Card đồ họa');
+  console.log(`\nCot tim thay: CPU=[${cpuCols}]  CPU Segment=[${segCols}]  Platform=[${platCols}]  GPU=[${gpuCols}]`);
+
+  // Ghep CPU voi Segment/Platform gan no nhat ve phia trai trong cung khoi.
+  const nearest = (cols, target) => {
+    const left = cols.filter(c => Math.abs(c - target) <= 3);
+    return left.length ? left.reduce((a, b) => Math.abs(a - target) < Math.abs(b - target) ? a : b) : -1;
+  };
 
   const problems = [];
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r] || [];
     const line = r + 1;                       // so dong that trong Sheet
 
-    // --- Khoi CPU ---
-    const cpu = String(row[iCpu] || '').trim();
-    if (cpu) {
+    for (const iCpu of cpuCols) {
+      const cpu = String(row[iCpu] || '').trim();
+      if (!cpu) continue;
+      const iSeg = nearest(segCols, iCpu), iPlat = nearest(platCols, iCpu);
       const n = normalizeCpu(cpu);
       if (n.confidence !== 'full') {
         problems.push({ line, col: 'CPU', now: cpu, should: '(máy không nhận ra)',
                         why: 'chuỗi thiếu mã số hoặc bị cắt cụt' });
-      } else {
-        if (n.cpu !== cpu) problems.push({ line, col: 'CPU', now: cpu, should: n.cpu, why: 'khác dạng chuẩn' });
+        continue;
+      }
+      if (n.cpu !== cpu) problems.push({ line, col: 'CPU', now: cpu, should: n.cpu, why: 'khác dạng chuẩn' });
+      if (iSeg >= 0) {
         const seg = String(row[iSeg] || '').trim();
         if (seg && seg !== n.segment) problems.push({ line, col: 'CPU Segment', now: seg, should: n.segment, why: 'không khớp CPU cùng dòng' });
-        if (!seg) problems.push({ line, col: 'CPU Segment', now: '(trống)', should: n.segment, why: 'thiếu' });
+        else if (!seg) problems.push({ line, col: 'CPU Segment', now: '(trống)', should: n.segment, why: 'thiếu' });
+      }
+      if (iPlat >= 0) {
         const plat = String(row[iPlat] || '').trim();
         const pShould = cpuPlatform(n.cpu);
         if (plat && pShould && plat !== pShould) problems.push({ line, col: 'CPU Platform', now: plat, should: pShould, why: 'sai hãng' });
       }
     }
 
-    // --- Khoi GPU ---
-    const gpu = String(row[iGpu] || '').trim();
-    if (gpu) {
+    for (const iGpu of gpuCols) {
+      const gpu = String(row[iGpu] || '').trim();
+      if (!gpu) continue;
       const g = K.gpu(gpu);
       if (!g) problems.push({ line, col: 'GPU', now: gpu, should: '(máy không nhận ra)', why: 'không khớp mẫu nào' });
-      else if (g !== gpu) problems.push({ line, col: 'GPU', now: gpu, should: g, why: 'khác dạng chuẩn' });
+      else if (g !== gpu) {
+        // Neu chi khac nhau o ky tu trang la o dang chua khoang trang la
+        // (non-breaking space) — bao rieng vi nhin bang mat khong thay.
+        const why = g.replace(/\s/g, '') === gpu.replace(/\s/g, '')
+          ? 'có ký tự trắng lạ (nhìn giống nhau nhưng khác)'
+          : 'khác dạng chuẩn';
+        problems.push({ line, col: 'GPU', now: gpu, should: g, why });
+      }
     }
   }
 
