@@ -85,6 +85,14 @@ on:
         description: 'URL doi chung (chi dung cho FPT Blocking Diagnostic)'
         required: false
         default: 'https://www.thegioididong.com/laptop'
+      run_apc_probe:
+        description: 'APC Probe — chay apc_api.js tren IP cloud, CHI in log, KHONG ghi Sheet'
+        type: boolean
+        default: false
+      apc_probe_use_proxy:
+        description: 'APC Probe: di qua Cloudflare Worker (/__proxy/apc) thay vi goi thang. Chi tick khi goi thang bi chan.'
+        type: boolean
+        default: false
 
 jobs:
   fpt-test:
@@ -491,4 +499,93 @@ jobs:
           name: fpt-diagnostic-msi
           path: artifacts/
           retention-days: 14
+          if-no-files-found: warn
+
+  # APC Probe — 02/09/2026.
+  # Chay apc_api.js tren runner cloud de tra loi DUY NHAT 1 cau hoi:
+  # An Phat co chan IP datacenter cua GitHub khong?
+  #
+  # An toan tuyet doi voi production: KHONG co GOOGLE_CREDENTIALS/SPREADSHEET_ID
+  # trong env, va apc_api.js von chi ghi file JSON local — khong co duong nao
+  # cham vao Google Sheet. Chay bao nhieu lan cung duoc.
+  #
+  # DOC KET QUA:
+  #   products=937 (~99% total)  -> khong bi chan, giu nguyen cau hinh goi thang
+  #   EMPTY_BODY / status 403    -> bi chan HOAC thieu header. Tick lai voi
+  #                                 apc_probe_use_proxy=true de doi chieu:
+  #                                 qua proxy chay duoc = bi chan IP -> bo
+  #                                 comment MBW_PROXY_HOST trong scrape.yml.
+  #                                 Ca hai deu hong = site doi API, phai sua code.
+  apc-probe:
+    name: APC Probe (IP cloud, khong ghi Sheet)
+    if: ${{ inputs.run_all || inputs.run_apc_probe }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm install
+
+      - name: Chay apc_api.js
+        continue-on-error: true
+        env:
+          OUTPUT_DIR: apc-probe-output
+          # Rong = goi thang anphatpc.com.vn. Co gia tri = di qua Worker.
+          MBW_PROXY_HOST: ${{ inputs.apc_probe_use_proxy && secrets.MBW_PROXY_HOST || '' }}
+        shell: bash
+        run: |
+          mkdir -p apc-probe-output
+          if [ -n "$MBW_PROXY_HOST" ]; then
+            echo "Che do: QUA Cloudflare Worker (/__proxy/apc)"
+          else
+            echo "Che do: GOI THANG anphatpc.com.vn tu IP runner"
+          fi
+          echo "IP ra ngoai cua runner nay:"
+          curl -sS --max-time 15 https://api.ipify.org || echo "(khong lay duoc)"
+          echo ""
+          set -o pipefail
+          node apc_api.js 2>&1 | tee apc-probe-output/probe.log || true
+
+      - name: Tom tat
+        if: always()
+        shell: bash
+        run: |
+          F=apc-probe-output/products-APC.json
+          if [ -f "$F" ]; then
+            node -e '
+              const a = require("./apc-probe-output/products-APC.json");
+              const has = k => a.filter(p => p[k]).length;
+              console.log("KET QUA: " + a.length + " SP");
+              console.log("  con hang : " + a.filter(p => p.stockStatus === "Còn hàng").length);
+              for (const k of ["cpu","ram","storage","screen","gpu"]) {
+                console.log("  co " + k.padEnd(8) + ": " + has(k) + "/" + a.length);
+              }
+              const msi = a.filter(p => p.brand === "MSI").length;
+              console.log("  MSI      : " + msi + " SKU");
+              if (a.length < 850) {
+                console.log("CANH BAO: duoi 850 SP - nghi bi chan mot phan hoac API doi.");
+                process.exitCode = 1;
+              } else {
+                console.log("KET LUAN: IP cloud KHONG bi chan - scrape.yml giu nguyen goi thang.");
+              }
+            '
+          else
+            echo "KHONG co file output -> apc_api.js that bai hoan toan."
+            echo "Xem probe.log o tren: neu la EMPTY_BODY hoac 403 thi chay lai"
+            echo "voi apc_probe_use_proxy = true de xac dinh co phai bi chan IP."
+            exit 1
+          fi
+
+      - name: Upload ket qua probe
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apc-probe
+          path: apc-probe-output/
+          retention-days: 7
           if-no-files-found: warn
