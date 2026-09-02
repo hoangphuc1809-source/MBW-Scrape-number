@@ -145,6 +145,29 @@ async function main() {
   fs.writeFileSync('segment-audit/segment-audit.tsv',
     ['Loại\tDòng\tCột\tGiá trị\tGhi chú', ...problems.map(p => [p.kind, p.line, p.col, p.now, p.note].join('\t'))].join('\n'), 'utf8');
   console.log(`\nDa ghi segment-audit/segment-audit.tsv (${problems.length} dong)`);
+
+  // --- Danh sach CHUAN da khu trung, de Phuc thay the vao tab ---
+  //
+  // Dang chuan = dang BO LUAT dung lai, KHONG phai "cach viet dau tien gap".
+  // Ly do: thu tu gap phu thuoc thu tu duyet dong, chay lai co the ra khac ->
+  // dung im lang. Dang luat dung lai la tat dinh.
+  const outLines = ['Loại\tGiá trị chuẩn\tSố cách viết\tCác cách viết hiện có trong tab (dòng)'];
+  let dupCount = 0;
+  for (const [label, seen] of [['CPU', seenCpu], ['GPU', seenGpu]]) {
+    const keys = [...seen.keys()].sort();
+    for (const key of keys) {
+      const variants = seen.get(key);
+      if (variants.size > 1) dupCount++;
+      const detail = [...variants.entries()]
+        .sort((a, b) => Number(a[1]) - Number(b[1]))          // sap theo so dong cho de tra
+        .map(([v, l]) => `"${v}" (${l})`).join(' | ');
+      outLines.push([label, key, variants.size, detail].join('\t'));
+    }
+  }
+  fs.writeFileSync('segment-audit/segment-normalized.tsv', outLines.join('\n'), 'utf8');
+  console.log(`Da ghi segment-audit/segment-normalized.tsv`);
+  console.log(`  CPU chuan: ${seenCpu.size} gia tri   |   GPU chuan: ${seenGpu.size} gia tri`);
+  console.log(`  trong do ${dupCount} gia tri hien dang co NHIEU HON MOT cach viet trong tab`);
 }
 
 main().catch(e => { console.error('LOI:', e.message); process.exit(1); });

@@ -96,6 +96,19 @@ const FULL_RULES = [
     }),
   },
   {
+    // Intel doi moi bo chu "i": "Core 5 210H", "Core 7 240H". NHUNG nguon
+    // (va ca tab Segment) van con viet "Core i5 210H", "Core i9 270H",
+    // "Core i7 226V", "Core i5 335U" — ma so 3 chu so voi tien to i la dang
+    // lai. Van doc duoc, khong bo qua; giu nguyen cach viet co "i" de khong
+    // tu y doi ten cua Phuc.
+    name: 'core-i-3digit',
+    re: /\b(?:Intel\s+)?Core\s*i([3579])\s*[- ]?(\d{3})\s*([A-Z]{1,2}\d?)?\b/i,
+    build: m => ({
+      cpu: `Core i${m[1]} ${m[2]}${m[3] ? m[3].toUpperCase() : ''}`,
+      segment: `Core i${m[1]}`,
+    }),
+  },
+  {
     name: 'core-n',
     re: /\b(?:Intel\s+)?Core\s*([357])\s*[- ]?N(\d{3})\b/i,
     build: m => ({ cpu: `Core ${m[1]} N${m[2]}`, segment: `Core ${m[1]}` }),
