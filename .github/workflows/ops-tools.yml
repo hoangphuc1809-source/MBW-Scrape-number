@@ -89,6 +89,10 @@ on:
         description: 'APC Probe — chay apc_api.js tren IP cloud, CHI in log, KHONG ghi Sheet'
         type: boolean
         default: false
+      run_segment_audit:
+        description: 'Segment Audit — doi chieu tab Segment voi bo luat chuan hoa. CHI DOC, khong ghi Sheet'
+        type: boolean
+        default: false
       apc_probe_use_proxy:
         description: 'APC Probe: di qua Cloudflare Worker (/__proxy/apc) thay vi goi thang. Chi tick khi goi thang bi chan.'
         type: boolean
@@ -588,4 +592,38 @@ jobs:
           name: apc-probe
           path: apc-probe-output/
           retention-days: 7
+          if-no-files-found: warn
+
+  # Segment Audit — 02/09/2026.
+  # Doi chieu tung dong trong tab "Segment" voi bo luat chuan hoa
+  # (spec_normalize.js + spec_dictionary.js), in ra dong nao sai quy luat.
+  #
+  # CHI DOC: scope spreadsheets.readonly, khong co duong nao ghi vao Sheet.
+  # Phuc doc bao cao roi tu sua tay trong Sheet.
+  segment-audit:
+    name: Segment Audit (chi doc tab Segment)
+    if: ${{ inputs.run_all || inputs.run_segment_audit }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Cai googleapis
+        run: npm install googleapis --no-audit --no-fund
+
+      - name: Doi chieu tab Segment
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: node audit_segment.js
+
+      - name: Upload ket qua
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: segment-audit
+          path: segment-audit/
+          retention-days: 14
           if-no-files-found: warn
