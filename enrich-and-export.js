@@ -31,6 +31,9 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { google } = require('googleapis');
+// Chuan hoa spec cho duong lui (khi SP khong khop tab Part #) — 02/09/2026.
+const { normalizeCpu } = require('./spec_normalize.js');
+const { K } = require('./spec_dictionary.js');
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = path.join(os.tmpdir(), 'enrich-gcreds.json');
@@ -283,6 +286,24 @@ async function main() {
     if (info && info.status === 'EOL') { skippedEOL++; continue; }
 
     const partNumber = (info && info.partNumber) || '';
+
+    // CHUAN HOA SPEC — them 02/09/2026.
+    // Chi ap dung cho DUONG LUI (khi khong khop tab Part #). Gia tri lay tu
+    // tab Part # la do Phuc go, KHONG dung vao.
+    // Truoc day duong lui do thang chuoi tho cua retailer vao data.csv, nen
+    // cung mot con chip hien ra hang chuc dang khac nhau tren dashboard
+    // ("NVIDIA GeForce RTX 3050 6GB GDDR6, Boost Clock 1732MHz, TGP 95W"...).
+    // Rieng An Phat co 937 dong deu di duong lui vi chua co trong tab Part #.
+    //
+    // Luon giu chuoi tho lam lop cuoi: neu luat khong doc duoc thi de nguyen,
+    // KHONG de trong — mat du lieu con te hon hien thi xau.
+    const nCpu = normalizeCpu(p.cpu || '');
+    const cpuVal = (info && info.cpu) || (nCpu.confidence === 'full' ? nCpu.cpu : '') || p.cpu || '';
+    const cpuSegVal = (info && info.cpuSegment) || nCpu.segment || '';
+    const gpuVal = (info && info.gpu) || K.gpu(p.gpu || '') || p.gpu || '';
+    const ramVal = (info && info.ram) || K.ram(p.ram || '') || p.ram || '';
+    const ssdVal = (info && info.ssd) || K.ssd(p.storage || '') || p.storage || '';
+
     // FIX 14/08/2026: SRP fallback — khi website bỏ gạch giá gốc, origPrice=0
     // nhưng salePrice vẫn có → dùng salePrice làm SRP để không để trống cột SRP.
     // origPrice=0 && salePrice>0: website bán 1 giá, không có KM hiển thị.
@@ -295,12 +316,12 @@ async function main() {
       (info && info.vendor) || canonVendor(p.brand) || '',
       (info && info.seriesGroup) || '',
       (info && info.segment) || '',
-      (info && info.cpuSegment) || '',
-      (info && info.cpu) || p.cpu || '',
-      (info && info.ram) || p.ram || '',
-      (info && info.ssd) || p.storage || '',
+      cpuSegVal,
+      cpuVal,
+      ramVal,
+      ssdVal,
       (info && info.screen) || p.screen || '',
-      (info && info.gpu) || p.gpu || '',
+      gpuVal,
       (info && info.vram) || '',
       p.weight || '',
       p.link || '',
