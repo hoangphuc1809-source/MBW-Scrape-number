@@ -49,8 +49,17 @@ async function main() {
     names.some(n => h.toLowerCase().replace(/\s+/g, ' ') === n.toLowerCase()) ? i : -1).filter(i => i >= 0);
   const cpuCols = allCols('CPU'), segCols = allCols('CPU Segment');
   const platCols = allCols('CPU Platform', 'CPU Flatform', 'CPU Flatfrom');
-  const gpuCols = allCols('GPU', 'Card đồ họa');
-  console.log(`Cot: CPU=[${cpuCols}] Segment=[${segCols}] Platform=[${platCols}] GPU=[${gpuCols}]\n`);
+  const gpuCols = allCols('GPU');
+  // Cot CHUOI GOC: Phuc da dung san khoi anh xa trong tab —
+  //   [12] "Card đồ họa" (chuoi tho tu retailer)  -> [13] "GPU" (dang chuan)
+  //   [18] "CPU Orginal" (chuoi tho)              -> [17] "CPU" (dang chuan)
+  // Ban dau em coi ca hai cot deu la danh sach chuan nen dem chung thanh
+  // "trung lap" — sai. 40 cach viet cua RTX 3050 chinh la bang anh xa dang
+  // hoat dong dung, khong phai loi.
+  const rawGpuCols = allCols('Card đồ họa', 'GPU Orginal', 'GPU Original');
+  const rawCpuCols = allCols('CPU Orginal', 'CPU Original');
+  console.log(`Cot chuan : CPU=[${cpuCols}] Segment=[${segCols}] Platform=[${platCols}] GPU=[${gpuCols}]`);
+  console.log(`Cot goc   : CPU=[${rawCpuCols}] GPU=[${rawGpuCols}]\n`);
 
   const nearest = (cols, t) => {
     const c = cols.filter(x => Math.abs(x - t) <= 3);
@@ -115,6 +124,41 @@ async function main() {
       if (!seenGpu.has(g)) seenGpu.set(g, new Map());
       seenGpu.get(g).set(gpu, line);
     }
+
+    // --- Khoi ANH XA: chuoi goc -> dang chuan Phuc ghi canh no ---
+    // Kiem tra khac han: khong hoi "co dung chuan khong", ma hoi "luat co dan
+    // chuoi goc nay ve DUNG cai Phuc ghi khong". Neu lech thi khi scraper gap
+    // chuoi do se dien ra gia tri khac voi y Phuc.
+    for (const iRaw of rawCpuCols) {
+      const raw = String(row[iRaw] || '').trim();
+      const iC = nearest(cpuCols, iRaw);
+      if (!raw || iC < 0) continue;
+      const want = String(row[iC] || '').trim();
+      if (!want || JUNK.test(raw)) continue;
+      const got = normalizeCpu(raw);
+      if (got.confidence !== 'full') {
+        problems.push({ kind: 'Ánh xạ hỏng', line, col: 'CPU Orginal', now: raw,
+                        note: `luật không đọc được -> sẽ không dẫn về "${want}"` });
+      } else if (got.cpu !== want) {
+        problems.push({ kind: 'Ánh xạ lệch', line, col: 'CPU Orginal', now: raw,
+                        note: `anh ghi "${want}" nhưng luật dẫn về "${got.cpu}"` });
+      }
+    }
+    for (const iRaw of rawGpuCols) {
+      const raw = String(row[iRaw] || '').trim();
+      const iC = nearest(gpuCols, iRaw);
+      if (!raw || iC < 0) continue;
+      const want = String(row[iC] || '').trim();
+      if (!want || JUNK.test(raw)) continue;
+      const got = K.gpu(raw);
+      if (!got) {
+        problems.push({ kind: 'Ánh xạ hỏng', line, col: 'Card đồ họa', now: raw,
+                        note: `luật không đọc được -> sẽ không dẫn về "${want}"` });
+      } else if (got !== want) {
+        problems.push({ kind: 'Ánh xạ lệch', line, col: 'Card đồ họa', now: raw,
+                        note: `anh ghi "${want}" nhưng luật dẫn về "${got}"` });
+      }
+    }
   }
 
   // Trung lap trong chinh tab
@@ -132,7 +176,7 @@ async function main() {
   console.log(`===== ${problems.length} VAN DE =====`);
   Object.entries(byKind).forEach(([k, n]) => console.log(`  ${k.padEnd(22)} ${n}`));
   console.log('');
-  const order = ['Trùng lặp', 'Lệch trong cùng dòng', 'Thiếu', 'Ô rác', 'Luật chưa nhận ra'];
+  const order = ['Ánh xạ lệch', 'Ánh xạ hỏng', 'Trùng lặp', 'Lệch trong cùng dòng', 'Thiếu', 'Ô rác', 'Luật chưa nhận ra'];
   for (const kind of order) {
     const g = problems.filter(p => p.kind === kind);
     if (!g.length) continue;
