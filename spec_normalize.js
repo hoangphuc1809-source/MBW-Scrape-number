@@ -30,12 +30,25 @@ const FULL_RULES = [
     },
   },
   {
+    // Snapdragon. Quy uoc Phuc chot 02/09 (doc tu tab Segment):
+    //   CPU Segment chi la HO CHIP, khong kem bac:
+    //     X1/X1P/X1E -> "Snapdragon X"      X2E -> "Snapdragon X2"
+    //   CPU thi CO bac: "Snapdragon X Plus X1P-42-100",
+    //                   "Snapdragon X2 Elite Extreme X2E-94-100"
+    // Truoc do em de segment la "Snapdragon X Plus"/"Snapdragon X Elite" —
+    // sai so voi tab cua Phuc.
     name: 'snapdragon',
     re: /\b(?:Snapdragon\s+)?(?:X\s*)?(X1E|X1P|X2E|X1)[\s-]*(\d{2})[\s-]*(\d{3})\b/i,
-    build: m => {
+    build: (m, s) => {
       const fam = m[1].toUpperCase();
-      const tier = { X1E: 'X Elite', X1P: 'X Plus', X1: 'X', X2E: 'X2 Elite' }[fam] || 'X';
-      return { cpu: `Snapdragon ${tier} ${fam}-${m[2]}-${m[3]}`, segment: `Snapdragon ${tier}` };
+      let tier;
+      if (/X2\s*Elite\s*Extreme/i.test(s)) tier = 'X2 Elite Extreme';
+      else if (/X2\s*Elite/i.test(s))      tier = 'X2 Elite';
+      else if (/X\s*Elite/i.test(s))       tier = 'X Elite';
+      else if (/X\s*Plus/i.test(s))        tier = 'X Plus';
+      else tier = { X1E: 'X Elite', X1P: 'X Plus', X1: 'X', X2E: 'X2 Elite' }[fam] || 'X';
+      const segment = fam.startsWith('X2') ? 'Snapdragon X2' : 'Snapdragon X';
+      return { cpu: `Snapdragon ${tier} ${fam}-${m[2]}-${m[3]}`, segment };
     },
   },
   {
@@ -141,11 +154,9 @@ const PARTIAL_RULES = [
   { re: /\bMendocino\s*R([3579])\b/i,                            seg: m => `Ryzen ${m[1]}` },
   { re: /\b(?:Intel\s+)?(?:Core\s+)?i([3579])\b/i,               seg: m => `Core i${m[1]}` },
   { re: /\b(?:Intel\s+)?Core\s*([3579])\b/i,                     seg: m => `Core ${m[1]}` },
-  { re: /\bSnapdragon\s+X2\s*Elite\b/i,                          seg: () => 'Snapdragon X2 Elite' },
-  { re: /\bSnapdragon\s*X2\b/i,                                  seg: () => 'Snapdragon X2' },
-  { re: /\bSnapdragon\s+X\s*Elite\b/i,                           seg: () => 'Snapdragon X Elite' },
-  { re: /\bSnapdragon\s+X\s*Plus\b/i,                            seg: () => 'Snapdragon X Plus' },
-  { re: /\bSnapdragon\b/i,                                       seg: () => 'Snapdragon X' },
+  // Segment Snapdragon chi la HO CHIP (X / X2), khong kem bac — theo tab Segment.
+  { re: /\bSnapdragon\b[\s\S]*\bX2\b|\bX2E\b/i,                  seg: () => 'Snapdragon X2' },
+  { re: /\bSnapdragon\b|\bX1[EP]?\b/i,                           seg: () => 'Snapdragon X' },
   { re: /\b(Celeron|Pentium|Athlon)\b/i,                         seg: m => CAP(m[1]) },
 ];
 
@@ -164,7 +175,9 @@ function normalizeCpu(raw) {
   for (const r of FULL_RULES) {
     if (r.guard && !r.guard(s)) continue;
     const m = s.match(r.re);
-    if (m) return { ...r.build(m), rule: r.name, confidence: 'full', raw: s };
+    // Truyen ca chuoi goc: luat Snapdragon can no de doc bac ("Elite Extreme")
+    // nam ngoai pham vi regex bat ma so.
+    if (m) return { ...r.build(m, s), rule: r.name, confidence: 'full', raw: s };
   }
   for (const r of PARTIAL_RULES) {
     const m = s.match(r.re);
