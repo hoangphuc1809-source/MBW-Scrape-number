@@ -20,6 +20,9 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { google } = require('googleapis');
+// Chuan hoa spec cho dong KHONG khop tab Part # — them 02/09/2026.
+const { normalizeCpu } = require('./spec_normalize.js');
+const { K } = require('./spec_dictionary.js');
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const CREDS_PATH = path.join(os.tmpdir(), 'reenrich-gcreds.json');
@@ -209,7 +212,7 @@ async function main() {
   // Tinh lai enrichment cho TOAN BO dong hien co trong data.csv. Giu nguyen
   // cac cot RAW; chi ghi de cot enrichment KHI Part# co gia tri moi (khong
   // xoa trang gia tri cu neu Part# lan nay khong khop - an toan hon).
-  let matched = 0, skippedEOL = 0;
+  let matched = 0, skippedEOL = 0, normalized = 0;
   const outRows = [];
   for (const row of dataRows) {
     const sku = row[COL.SKU];
@@ -229,10 +232,29 @@ async function main() {
       row[COL.VRAM] = info.vram || row[COL.VRAM];
       row[COL.PartNo] = info.partNumber || row[COL.PartNo];
       row[COL.FocusModel] = info.focusModel || row[COL.FocusModel];
+    } else {
+      // KHONG khop tab Part # -> chuoi tho cua retailer nam nguyen trong
+      // data.csv, nen cung mot con chip hien ra hang chuc dang khac nhau tren
+      // dashboard. Chuan hoa lai o day.
+      //
+      // CHI chay o nhanh nay: dong da khop Part # dung gia tri Phuc go tay,
+      // khong duoc dung vao.
+      //
+      // Luon giu gia tri cu lam lop cuoi: luat khong doc duoc thi de nguyen,
+      // KHONG de trong — mat du lieu te hon hien thi xau.
+      const before = [row[COL.CPUSegment], row[COL.CPU], row[COL.RAM], row[COL.SSD], row[COL.GPU]].join('\u0000');
+      const n = normalizeCpu(row[COL.CPU] || '');
+      if (n.confidence === 'full') row[COL.CPU] = n.cpu;
+      if (!row[COL.CPUSegment] && n.segment) row[COL.CPUSegment] = n.segment;
+      row[COL.RAM] = K.ram(row[COL.RAM] || '') || row[COL.RAM];
+      row[COL.SSD] = K.ssd(row[COL.SSD] || '') || row[COL.SSD];
+      row[COL.GPU] = K.gpu(row[COL.GPU] || '') || row[COL.GPU];
+      const after = [row[COL.CPUSegment], row[COL.CPU], row[COL.RAM], row[COL.SSD], row[COL.GPU]].join('\u0000');
+      if (before !== after) normalized++;
     }
     outRows.push(row);
   }
-  debugLog(`Re-enrich xong: ${matched}/${dataRows.length} dòng khớp Part # (loại ${skippedEOL} SP EOL).`);
+  debugLog(`Re-enrich xong: ${matched}/${dataRows.length} dòng khớp Part # (loại ${skippedEOL} SP EOL), ${normalized} dòng được chuẩn hoá spec.`);
 
   const csv = [header, ...outRows].map(r => r.map(csvEscape).join(',')).join('\n') + '\n';
   fs.writeFileSync(DATA_CSV_PATH, csv, 'utf8');
