@@ -212,6 +212,36 @@ async function main() {
   console.log(`Da ghi segment-audit/segment-normalized.tsv`);
   console.log(`  CPU chuan: ${seenCpu.size} gia tri   |   GPU chuan: ${seenGpu.size} gia tri`);
   console.log(`  trong do ${dupCount} gia tri hien dang co NHIEU HON MOT cach viet trong tab`);
+
+  // --- Danh sach SUA CU THE ---
+  // Chi gom nhung van de co DICH RO RANG (biet phai sua thanh gi). Cac loai
+  // khac (o rac, luat chua nhan ra) khong co dich nen khong dua vao day.
+  const fix = [];
+  for (const p of problems) {
+    let target = null;
+    if (p.kind === 'Ánh xạ lệch') {
+      const m = p.note.match(/luật dẫn về "(.+?)"$/);
+      if (m) target = m[1];
+    } else if (p.kind === 'Lệch trong cùng dòng') {
+      const m = p.note.match(/phải là "(.+?)"$/);
+      if (m) target = m[1];
+    }
+    if (!target) continue;
+    // Voi 'Anh xa lech', o CAN SUA la o DANG CHUAN ben canh, khong phai o goc.
+    const cell = p.kind === 'Ánh xạ lệch'
+      ? (p.col === 'CPU Orginal' ? 'CPU' : 'GPU')
+      : p.col;
+    const current = p.kind === 'Ánh xạ lệch'
+      ? (p.note.match(/anh ghi "(.+?)" nhưng/) || [, ''])[1]
+      : p.now;
+    if (current === target) continue;
+    fix.push([p.line, cell, current, target, p.kind].join('\t'));
+  }
+  // Khu trung: cung dong + cung cot + cung dich thi chi can sua mot lan
+  const uniq = [...new Set(fix)];
+  fs.writeFileSync('segment-audit/segment-fixlist.tsv',
+    ['Dòng\tCột\tGiá trị hiện tại\tSửa thành\tLoại', ...uniq].join('\n'), 'utf8');
+  console.log(`Da ghi segment-audit/segment-fixlist.tsv (${uniq.length} o can sua, co dich ro rang)`);
 }
 
 main().catch(e => { console.error('LOI:', e.message); process.exit(1); });
