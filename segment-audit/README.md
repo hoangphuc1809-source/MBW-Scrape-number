@@ -1,6 +1,6 @@
 # Kiểm tra tab `Segment`
 
-Cập nhật: **11:19:35 3/9/2026** — tự sinh bởi job `segment-audit` (ops-tools).
+Cập nhật: **14:30:26 3/9/2026** — tự sinh bởi job `segment-audit` (ops-tools).
 Chỉ đọc Sheet, không ghi. Chạy lại: Actions → Ops Tools → tick `run_segment_audit`.
 
 | File | Nội dung |
@@ -34,6 +34,6 @@ từ retailer, sửa vào là hỏng bảng ánh xạ.
 - **Ô rác** — `#N/A`, `Đang cập nhật`, `Graphics` chung chung.
 - **Luật chưa nhận ra** — dữ liệu scraper sẽ không bao giờ khớp vào dòng này. Đây là việc cần sửa **luật**, không phải sửa Sheet.
 
-Tổng: **330** vấn đề, trong đó **209** ô có đích rõ ràng.
+Tổng: **105** vấn đề, trong đó **22** ô có đích rõ ràng.
 
 Sửa tới đâu, lần scrape sau áp tới đó — không cần làm hết một lượt.
