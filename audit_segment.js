@@ -61,6 +61,16 @@ async function main() {
   console.log(`Cot chuan : CPU=[${cpuCols}] Segment=[${segCols}] Platform=[${platCols}] GPU=[${gpuCols}]`);
   console.log(`Cot goc   : CPU=[${rawCpuCols}] GPU=[${rawGpuCols}]\n`);
 
+  // Tab co HAI khoi CPU (cot F-H va Q-S) nen "dòng 41, cột CPU" la mo ho —
+  // Phuc khong biet o nao. Ghi kem dia chi o that (vd "R41") de dan thang
+  // vao Name Box cua Google Sheets la nhay den dung cho.
+  const colLetter = i => {
+    let n = i, s2 = '';
+    do { s2 = String.fromCharCode(65 + (n % 26)) + s2; n = Math.floor(n / 26) - 1; } while (n >= 0);
+    return s2;
+  };
+  const cellRef = (i, line) => colLetter(i) + line;
+
   const nearest = (cols, t) => {
     const c = cols.filter(x => Math.abs(x - t) <= 3);
     return c.length ? c.reduce((a, b) => Math.abs(a - t) < Math.abs(b - t) ? a : b) : -1;
@@ -77,12 +87,12 @@ async function main() {
       const cpu = String(row[iCpu] || '').trim();
       if (!cpu) continue;
       if (JUNK.test(cpu) || /đang cập nhật/i.test(cpu)) {
-        problems.push({ kind: 'Ô rác', line, col: 'CPU', now: cpu, note: 'không phải tên chip' });
+        problems.push({ kind: 'Ô rác', line, cell: cellRef(iCpu, line), col: 'CPU', now: cpu, note: 'không phải tên chip' });
         continue;
       }
       const n = normalizeCpu(cpu);
       if (n.confidence !== 'full') {
-        problems.push({ kind: 'Luật chưa nhận ra', line, col: 'CPU', now: cpu,
+        problems.push({ kind: 'Luật chưa nhận ra', line, cell: cellRef(iCpu, line), col: 'CPU', now: cpu,
                         note: 'dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật' });
         continue;
       }
@@ -93,16 +103,16 @@ async function main() {
       const iSeg = nearest(segCols, iCpu), iPlat = nearest(platCols, iCpu);
       if (iSeg >= 0) {
         const seg = String(row[iSeg] || '').trim();
-        if (!seg) problems.push({ kind: 'Thiếu', line, col: 'CPU Segment', now: '(trống)', note: `CPU là "${cpu}"` });
+        if (!seg) problems.push({ kind: 'Thiếu', line, cell: cellRef(iSeg, line), col: 'CPU Segment', now: '(trống)', note: `CPU là "${cpu}"` });
         else if (seg !== n.segment && seg.replace(/\s+/g, ' ') !== n.segment) {
-          problems.push({ kind: 'Lệch trong cùng dòng', line, col: 'CPU Segment', now: seg,
+          problems.push({ kind: 'Lệch trong cùng dòng', line, cell: cellRef(iSeg, line), col: 'CPU Segment', now: seg,
                           note: `CPU là "${cpu}" -> segment phải là "${n.segment}"` });
         }
       }
       if (iPlat >= 0) {
         const plat = String(row[iPlat] || '').trim(), should = cpuPlatform(n.cpu);
         if (plat && should && plat !== should) {
-          problems.push({ kind: 'Lệch trong cùng dòng', line, col: 'CPU Platform', now: plat,
+          problems.push({ kind: 'Lệch trong cùng dòng', line, cell: cellRef(iPlat, line), col: 'CPU Platform', now: plat,
                           note: `CPU là "${cpu}" -> hãng phải là "${should}"` });
         }
       }
@@ -112,12 +122,12 @@ async function main() {
       const gpu = String(row[iGpu] || '').trim();
       if (!gpu) continue;
       if (JUNK.test(gpu) || /đang cập nhật/i.test(gpu)) {
-        problems.push({ kind: 'Ô rác', line, col: 'GPU', now: gpu, note: 'không phải tên GPU' });
+        problems.push({ kind: 'Ô rác', line, cell: cellRef(iGpu, line), col: 'GPU', now: gpu, note: 'không phải tên GPU' });
         continue;
       }
       const g = K.gpu(gpu);
       if (!g) {
-        problems.push({ kind: 'Luật chưa nhận ra', line, col: 'GPU', now: gpu,
+        problems.push({ kind: 'Luật chưa nhận ra', line, cell: cellRef(iGpu, line), col: 'GPU', now: gpu,
                         note: 'dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật' });
         continue;
       }
@@ -137,10 +147,10 @@ async function main() {
       if (!want || JUNK.test(raw)) continue;
       const got = normalizeCpu(raw);
       if (got.confidence !== 'full') {
-        problems.push({ kind: 'Ánh xạ hỏng', line, col: 'CPU Orginal', now: raw,
+        problems.push({ kind: 'Ánh xạ hỏng', line, cell: cellRef(iC, line), col: 'CPU Orginal', now: raw,
                         note: `luật không đọc được -> sẽ không dẫn về "${want}"` });
       } else if (got.cpu !== want) {
-        problems.push({ kind: 'Ánh xạ lệch', line, col: 'CPU Orginal', now: raw,
+        problems.push({ kind: 'Ánh xạ lệch', line, cell: cellRef(iC, line), col: 'CPU Orginal', now: raw,
                         note: `anh ghi "${want}" nhưng luật dẫn về "${got.cpu}"` });
       }
     }
@@ -152,10 +162,10 @@ async function main() {
       if (!want || JUNK.test(raw)) continue;
       const got = K.gpu(raw);
       if (!got) {
-        problems.push({ kind: 'Ánh xạ hỏng', line, col: 'Card đồ họa', now: raw,
+        problems.push({ kind: 'Ánh xạ hỏng', line, cell: cellRef(iC, line), col: 'Card đồ họa', now: raw,
                         note: `luật không đọc được -> sẽ không dẫn về "${want}"` });
       } else if (got !== want) {
-        problems.push({ kind: 'Ánh xạ lệch', line, col: 'Card đồ họa', now: raw,
+        problems.push({ kind: 'Ánh xạ lệch', line, cell: cellRef(iC, line), col: 'Card đồ họa', now: raw,
                         note: `anh ghi "${want}" nhưng luật dẫn về "${got}"` });
       }
     }
@@ -198,8 +208,8 @@ async function main() {
 
   fs.mkdirSync('segment-audit', { recursive: true });
   writeCsv('segment-audit/segment-audit.csv',
-    [['Loại', 'Dòng', 'Cột', 'Giá trị', 'Ghi chú'],
-     ...problems.map(p => [p.kind, p.line, p.col, p.now, p.note])]);
+    [['Loại', 'Ô', 'Dòng', 'Cột', 'Giá trị', 'Ghi chú'],
+     ...problems.map(p => [p.kind, p.cell || '', p.line, p.col, p.now, p.note])]);
   console.log(`Da ghi segment-audit/segment-audit.csv (${problems.length} dong)`);
 
   // --- Danh sach CHUAN da khu trung, de Phuc thay the vao tab ---
@@ -247,12 +257,23 @@ async function main() {
       ? (p.note.match(/anh ghi "(.+?)" nhưng/) || [, ''])[1]
       : p.now;
     if (current === target) continue;
-    fix.push([p.line, cell, current, target, p.kind].join('\t'));
+    fix.push({ cell: p.cell || '', line: p.line, col: cell, cur: current, to: target, kind: p.kind });
   }
-  // Khu trung: cung dong + cung cot + cung dich thi chi can sua mot lan
-  const uniq = [...new Set(fix)];
+  // Khu trung theo dia chi o: mot o chi can sua mot lan
+  const seenCell = new Set();
+  const uniq = fix.filter(f => {
+    const k = `${f.cell}|${f.cur}|${f.to}`;
+    if (seenCell.has(k)) return false;
+    seenCell.add(k); return true;
+  });
+  // Sap xep theo CAP SUA (cot + gia tri cu + gia tri moi) roi moi den so dong:
+  // cac o sua GIONG NHAU nam lien nhau -> Phuc lam mot mach, khong phai nhay
+  // qua nhay lai giua cac loai sua khac nhau.
+  uniq.sort((a, b) =>
+    (a.col + a.cur + a.to).localeCompare(b.col + b.cur + b.to) || Number(a.line) - Number(b.line));
   writeCsv('segment-audit/segment-fixlist.csv',
-    [['Dòng', 'Cột', 'Giá trị hiện tại', 'Sửa thành', 'Loại'], ...uniq.map(l => l.split('\t'))]);
+    [['Ô', 'Dòng', 'Cột', 'Giá trị hiện tại', 'Sửa thành', 'Loại'],
+     ...uniq.map(f => [f.cell, f.line, f.col, f.cur, f.to, f.kind])]);
   console.log(`Da ghi segment-audit/segment-fixlist.csv (${uniq.length} o can sua, co dich ro rang)`);
 
   // README de mo tren GitHub la hieu ngay moi file la gi, khong phai hoi lai.
@@ -265,9 +286,25 @@ async function main() {
     '',
     '| File | Nội dung |',
     '|---|---|',
-    '| [`segment-fixlist.csv`](segment-fixlist.csv) | **Bắt đầu từ đây.** Ô cần sửa kèm giá trị đúng. Cột `Dòng` là số dòng thật trong tab `Segment`. |',
+    '| [`segment-fixlist.csv`](segment-fixlist.csv) | **Bắt đầu từ đây.** Ô cần sửa kèm giá trị đúng. |',
     '| [`segment-audit.csv`](segment-audit.csv) | Toàn bộ vấn đề, phân theo loại. |',
     '| [`segment-normalized.csv`](segment-normalized.csv) | Danh sách giá trị chuẩn, kèm mọi cách viết đang có. |',
+    '',
+    '## Cách dùng `segment-fixlist.csv`',
+    '',
+    'Cột **`Ô`** là địa chỉ ô thật trong tab `Segment` (ví dụ `R41`).',
+    'Dán nó vào ô Name Box của Google Sheets (góc trên bên trái, cạnh thanh công thức)',
+    'rồi Enter — con trỏ nhảy thẳng tới đúng ô. Gõ đè giá trị ở cột `Sửa thành`.',
+    '',
+    'Cần địa chỉ ô vì tab có **hai khối CPU** (cột F–H và Q–S), nên chỉ nói',
+    '"dòng 41, cột CPU" là không đủ để biết ô nào.',
+    '',
+    'File đã sắp xếp theo **cặp sửa**: các ô sửa giống hệt nhau nằm liền nhau,',
+    'làm một mạch cho nhanh. Không bắt buộc làm hết một lượt — sửa tới đâu,',
+    'lần scrape sau áp tới đó.',
+    '',
+    '**Không sửa** cột chuỗi gốc (`CPU Orginal`, `Card đồ họa`) — đó là dữ liệu thô',
+    'từ retailer, sửa vào là hỏng bảng ánh xạ.',
     '',
     '## Các loại vấn đề',
     '',
