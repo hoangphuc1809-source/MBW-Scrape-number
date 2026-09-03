@@ -304,6 +304,16 @@ async function main() {
     const ramVal = (info && info.ram) || K.ram(p.ram || '') || p.ram || '';
     const ssdVal = (info && info.ssd) || K.ssd(p.storage || '') || p.storage || '';
 
+    // Products Family (Segment) + Series Group cho dong KHONG khop tab Part #.
+    // guessSegment() doi chieu ten SP voi danh sach dong may trong tab Segment,
+    // khong can Part #.
+    // LOI 03/09: em chi sua cho nay trong reenrich-dashboard-csv.js ma QUEN
+    // file nay — ma duong scrape lai chay file nay. Ket qua: chay scrape xong
+    // cot Products Family cua An Phat van trong. Hai file phai sua CUNG NHAU.
+    const guessed = info ? null : guessSegment(p.name);
+    const segVal = (info && info.segment) || (guessed && guessed.segment) || '';
+    const sgVal  = (info && info.seriesGroup) || (guessed && guessed.seriesGroup) || '';
+
     // FIX 14/08/2026: SRP fallback — khi website bỏ gạch giá gốc, origPrice=0
     // nhưng salePrice vẫn có → dùng salePrice làm SRP để không để trống cột SRP.
     // origPrice=0 && salePrice>0: website bán 1 giá, không có KM hiển thị.
@@ -314,8 +324,8 @@ async function main() {
       srp, promo, p.discount || '',
       p.sold || '', p.rating || '',
       (info && info.vendor) || canonVendor(p.brand) || '',
-      (info && info.seriesGroup) || '',
-      (info && info.segment) || '',
+      sgVal,
+      segVal,
       cpuSegVal,
       cpuVal,
       ramVal,
