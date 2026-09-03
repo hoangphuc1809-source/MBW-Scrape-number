@@ -98,7 +98,7 @@ async function main() {
       }
       // Trung lap: hai cach viet cua cung mot con chip
       if (!seenCpu.has(n.cpu)) seenCpu.set(n.cpu, new Map());
-      seenCpu.get(n.cpu).set(cpu, line);
+      seenCpu.get(n.cpu).set(cpu, cellRef(iCpu, line));
 
       const iSeg = nearest(segCols, iCpu), iPlat = nearest(platCols, iCpu);
       if (iSeg >= 0) {
@@ -132,7 +132,7 @@ async function main() {
         continue;
       }
       if (!seenGpu.has(g)) seenGpu.set(g, new Map());
-      seenGpu.get(g).set(gpu, line);
+      seenGpu.get(g).set(gpu, cellRef(iGpu, line));
     }
 
     // --- Khoi ANH XA: chuoi goc -> dang chuan Phuc ghi canh no ---
@@ -171,13 +171,17 @@ async function main() {
     }
   }
 
-  // Trung lap trong chinh tab
+  // Trung lap trong chinh tab. Moi bien the ghi kem DIA CHI O de Phuc nhay
+  // thang toi, va cai nao KHAC dang chuan thi vao fixlist voi dich ro rang.
   for (const [label, seen] of [['CPU', seenCpu], ['GPU', seenGpu]]) {
     for (const [key, variants] of seen) {
       if (variants.size <= 1) continue;
-      const list = [...variants.entries()].map(([v, l]) => `"${v}" (dòng ${l})`).join('  vs  ');
-      problems.push({ kind: 'Trùng lặp', line: [...variants.values()][0], col: label, now: list,
-                      note: 'cùng một thứ nhưng hai cách viết — phải bỏ bớt một' });
+      const list = [...variants.entries()].map(([v, c]) => `"${v}" (${c})`).join('  vs  ');
+      for (const [v, c] of variants) {
+        if (v === key) continue;                    // bien the nay da dung chuan
+        problems.push({ kind: 'Trùng lặp', line: c.replace(/^[A-Z]+/, ''), cell: c, col: label,
+                        now: v, note: `trùng với ${list} — sửa thành "${key}"` });
+      }
     }
   }
 
@@ -246,6 +250,9 @@ async function main() {
       if (m) target = m[1];
     } else if (p.kind === 'Lệch trong cùng dòng') {
       const m = p.note.match(/phải là "(.+?)"$/);
+      if (m) target = m[1];
+    } else if (p.kind === 'Trùng lặp') {
+      const m = p.note.match(/sửa thành "(.+?)"$/);
       if (m) target = m[1];
     }
     if (!target) continue;

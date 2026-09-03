@@ -71,6 +71,23 @@ const FULL_RULES = [
     },
   },
   {
+    // Ryzen viet DINH LIEN, khong co dau cach giua bac va ma so:
+    //   "AMD Ryzen 7530U", "Ryzen 8840HS"
+    // CHU Y: KHONG the suy ra bac tu chuoi nay mot cach chac chan. Theo cach
+    // AMD danh so dong 7000/8000 mobile thi chu so DAU la doi (7 = 2023),
+    // chu so THU HAI moi la bac (7530U -> bac 5; 8840HS -> bac 7). Anh xa
+    // chu so thu hai sang bac lai khong deu giua cac dong san pham.
+    //
+    // Nen o day CO Y khong doan. Tra ve 'partial': van lay duoc ma so day du
+    // de doi chieu, nhung de trong bac cho nguoi quyet. Doan bua o day se ghi
+    // sai im lang vao ca Sheet lan dashboard.
+    name: 'ryzen-fused',
+    re: /\b(?:AMD\s+)?Ryz+en\s+(\d{4})([A-Z]{1,3})?\b/i,
+    guard: s => !/\bRyz+en\s+[3579]\s/i.test(s),
+    build: () => ({ cpu: '', segment: '' }),
+    partialOnly: true,
+  },
+  {
     // Ryzen: ma so 2-4 chu so. AMD co that ca "Ryzen 5 40", "Ryzen 7 170"
     // (dong 40/100/200 series) lan "Ryzen 7 7735HS" (dong cu 4 chu so).
     // Ban dau em cho 2 chu so la chuoi bi cat cut nen loai — SAI. Phuc xac
@@ -187,9 +204,14 @@ function normalizeCpu(raw) {
   for (const r of FULL_RULES) {
     if (r.guard && !r.guard(s)) continue;
     const m = s.match(r.re);
+    if (!m) continue;
+    // partialOnly: luat NHAN RA chuoi nhung CO Y khong dung lai ten, vi thieu
+    // thong tin de chac chan (vd "Ryzen 7530U" khong suy duoc bac). Bao
+    // 'unknown' de audit dua ra cho nguoi quyet, thay vi doan bua.
+    if (r.partialOnly) return { cpu: '', segment: '', rule: r.name, confidence: 'unknown', raw: s };
     // Truyen ca chuoi goc: luat Snapdragon can no de doc bac ("Elite Extreme")
     // nam ngoai pham vi regex bat ma so.
-    if (m) return { ...r.build(m, s), rule: r.name, confidence: 'full', raw: s };
+    return { ...r.build(m, s), rule: r.name, confidence: 'full', raw: s };
   }
   for (const r of PARTIAL_RULES) {
     const m = s.match(r.re);
