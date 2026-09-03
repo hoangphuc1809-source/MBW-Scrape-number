@@ -185,17 +185,29 @@ async function main() {
     if (g.length > 60) console.log(`  ... còn ${g.length - 60} dòng nữa, xem file`);
   }
 
+  // Tat ca xuat ra .csv CO BOM (\uFEFF), khong dung .tsv nua: GitHub render
+  // .csv thanh BANG xem duoc thang tren trinh duyet/dien thoai, con .tsv thi
+  // hien ra van ban tho. Va thieu BOM thi Excel doc tieng Viet thanh ky tu loi.
+  const csvEsc = v => {
+    const s = String(v == null ? '' : v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const writeCsv = (file, rows) => {
+    fs.writeFileSync(file, '\uFEFF' + rows.map(r => r.map(csvEsc).join(',')).join('\r\n'), 'utf8');
+  };
+
   fs.mkdirSync('segment-audit', { recursive: true });
-  fs.writeFileSync('segment-audit/segment-audit.tsv',
-    ['Loại\tDòng\tCột\tGiá trị\tGhi chú', ...problems.map(p => [p.kind, p.line, p.col, p.now, p.note].join('\t'))].join('\n'), 'utf8');
-  console.log(`\nDa ghi segment-audit/segment-audit.tsv (${problems.length} dong)`);
+  writeCsv('segment-audit/segment-audit.csv',
+    [['Loại', 'Dòng', 'Cột', 'Giá trị', 'Ghi chú'],
+     ...problems.map(p => [p.kind, p.line, p.col, p.now, p.note])]);
+  console.log(`Da ghi segment-audit/segment-audit.csv (${problems.length} dong)`);
 
   // --- Danh sach CHUAN da khu trung, de Phuc thay the vao tab ---
   //
   // Dang chuan = dang BO LUAT dung lai, KHONG phai "cach viet dau tien gap".
   // Ly do: thu tu gap phu thuoc thu tu duyet dong, chay lai co the ra khac ->
   // dung im lang. Dang luat dung lai la tat dinh.
-  const outLines = ['Loại\tGiá trị chuẩn\tSố cách viết\tCác cách viết hiện có trong tab (dòng)'];
+  const outLines = [['Loại', 'Giá trị chuẩn', 'Số cách viết', 'Các cách viết hiện có trong tab (dòng)']];
   let dupCount = 0;
   for (const [label, seen] of [['CPU', seenCpu], ['GPU', seenGpu]]) {
     const keys = [...seen.keys()].sort();
@@ -205,10 +217,10 @@ async function main() {
       const detail = [...variants.entries()]
         .sort((a, b) => Number(a[1]) - Number(b[1]))          // sap theo so dong cho de tra
         .map(([v, l]) => `"${v}" (${l})`).join(' | ');
-      outLines.push([label, key, variants.size, detail].join('\t'));
+      outLines.push([label, key, variants.size, detail]);
     }
   }
-  fs.writeFileSync('segment-audit/segment-normalized.tsv', outLines.join('\n'), 'utf8');
+  writeCsv('segment-audit/segment-normalized.csv', outLines);
   console.log(`Da ghi segment-audit/segment-normalized.tsv`);
   console.log(`  CPU chuan: ${seenCpu.size} gia tri   |   GPU chuan: ${seenGpu.size} gia tri`);
   console.log(`  trong do ${dupCount} gia tri hien dang co NHIEU HON MOT cach viet trong tab`);
@@ -239,18 +251,39 @@ async function main() {
   }
   // Khu trung: cung dong + cung cot + cung dich thi chi can sua mot lan
   const uniq = [...new Set(fix)];
-  // Xuat .csv CO BOM (\uFEFF) chu khong phai .tsv: Phuc bao khong mo duoc file
-  // .tsv — Excel khong tu nhan duoi nay, va thieu BOM thi tieng Viet thanh
-  // ky tu loi. .csv + BOM thi nhap doi la mo duoc ngay.
-  const csvEsc = v => {
-    const s = String(v == null ? '' : v);
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  };
-  const csvRows = [['Dòng', 'Cột', 'Giá trị hiện tại', 'Sửa thành', 'Loại'],
-    ...uniq.map(l => l.split('\t'))];
-  fs.writeFileSync('segment-audit/segment-fixlist.csv',
-    '\uFEFF' + csvRows.map(r => r.map(csvEsc).join(',')).join('\r\n'), 'utf8');
+  writeCsv('segment-audit/segment-fixlist.csv',
+    [['Dòng', 'Cột', 'Giá trị hiện tại', 'Sửa thành', 'Loại'], ...uniq.map(l => l.split('\t'))]);
   console.log(`Da ghi segment-audit/segment-fixlist.csv (${uniq.length} o can sua, co dich ro rang)`);
+
+  // README de mo tren GitHub la hieu ngay moi file la gi, khong phai hoi lai.
+  const stamp = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+  fs.writeFileSync('segment-audit/README.md', [
+    '# Kiểm tra tab `Segment`',
+    '',
+    `Cập nhật: **${stamp}** — tự sinh bởi job \`segment-audit\` (ops-tools).`,
+    'Chỉ đọc Sheet, không ghi. Chạy lại: Actions → Ops Tools → tick `run_segment_audit`.',
+    '',
+    '| File | Nội dung |',
+    '|---|---|',
+    '| [`segment-fixlist.csv`](segment-fixlist.csv) | **Bắt đầu từ đây.** Ô cần sửa kèm giá trị đúng. Cột `Dòng` là số dòng thật trong tab `Segment`. |',
+    '| [`segment-audit.csv`](segment-audit.csv) | Toàn bộ vấn đề, phân theo loại. |',
+    '| [`segment-normalized.csv`](segment-normalized.csv) | Danh sách giá trị chuẩn, kèm mọi cách viết đang có. |',
+    '',
+    '## Các loại vấn đề',
+    '',
+    '- **Ánh xạ lệch** — luật dẫn chuỗi gốc về giá trị khác với ô chuẩn ghi cạnh nó. Sửa ô **dạng chuẩn** (cột `CPU`/`GPU`), không sửa ô chuỗi gốc.',
+    '- **Ánh xạ hỏng** — luật không đọc được chuỗi gốc, dòng ánh xạ đó vô dụng.',
+    '- **Trùng lặp** — hai cách viết của cùng một thứ cùng tồn tại. Phải bỏ bớt một.',
+    '- **Lệch trong cùng dòng** — `CPU Segment` hoặc `CPU Platform` không khớp `CPU` cùng dòng.',
+    '- **Ô rác** — `#N/A`, `Đang cập nhật`, `Graphics` chung chung.',
+    '- **Luật chưa nhận ra** — dữ liệu scraper sẽ không bao giờ khớp vào dòng này. Đây là việc cần sửa **luật**, không phải sửa Sheet.',
+    '',
+    `Tổng: **${problems.length}** vấn đề, trong đó **${uniq.length}** ô có đích rõ ràng.`,
+    '',
+    'Sửa tới đâu, lần scrape sau áp tới đó — không cần làm hết một lượt.',
+    '',
+  ].join('\n'), 'utf8');
+  console.log('Da ghi segment-audit/README.md');
 }
 
 main().catch(e => { console.error('LOI:', e.message); process.exit(1); });
