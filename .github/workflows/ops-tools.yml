@@ -605,6 +605,11 @@ jobs:
     if: ${{ inputs.run_all || inputs.run_segment_audit }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Mac dinh GITHUB_TOKEN trong workflow nay chi co quyen DOC -> push bi 403
+    # "Permission denied to github-actions[bot]". Job reenrich trong scrape.yml
+    # khai quyen nay o cap job, lam y het.
+    permissions:
+      contents: write
     # Chan chay song song: 02/09 co 2 run reenrich dispatch sat nhau, ca hai
     # cung commit mot file -> run sau fail o buoc rebase. Job nay cung ghi vao
     # repo nen dinh y het.
