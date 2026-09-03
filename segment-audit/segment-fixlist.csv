@@ -1,210 +1,210 @@
-﻿Dòng,Cột,Giá trị hiện tại,Sửa thành,Loại
-2,GPU,Radeon,AMD Radeon Graphics,Ánh xạ lệch
-3,CPU,Snapdragon X - X1 26 100,Snapdragon X X1-26-100,Ánh xạ lệch
-3,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
-4,GPU,Graphics,Intel Graphics,Ánh xạ lệch
-6,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
-8,GPU,Arc,Intel Arc Graphics,Ánh xạ lệch
-12,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
-13,GPU,Iris Xe,Intel Iris Xe Graphics,Ánh xạ lệch
-14,GPU,Graphics,AMD Radeon 680M,Ánh xạ lệch
-15,GPU,Iris Xe,Intel Iris Xe Graphics,Ánh xạ lệch
-16,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
-16,CPU,Core i5-13500H,Core i5 13500H,Ánh xạ lệch
-16,GPU,Graphics,AMD Radeon 860M,Ánh xạ lệch
-17,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
-19,GPU,Graphics,AMD Radeon 820M,Ánh xạ lệch
-24,GPU,Graphics,AMD Radeon Graphics,Ánh xạ lệch
-25,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
-25,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
-27,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-28,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-28,GPU,Arc,Intel Arc Graphics 130V,Ánh xạ lệch
-29,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-29,GPU,Iris Xe,Intel Iris Xe Graphics,Ánh xạ lệch
-31,GPU,Graphics,AMD Radeon 610M,Ánh xạ lệch
-32,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
-32,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
-32,GPU,Graphics,AMD Radeon 740M,Ánh xạ lệch
-38,GPU,Graphics,AMD Radeon 780M,Ánh xạ lệch
-40,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
-41,CPU Segment,Ryzen AI 7,Ryzen 7,Lệch trong cùng dòng
-41,CPU,Ryzen 7 260,Ryzen AI 7 260,Ánh xạ lệch
-43,CPU Segment,i9,Core i9,Lệch trong cùng dòng
-43,CPU,"i9, 14900HX",Core i9 14900HX,Ánh xạ lệch
-44,CPU,"Celeron, N4500",Celeron N4500,Ánh xạ lệch
-47,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
-54,GPU,Graphics,AMD Radeon 8060S,Ánh xạ lệch
-58,GPU,Arc,Intel Arc Graphics 130V,Ánh xạ lệch
-62,GPU,Arc,Intel Arc Graphics 140V,Ánh xạ lệch
-63,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
-63,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
-64,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-67,GPU,NVIDIA GeForce RTX 4080,RTX 4080,Ánh xạ lệch
-68,GPU,UHD,Intel UHD Graphics 620,Ánh xạ lệch
-70,GPU,"NVIDIA GeForce MX330, 2 GB",MX 330,Ánh xạ lệch
-71,GPU,NVIDIA® GeForce® MX330 2GB GDDR5,MX 330,Ánh xạ lệch
-72,GPU,UHD,Intel UHD Graphics 605,Ánh xạ lệch
-73,GPU,NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost),RTX 2060,Ánh xạ lệch
-74,GPU,Nvidia MX330-2GB,MX 330,Ánh xạ lệch
-75,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-76,GPU,UHD,Intel UHD Graphics 620,Ánh xạ lệch
-81,GPU,Arc,Intel Arc Graphics,Ánh xạ lệch
-83,GPU,Iris Xe,RTX 3050,Ánh xạ lệch
-86,GPU,NVIDIA® GeForce RTX™ 4060,RTX 4060,Ánh xạ lệch
-92,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
-93,GPU,Graphics,Intel UHD Graphics,Ánh xạ lệch
-94,CPU,Oryon X1P,Snapdragon X Plus X1P-64-100,Ánh xạ lệch
-94,GPU,Graphics,AMD Radeon Graphics,Ánh xạ lệch
-96,CPU,Snapdragon X - X1 26 100,Snapdragon X X1-26-100,Ánh xạ lệch
-101,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
-102,CPU,Core Ultra 5 125H,Core 5 125H,Ánh xạ lệch
-103,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-103,CPU Segment,Core 7,Core Ultra 7,Lệch trong cùng dòng
-103,CPU,Core Ultra 7 155H,Core 7 155H,Ánh xạ lệch
-104,CPU Segment,Ryzen 7 AI PRO,Ryzen AI 7,Lệch trong cùng dòng
-105,CPU,Ryzen 7 7530U,Ryzen 7 530U,Ánh xạ lệch
-113,CPU Segment,Ryzen 9 AI HX PRO,Ryzen AI 9,Lệch trong cùng dòng
-115,CPU Segment,Ryzen 7 AI PRO,Ryzen AI 7,Lệch trong cùng dòng
-122,GPU,Graphics,Intel HD Graphics 520,Ánh xạ lệch
-127,GPU,Arc,Intel Arc Graphics,Ánh xạ lệch
-129,GPU,Iris Xe,MX 570A,Ánh xạ lệch
-130,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
-131,GPU,RTX 3070,RTX 3070Ti,Ánh xạ lệch
-133,GPU,"NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6",RTX 3080Ti,Ánh xạ lệch
-135,GPU,UHD,Intel UHD Graphics 600,Ánh xạ lệch
-136,GPU,Graphics,AMD Radeon RX Vega 10,Ánh xạ lệch
-137,CPU,Snapdragon X - X1 26 100,Snapdragon X X1-26-100,Ánh xạ lệch
-137,GPU,RTX 3050,RTX 3050Ti,Ánh xạ lệch
-138,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
-138,CPU,Ryzen AI MAX+ 395,Ryzen AI Max+ 395,Ánh xạ lệch
-139,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
-139,GPU,"NVIDIA GeForce 940MX, 2 GB",GeForce 940MX,Ánh xạ lệch
-140,GPU,GTX 960,GTX 960M,Ánh xạ lệch
-141,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-141,GPU,NVIDIA GeForce GT 740M,GT 740M,Ánh xạ lệch
-142,CPU,AMD Ryzen AI 9 465,Ryzen AI 9 465,Ánh xạ lệch
-142,GPU,Gtx 1660,GTX 1660Ti,Ánh xạ lệch
-143,GPU,Iris Xe,MX 550,Ánh xạ lệch
-144,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-144,GPU,Graphics,AMD Radeon Vega 7,Ánh xạ lệch
-145,GPU,"AMD Radeon 520, 2 GB",AMD Radeon 520,Ánh xạ lệch
-146,GPU,Graphics,AMD Radeon 840M,Ánh xạ lệch
-148,CPU Segment,Ryzen 9 AI HX,Ryzen AI 9,Lệch trong cùng dòng
-148,GPU,Arc,Intel Arc Graphics 130V,Ánh xạ lệch
-149,CPU,AMD Ryzen AI 9 HX 370,Ryzen AI 9 HX 370,Ánh xạ lệch
-152,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
-152,CPU,Ryzen AI MAX+ 392,Ryzen AI Max+ 392,Ánh xạ lệch
-152,GPU,Arc,Intel Arc Graphics 140V,Ánh xạ lệch
-153,GPU,Arc,Intel Arc Graphics 140T,Ánh xạ lệch
-154,CPU Segment,M5,Apple M5,Lệch trong cùng dòng
-154,GPU,Graphics,AMD Radeon 890M,Ánh xạ lệch
-155,CPU Segment,M4,Apple M4,Lệch trong cùng dòng
-155,GPU,Arc,Intel Arc Graphics 130T,Ánh xạ lệch
-156,CPU Segment,M4,Apple M4 Pro,Lệch trong cùng dòng
-157,CPU Segment,M5,Apple M5 Pro,Lệch trong cùng dòng
-157,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
-158,CPU Segment,M5,Apple M5 Max,Lệch trong cùng dòng
-158,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
-159,GPU,Graphics,Intel HD Graphics,Ánh xạ lệch
-160,GPU,nVidia Geforce MX130 2GB,MX 130,Ánh xạ lệch
-162,CPU Segment,Ryzen 7,Ryzen AI 7,Lệch trong cùng dòng
-162,GPU,Graphics,AMD Radeon 660M,Ánh xạ lệch
-167,CPU,Intel Core Ultra 5 325,Core Ultra 5 325,Ánh xạ lệch
-168,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
-168,CPU Segment,Snapdragon X,Snapdragon X2,Lệch trong cùng dòng
-174,CPU,Core i5-13500H,Core i5 13500H,Ánh xạ lệch
-175,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
-176,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
-177,CPU,AMD Ryzen 9 7945HX,Ryzen 9 7945HX,Ánh xạ lệch
-179,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
-180,GPU,Arc,Intel Arc Graphics 130T,Ánh xạ lệch
-182,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
-183,CPU,Intel Pentium N6000,Pentium N6000,Ánh xạ lệch
-184,CPU,Core i5-1135G7,Core i5 1135G7,Ánh xạ lệch
-185,CPU,"Celeron, N4500",Celeron N4500,Ánh xạ lệch
-188,CPU,Intel Pentium N6000,Pentium N6000,Ánh xạ lệch
-190,CPU,Core I5-1135G7,Core i5 1135G7,Ánh xạ lệch
-193,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
-197,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
-198,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-199,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
-200,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-201,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
-203,GPU,GTX1650,GTX 1650,Ánh xạ lệch
-204,GPU,GTX 1660,GTX 1660Ti,Ánh xạ lệch
-206,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-211,CPU,Core i5-1340P,Core i5 1340P,Ánh xạ lệch
-216,CPU,Core i7-9750H,Core i7 9750H,Ánh xạ lệch
-218,CPU,Ryzen AI 7 350,Core 7 350,Ánh xạ lệch
-218,GPU,RTX 3050,RTX 3050Ti,Ánh xạ lệch
-224,CPU,Ryzen 9 5900Hs,Ryzen 9 5900HS,Ánh xạ lệch
-225,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
-228,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
-229,CPU Segment,Ryzen 9,Ryzen AI 9,Lệch trong cùng dòng
-230,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
-231,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
-237,CPU,Core i7-12650H,Core i7 12650H,Ánh xạ lệch
-244,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
-245,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
-246,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
-247,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
-247,CPU,Core i5-13500H,Core i5 13500H,Ánh xạ lệch
-248,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
-249,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
-276,CPU,Ryzen 5-4600H,Ryzen 5 4600H,Ánh xạ lệch
-279,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-282,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-283,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
-285,CPU,Core i3-1215U,Core i3 1215U,Ánh xạ lệch
-292,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-297,CPU,"Core 3, N350",Core 3 N350,Ánh xạ lệch
-317,CPU,Core Ultra 5 236V vPro,Core Ultra 5 236V,Ánh xạ lệch
-337,CPU,Core i9-13980HX,Core i9 13980HX,Ánh xạ lệch
-338,CPU,Core I5 8265U,Core i5 8265U,Ánh xạ lệch
-339,CPU Segment,i9,Core i9,Lệch trong cùng dòng
-339,CPU,Core i9 12900H,Core i9 12900HK,Ánh xạ lệch
-341,CPU,Core I5 8265U,Core i5 8265U,Ánh xạ lệch
-343,CPU,Ryzen R7 3700U,Ryzen 7 3700U,Ánh xạ lệch
-344,CPU,Intel Pentium N5030,Pentium N5030,Ánh xạ lệch
-346,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
-347,CPU,Core i3-1215U,Core i3 1215U,Ánh xạ lệch
-353,CPU Segment,I7,Core i7,Lệch trong cùng dòng
-353,CPU,I7-6700HQ,Core i7 6700HQ,Ánh xạ lệch
-354,CPU,I5-4200U,Core i5 4200U,Ánh xạ lệch
-355,CPU,Core I5 -10210U,Core i5 10210U,Ánh xạ lệch
-356,CPU,Intel Core i7 10750H,Core i7 10750H,Ánh xạ lệch
-357,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
-390,CPU,Ryzen 7 7735HS,Ryzen 7 7735U,Ánh xạ lệch
-397,CPU,Core i7-1365U,Core i7 1365U,Ánh xạ lệch
-398,CPU,Core i7-13700HX,Core i7 13700HX,Ánh xạ lệch
-404,CPU,Core i7-1165G7,Core i7 1165G7,Ánh xạ lệch
-411,CPU,Core i7-8550U,Core i7 8550U,Ánh xạ lệch
-416,CPU,Intel Pentium - N3710,Pentium N3710,Ánh xạ lệch
-417,CPU,Core i5-1035G1,Core i5 1035G1,Ánh xạ lệch
-418,CPU,Intel Core i7 - 10510U,Core i7 10510U,Ánh xạ lệch
-419,CPU,Core i5-1155G7,Core i5 1155G7,Ánh xạ lệch
-422,CPU,Intel Core i7-1165G7,Core i7 1165G7,Ánh xạ lệch
-438,CPU,Core i7-13645HX,Core i7 13645HX,Ánh xạ lệch
-444,CPU,Intel Core Ultra 5 322,Core Ultra 5 322,Ánh xạ lệch
-445,CPU,"Snapdragon X X1-26-100, 8C",Snapdragon X X1-26-100,Ánh xạ lệch
-447,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
-454,CPU,Core i5 12450H,Core i5 12450HX,Ánh xạ lệch
-455,CPU,Ryzen 7-5800H,Ryzen 7 5800H,Ánh xạ lệch
-456,CPU,Ryzen 5 6600H,Ryzen 5 6600HS,Ánh xạ lệch
-457,CPU,Core i7-10750H,Core i7 10750H,Ánh xạ lệch
-459,CPU,Core i5 12450H,Core i5 12450HX,Ánh xạ lệch
-464,CPU,Core i7-14700HX,Core i7 14700HX,Ánh xạ lệch
-466,CPU,"Snapdragon X Plus X1P-42-100, 8C",Snapdragon X Plus X1P-42-100,Ánh xạ lệch
-472,CPU,Core i3-1215U,Core i3 1215U,Ánh xạ lệch
-475,CPU,Core i5-1240P,Core i5 1240P,Ánh xạ lệch
-479,CPU,Core i7-10750H,Core i7 10750H,Ánh xạ lệch
-482,CPU Segment,Core I7,Core i7,Lệch trong cùng dòng
-482,CPU,Core I7-10510U,Core i7 10510U,Ánh xạ lệch
-483,CPU Segment,i7,Core i7,Lệch trong cùng dòng
-515,CPU,Core i5-8265U,Core i5 8265U,Ánh xạ lệch
-525,CPU,Core Ultra 9 290HX Plus,Core Ultra 9 290HX,Ánh xạ lệch
-528,CPU,"Celeron, N4500",Celeron N4500,Ánh xạ lệch
-536,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
-538,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
-539,CPU,Core i5 12450H,Core i5 12450HX,Ánh xạ lệch
+﻿Ô,Dòng,Cột,Giá trị hiện tại,Sửa thành,Loại
+H234,234,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
+H235,235,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
+H236,236,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
+H237,237,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
+H238,238,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
+H239,239,CPU Platform,Qualcom,Qualcomm,Lệch trong cùng dòng
+Q103,103,CPU Segment,Core 7,Core Ultra 7,Lệch trong cùng dòng
+Q482,482,CPU Segment,Core I7,Core i7,Lệch trong cùng dòng
+Q483,483,CPU Segment,i7,Core i7,Lệch trong cùng dòng
+Q353,353,CPU Segment,I7,Core i7,Lệch trong cùng dòng
+Q43,43,CPU Segment,i9,Core i9,Lệch trong cùng dòng
+Q339,339,CPU Segment,i9,Core i9,Lệch trong cùng dòng
+F149,149,CPU Segment,M4,Apple M4,Lệch trong cùng dòng
+F150,150,CPU Segment,M4,Apple M4 Pro,Lệch trong cùng dòng
+F148,148,CPU Segment,M5,Apple M5,Lệch trong cùng dòng
+F152,152,CPU Segment,M5,Apple M5 Max,Lệch trong cùng dòng
+F151,151,CPU Segment,M5,Apple M5 Pro,Lệch trong cùng dòng
+F15,15,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
+F88,88,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
+F216,216,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
+F219,219,CPU Segment,Ryzen 5 AI,Ryzen AI 5,Lệch trong cùng dòng
+F100,100,CPU Segment,Ryzen 7 AI PRO,Ryzen AI 7,Lệch trong cùng dòng
+F111,111,CPU Segment,Ryzen 7 AI PRO,Ryzen AI 7,Lệch trong cùng dòng
+F11,11,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
+F16,16,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
+F60,60,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
+F133,133,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
+F161,161,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
+F222,222,CPU Segment,Ryzen 7 AI,Ryzen AI 7,Lệch trong cùng dòng
+F156,156,CPU Segment,Ryzen 7,Ryzen AI 7,Lệch trong cùng dòng
+F109,109,CPU Segment,Ryzen 9 AI HX PRO,Ryzen AI 9,Lệch trong cùng dòng
+F142,142,CPU Segment,Ryzen 9 AI HX,Ryzen AI 9,Lệch trong cùng dòng
+F25,25,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F27,27,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F61,61,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F71,71,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F99,99,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F135,135,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F138,138,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F221,221,CPU Segment,Ryzen 9 AI,Ryzen AI 9,Lệch trong cùng dòng
+F220,220,CPU Segment,Ryzen 9,Ryzen AI 9,Lệch trong cùng dòng
+Q41,41,CPU Segment,Ryzen AI 7,Ryzen 7,Lệch trong cùng dòng
+F23,23,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
+F30,30,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
+Q138,138,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
+Q152,152,CPU Segment,Ryzen AI MAX+,Ryzen AI Max+,Lệch trong cùng dòng
+Q168,168,CPU Segment,Snapdragon X,Snapdragon X2,Lệch trong cùng dòng
+R177,177,CPU,AMD Ryzen 9 7945HX,Ryzen 9 7945HX,Ánh xạ lệch
+R142,142,CPU,AMD Ryzen AI 9 465,Ryzen AI 9 465,Ánh xạ lệch
+R149,149,CPU,AMD Ryzen AI 9 HX 370,Ryzen AI 9 HX 370,Ánh xạ lệch
+R44,44,CPU,"Celeron, N4500",Celeron N4500,Ánh xạ lệch
+R185,185,CPU,"Celeron, N4500",Celeron N4500,Ánh xạ lệch
+R528,528,CPU,"Celeron, N4500",Celeron N4500,Ánh xạ lệch
+R297,297,CPU,"Core 3, N350",Core 3 N350,Ánh xạ lệch
+R285,285,CPU,Core i3-1215U,Core i3 1215U,Ánh xạ lệch
+R347,347,CPU,Core i3-1215U,Core i3 1215U,Ánh xạ lệch
+R472,472,CPU,Core i3-1215U,Core i3 1215U,Ánh xạ lệch
+R355,355,CPU,Core I5 -10210U,Core i5 10210U,Ánh xạ lệch
+R454,454,CPU,Core i5 12450H,Core i5 12450HX,Ánh xạ lệch
+R459,459,CPU,Core i5 12450H,Core i5 12450HX,Ánh xạ lệch
+R539,539,CPU,Core i5 12450H,Core i5 12450HX,Ánh xạ lệch
+R338,338,CPU,Core I5 8265U,Core i5 8265U,Ánh xạ lệch
+R341,341,CPU,Core I5 8265U,Core i5 8265U,Ánh xạ lệch
+R417,417,CPU,Core i5-1035G1,Core i5 1035G1,Ánh xạ lệch
+R184,184,CPU,Core i5-1135G7,Core i5 1135G7,Ánh xạ lệch
+R190,190,CPU,Core I5-1135G7,Core i5 1135G7,Ánh xạ lệch
+R419,419,CPU,Core i5-1155G7,Core i5 1155G7,Ánh xạ lệch
+R475,475,CPU,Core i5-1240P,Core i5 1240P,Ánh xạ lệch
+R28,28,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R198,198,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R200,200,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R206,206,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R279,279,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R282,282,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R292,292,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R538,538,CPU,Core i5-12500H,Core i5 12500H,Ánh xạ lệch
+R211,211,CPU,Core i5-1340P,Core i5 1340P,Ánh xạ lệch
+R32,32,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
+R199,199,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
+R201,201,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
+R447,447,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
+R536,536,CPU,Core i5-13450HX,Core i5 13450HX,Ánh xạ lệch
+R16,16,CPU,Core i5-13500H,Core i5 13500H,Ánh xạ lệch
+R174,174,CPU,Core i5-13500H,Core i5 13500H,Ánh xạ lệch
+R247,247,CPU,Core i5-13500H,Core i5 13500H,Ánh xạ lệch
+R515,515,CPU,Core i5-8265U,Core i5 8265U,Ánh xạ lệch
+R482,482,CPU,Core I7-10510U,Core i7 10510U,Ánh xạ lệch
+R457,457,CPU,Core i7-10750H,Core i7 10750H,Ánh xạ lệch
+R479,479,CPU,Core i7-10750H,Core i7 10750H,Ánh xạ lệch
+R404,404,CPU,Core i7-1165G7,Core i7 1165G7,Ánh xạ lệch
+R175,175,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
+R283,283,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
+R346,346,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
+R357,357,CPU,Core i7-1255U,Core i7 1255U,Ánh xạ lệch
+R237,237,CPU,Core i7-12650H,Core i7 12650H,Ánh xạ lệch
+R438,438,CPU,Core i7-13645HX,Core i7 13645HX,Ánh xạ lệch
+R397,397,CPU,Core i7-1365U,Core i7 1365U,Ánh xạ lệch
+R398,398,CPU,Core i7-13700HX,Core i7 13700HX,Ánh xạ lệch
+R464,464,CPU,Core i7-14700HX,Core i7 14700HX,Ánh xạ lệch
+R411,411,CPU,Core i7-8550U,Core i7 8550U,Ánh xạ lệch
+R216,216,CPU,Core i7-9750H,Core i7 9750H,Ánh xạ lệch
+R339,339,CPU,Core i9 12900H,Core i9 12900HK,Ánh xạ lệch
+R337,337,CPU,Core i9-13980HX,Core i9 13980HX,Ánh xạ lệch
+R102,102,CPU,Core Ultra 5 125H,Core 5 125H,Ánh xạ lệch
+R317,317,CPU,Core Ultra 5 236V vPro,Core Ultra 5 236V,Ánh xạ lệch
+R103,103,CPU,Core Ultra 7 155H,Core 7 155H,Ánh xạ lệch
+R525,525,CPU,Core Ultra 9 290HX Plus,Core Ultra 9 290HX,Ánh xạ lệch
+R354,354,CPU,I5-4200U,Core i5 4200U,Ánh xạ lệch
+R353,353,CPU,I7-6700HQ,Core i7 6700HQ,Ánh xạ lệch
+R43,43,CPU,"i9, 14900HX",Core i9 14900HX,Ánh xạ lệch
+R418,418,CPU,Intel Core i7 - 10510U,Core i7 10510U,Ánh xạ lệch
+R356,356,CPU,Intel Core i7 10750H,Core i7 10750H,Ánh xạ lệch
+R422,422,CPU,Intel Core i7-1165G7,Core i7 1165G7,Ánh xạ lệch
+R444,444,CPU,Intel Core Ultra 5 322,Core Ultra 5 322,Ánh xạ lệch
+R167,167,CPU,Intel Core Ultra 5 325,Core Ultra 5 325,Ánh xạ lệch
+R416,416,CPU,Intel Pentium - N3710,Pentium N3710,Ánh xạ lệch
+R344,344,CPU,Intel Pentium N5030,Pentium N5030,Ánh xạ lệch
+R183,183,CPU,Intel Pentium N6000,Pentium N6000,Ánh xạ lệch
+R188,188,CPU,Intel Pentium N6000,Pentium N6000,Ánh xạ lệch
+R94,94,CPU,Oryon X1P,Snapdragon X Plus X1P-64-100,Ánh xạ lệch
+R456,456,CPU,Ryzen 5 6600H,Ryzen 5 6600HS,Ánh xạ lệch
+R276,276,CPU,Ryzen 5-4600H,Ryzen 5 4600H,Ánh xạ lệch
+R41,41,CPU,Ryzen 7 260,Ryzen AI 7 260,Ánh xạ lệch
+R105,105,CPU,Ryzen 7 7530U,Ryzen 7 530U,Ánh xạ lệch
+R390,390,CPU,Ryzen 7 7735HS,Ryzen 7 7735U,Ánh xạ lệch
+R455,455,CPU,Ryzen 7-5800H,Ryzen 7 5800H,Ánh xạ lệch
+R224,224,CPU,Ryzen 9 5900Hs,Ryzen 9 5900HS,Ánh xạ lệch
+R218,218,CPU,Ryzen AI 7 350,Core 7 350,Ánh xạ lệch
+R152,152,CPU,Ryzen AI MAX+ 392,Ryzen AI Max+ 392,Ánh xạ lệch
+R138,138,CPU,Ryzen AI MAX+ 395,Ryzen AI Max+ 395,Ánh xạ lệch
+R343,343,CPU,Ryzen R7 3700U,Ryzen 7 3700U,Ánh xạ lệch
+R3,3,CPU,Snapdragon X - X1 26 100,Snapdragon X X1-26-100,Ánh xạ lệch
+R96,96,CPU,Snapdragon X - X1 26 100,Snapdragon X X1-26-100,Ánh xạ lệch
+R137,137,CPU,Snapdragon X - X1 26 100,Snapdragon X X1-26-100,Ánh xạ lệch
+R466,466,CPU,"Snapdragon X Plus X1P-42-100, 8C",Snapdragon X Plus X1P-42-100,Ánh xạ lệch
+R445,445,CPU,"Snapdragon X X1-26-100, 8C",Snapdragon X X1-26-100,Ánh xạ lệch
+N3,3,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
+N47,47,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
+N130,130,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
+N179,179,GPU,Adreno,Qualcomm Adreno,Ánh xạ lệch
+N145,145,GPU,"AMD Radeon 520, 2 GB",AMD Radeon 520,Ánh xạ lệch
+N8,8,GPU,Arc,Intel Arc Graphics,Ánh xạ lệch
+N81,81,GPU,Arc,Intel Arc Graphics,Ánh xạ lệch
+N127,127,GPU,Arc,Intel Arc Graphics,Ánh xạ lệch
+N155,155,GPU,Arc,Intel Arc Graphics 130T,Ánh xạ lệch
+N180,180,GPU,Arc,Intel Arc Graphics 130T,Ánh xạ lệch
+N28,28,GPU,Arc,Intel Arc Graphics 130V,Ánh xạ lệch
+N58,58,GPU,Arc,Intel Arc Graphics 130V,Ánh xạ lệch
+N148,148,GPU,Arc,Intel Arc Graphics 130V,Ánh xạ lệch
+N153,153,GPU,Arc,Intel Arc Graphics 140T,Ánh xạ lệch
+N62,62,GPU,Arc,Intel Arc Graphics 140V,Ánh xạ lệch
+N152,152,GPU,Arc,Intel Arc Graphics 140V,Ánh xạ lệch
+N31,31,GPU,Graphics,AMD Radeon 610M,Ánh xạ lệch
+N162,162,GPU,Graphics,AMD Radeon 660M,Ánh xạ lệch
+N14,14,GPU,Graphics,AMD Radeon 680M,Ánh xạ lệch
+N32,32,GPU,Graphics,AMD Radeon 740M,Ánh xạ lệch
+N38,38,GPU,Graphics,AMD Radeon 780M,Ánh xạ lệch
+N54,54,GPU,Graphics,AMD Radeon 8060S,Ánh xạ lệch
+N19,19,GPU,Graphics,AMD Radeon 820M,Ánh xạ lệch
+N146,146,GPU,Graphics,AMD Radeon 840M,Ánh xạ lệch
+N16,16,GPU,Graphics,AMD Radeon 860M,Ánh xạ lệch
+N154,154,GPU,Graphics,AMD Radeon 890M,Ánh xạ lệch
+N24,24,GPU,Graphics,AMD Radeon Graphics,Ánh xạ lệch
+N94,94,GPU,Graphics,AMD Radeon Graphics,Ánh xạ lệch
+N136,136,GPU,Graphics,AMD Radeon RX Vega 10,Ánh xạ lệch
+N144,144,GPU,Graphics,AMD Radeon Vega 7,Ánh xạ lệch
+N4,4,GPU,Graphics,Intel Graphics,Ánh xạ lệch
+N159,159,GPU,Graphics,Intel HD Graphics,Ánh xạ lệch
+N122,122,GPU,Graphics,Intel HD Graphics 520,Ánh xạ lệch
+N93,93,GPU,Graphics,Intel UHD Graphics,Ánh xạ lệch
+N142,142,GPU,Gtx 1660,GTX 1660Ti,Ánh xạ lệch
+N204,204,GPU,GTX 1660,GTX 1660Ti,Ánh xạ lệch
+N140,140,GPU,GTX 960,GTX 960M,Ánh xạ lệch
+N203,203,GPU,GTX1650,GTX 1650,Ánh xạ lệch
+N13,13,GPU,Iris Xe,Intel Iris Xe Graphics,Ánh xạ lệch
+N15,15,GPU,Iris Xe,Intel Iris Xe Graphics,Ánh xạ lệch
+N29,29,GPU,Iris Xe,Intel Iris Xe Graphics,Ánh xạ lệch
+N143,143,GPU,Iris Xe,MX 550,Ánh xạ lệch
+N129,129,GPU,Iris Xe,MX 570A,Ánh xạ lệch
+N83,83,GPU,Iris Xe,RTX 3050,Ánh xạ lệch
+N139,139,GPU,"NVIDIA GeForce 940MX, 2 GB",GeForce 940MX,Ánh xạ lệch
+N141,141,GPU,NVIDIA GeForce GT 740M,GT 740M,Ánh xạ lệch
+N160,160,GPU,nVidia Geforce MX130 2GB,MX 130,Ánh xạ lệch
+N70,70,GPU,"NVIDIA GeForce MX330, 2 GB",MX 330,Ánh xạ lệch
+N67,67,GPU,NVIDIA GeForce RTX 4080,RTX 4080,Ánh xạ lệch
+N73,73,GPU,NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost),RTX 2060,Ánh xạ lệch
+N74,74,GPU,Nvidia MX330-2GB,MX 330,Ánh xạ lệch
+N133,133,GPU,"NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6",RTX 3080Ti,Ánh xạ lệch
+N86,86,GPU,NVIDIA® GeForce RTX™ 4060,RTX 4060,Ánh xạ lệch
+N71,71,GPU,NVIDIA® GeForce® MX330 2GB GDDR5,MX 330,Ánh xạ lệch
+N2,2,GPU,Radeon,AMD Radeon Graphics,Ánh xạ lệch
+N137,137,GPU,RTX 3050,RTX 3050Ti,Ánh xạ lệch
+N218,218,GPU,RTX 3050,RTX 3050Ti,Ánh xạ lệch
+N131,131,GPU,RTX 3070,RTX 3070Ti,Ánh xạ lệch
+N40,40,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
+N63,63,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
+N101,101,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
+N176,176,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
+N193,193,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
+N197,197,GPU,RTX 5070,RTX 5070Ti,Ánh xạ lệch
+N6,6,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
+N25,25,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
+N157,157,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
+N158,158,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
+N182,182,GPU,UHD,Intel UHD Graphics,Ánh xạ lệch
+N135,135,GPU,UHD,Intel UHD Graphics 600,Ánh xạ lệch
+N72,72,GPU,UHD,Intel UHD Graphics 605,Ánh xạ lệch
+N68,68,GPU,UHD,Intel UHD Graphics 620,Ánh xạ lệch
+N76,76,GPU,UHD,Intel UHD Graphics 620,Ánh xạ lệch

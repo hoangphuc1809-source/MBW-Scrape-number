@@ -1,331 +1,331 @@
-﻿Loại,Dòng,Cột,Giá trị,Ghi chú
-Ánh xạ lệch,2,Card đồ họa,Radeon,"anh ghi ""Radeon"" nhưng luật dẫn về ""AMD Radeon Graphics"""
-Ánh xạ lệch,3,CPU Orginal,"Snapdragon X, X1 26 100, Lên đến 2.97 GHz khi tải nặng","anh ghi ""Snapdragon X - X1 26 100"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
-Ánh xạ lệch,3,Card đồ họa,Qualcomm Adreno GPU,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
-Ô rác,4,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,4,Card đồ họa,Intel Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel Graphics"""
-Ánh xạ lệch,6,Card đồ họa,Intel UHD,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
-Ánh xạ lệch,8,Card đồ họa,Intel Arc Graphics,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics"""
-Lệch trong cùng dòng,12,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 350"" -> segment phải là ""Ryzen AI 7"""
-Ánh xạ lệch,13,Card đồ họa,Intel Iris Xe Graphics eligible,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""Intel Iris Xe Graphics"""
-Ô rác,14,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,14,Card đồ họa,AMD Radeon 680M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 680M"""
-Ánh xạ lệch,15,Card đồ họa,Intel Iris Xe,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""Intel Iris Xe Graphics"""
-Lệch trong cùng dòng,16,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 330"" -> segment phải là ""Ryzen AI 5"""
-Ô rác,16,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,16,CPU Orginal,"i5, 13500H, 2.60 GHz (Lên đến 4.70 GHz khi tải nặng)","anh ghi ""Core i5-13500H"" nhưng luật dẫn về ""Core i5 13500H"""
-Ánh xạ lệch,16,Card đồ họa,AMD Radeon 860M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 860M"""
-Lệch trong cùng dòng,17,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 445"" -> segment phải là ""Ryzen AI 7"""
-Ô rác,19,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,19,Card đồ họa,AMD Radeon 820M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 820M"""
-Ô rác,22,GPU,Graphics,không phải tên GPU
-Ô rác,24,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,24,Card đồ họa,AMD Radeon Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon Graphics"""
-Lệch trong cùng dòng,25,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 395"" -> segment phải là ""Ryzen AI Max+"""
-Ánh xạ lệch,25,Card đồ họa,Intel UHD Graphics,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
-Lệch trong cùng dòng,27,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 465"" -> segment phải là ""Ryzen AI 9"""
-Ánh xạ lệch,28,CPU Orginal,"i5, 12500H, 3.30 GHz (Lên đến 4.50 GHz khi tải nặng)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,28,Card đồ họa,Intel Arc Graphics 130V,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130V"""
-Lệch trong cùng dòng,29,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX 370"" -> segment phải là ""Ryzen AI 9"""
-Ánh xạ lệch,29,Card đồ họa,Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""Intel Iris Xe Graphics"""
-Ô rác,31,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,31,Card đồ họa,AMD Radeon 610M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 610M"""
-Lệch trong cùng dòng,32,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 392"" -> segment phải là ""Ryzen AI Max+"""
-Ô rác,32,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,32,CPU Orginal,"i5, 13450HX, 2.40 GHz (Lên đến 4.60 GHz khi tải nặng)","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
-Ánh xạ lệch,32,Card đồ họa,AMD Radeon 740M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 740M"""
-Ô rác,35,GPU,Đang cập nhật,không phải tên GPU
-Ô rác,38,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,38,Card đồ họa,AMD Radeon 780M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 780M"""
-Ô rác,39,GPU,Intel,không phải tên GPU
-Ánh xạ lệch,40,Card đồ họa,NVIDIA GeForce RTX 5070 Ti 12GB,"anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
-Lệch trong cùng dòng,41,CPU Segment,Ryzen AI 7,"CPU là ""Ryzen 7 260"" -> segment phải là ""Ryzen 7"""
-Ánh xạ lệch,41,CPU Orginal,"AMD Ryzen AI 7, 260, 3.80 GHz (Lên đến 5.10 GHz khi tải nặng)","anh ghi ""Ryzen 7 260"" nhưng luật dẫn về ""Ryzen AI 7 260"""
-Lệch trong cùng dòng,43,CPU Segment,i9,"CPU là ""i9, 14900HX"" -> segment phải là ""Core i9"""
-Ánh xạ lệch,43,CPU Orginal,"i9, 14900HX, 2.20 GHz (Lên đến 5.80 GHz khi tải nặng)","anh ghi ""i9, 14900HX"" nhưng luật dẫn về ""Core i9 14900HX"""
-Ô rác,44,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,44,CPU Orginal,"Celeron, N4500, 1.1GHz","anh ghi ""Celeron, N4500"" nhưng luật dẫn về ""Celeron N4500"""
-Ô rác,47,CPU,Ryzen 5 Đang cập nhật,không phải tên chip
-Ánh xạ hỏng,47,CPU Orginal,Ryzen 5 Đang cập nhật - Max Turbo: 4.55 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 5 Đang cập nhật"""
-Ánh xạ lệch,47,Card đồ họa,Qualcomm Adreno GPU Tiến trình chip mới nên có thể không kết nối được với các thiết bị có driver cũ,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
-Ô rác,50,CPU,Ryzen 7 Đang cập nhật,không phải tên chip
-Ánh xạ hỏng,50,CPU Orginal,Ryzen 7 Đang cập nhật - Max Turbo: 4.75 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 7 Đang cập nhật"""
-Luật chưa nhận ra,51,GPU,Intel UMA Graphics,dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật
-Ô rác,53,CPU,Ryzen AI 5 Đang cập nhật,không phải tên chip
-Ánh xạ hỏng,53,CPU Orginal,Ryzen AI 5 Đang cập nhật - Max Turbo: 4 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 5 Đang cập nhật"""
-Ô rác,54,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,54,Card đồ họa,AMD Radeon 8060S Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 8060S"""
-Ánh xạ lệch,58,Card đồ họa,Intel Arc 130V GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130V"""
-Ánh xạ hỏng,61,CPU Orginal,Snapdragon X Series X1-26,"luật không đọc được -> sẽ không dẫn về ""Snapdragon X - X1 26 100"""
-Ánh xạ lệch,62,Card đồ họa,Intel Arc 140V GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 140V"""
-Lệch trong cùng dòng,63,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 445"" -> segment phải là ""Ryzen AI 7"""
-Ánh xạ lệch,63,Card đồ họa,NVIDIA GeForce RTX 5070 Ti 12GB GDDR7 AMD Radeon Graphics,"anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
-Lệch trong cùng dòng,64,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 465"" -> segment phải là ""Ryzen AI 9"""
-Ánh xạ lệch,67,Card đồ họa,NVIDIA GeForce RTX 4080,"anh ghi ""NVIDIA GeForce RTX 4080"" nhưng luật dẫn về ""RTX 4080"""
-Ô rác,68,GPU,Đang cập nhật,không phải tên GPU
-Ánh xạ lệch,68,Card đồ họa,Intel UHD Graphics 620,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 620"""
-Ánh xạ lệch,70,Card đồ họa,"NVIDIA GeForce MX330, 2 GB","anh ghi ""NVIDIA GeForce MX330, 2 GB"" nhưng luật dẫn về ""MX 330"""
-Ánh xạ lệch,71,Card đồ họa,NVIDIA® GeForce® MX330 2GB GDDR5,"anh ghi ""NVIDIA® GeForce® MX330 2GB GDDR5"" nhưng luật dẫn về ""MX 330"""
-Ánh xạ lệch,72,Card đồ họa,Intel UHD Graphics 605,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 605"""
-Ánh xạ lệch,73,Card đồ họa,NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost),"anh ghi ""NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost)"" nhưng luật dẫn về ""RTX 2060"""
-Ánh xạ lệch,74,Card đồ họa,Nvidia MX330-2GB,"anh ghi ""Nvidia MX330-2GB"" nhưng luật dẫn về ""MX 330"""
-Lệch trong cùng dòng,75,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 365"" -> segment phải là ""Ryzen AI 9"""
-Ô rác,75,CPU,Core Ultra 5 Đang cập nhật,không phải tên chip
-Ánh xạ hỏng,75,CPU Orginal,Core Ultra 5 Đang cập nhật - Max Turbo: 4.2 GHz,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 5 Đang cập nhật"""
-Ánh xạ lệch,76,Card đồ họa,Card tích hợp Intel UHD 620,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 620"""
-Ô rác,77,GPU,#N/A,không phải tên GPU
-Ánh xạ lệch,81,Card đồ họa,Intel® Arc Graphics,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics"""
-Ô rác,82,GPU,Apple,không phải tên GPU
-Ánh xạ lệch,83,Card đồ họa,NVIDIA GeForce RTX 3050 4GB GDDR6 Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""RTX 3050"""
-Ô rác,86,GPU,Intel,không phải tên GPU
-Ánh xạ lệch,86,Card đồ họa,NVIDIA® GeForce RTX™ 4060,"anh ghi ""NVIDIA® GeForce RTX™ 4060"" nhưng luật dẫn về ""RTX 4060"""
-Lệch trong cùng dòng,92,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 340"" -> segment phải là ""Ryzen AI 5"""
-Ô rác,93,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,93,Card đồ họa,Intel Graphics UHD,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel UHD Graphics"""
-Luật chưa nhận ra,94,CPU,Oryon X1P,dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật
-Ô rác,94,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,94,CPU Orginal,Oryon X1P-64-100 - Max Turbo: 3.4 GHz,"anh ghi ""Oryon X1P"" nhưng luật dẫn về ""Snapdragon X Plus X1P-64-100"""
-Ánh xạ lệch,94,Card đồ họa,AMD Radeon™ Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon Graphics"""
-Ánh xạ lệch,96,CPU Orginal,Snapdragon X Series X1-26-100,"anh ghi ""Snapdragon X - X1 26 100"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
-Ô rác,99,CPU,Ryzen 5 Đang cập nhật,không phải tên chip
-Ánh xạ hỏng,99,CPU Orginal,Ryzen 5 Đang cập nhật - Max Turbo: 4.9 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 5 Đang cập nhật"""
-Ánh xạ lệch,101,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti với 12 GB GDDR7 VRAM chuyên dụng, hỗ trợ 5888 lõi NVIDIA CUDA","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
-Ánh xạ lệch,102,CPU Orginal,Core 5 125H - Max Turbo: 4.5 GHz,"anh ghi ""Core Ultra 5 125H"" nhưng luật dẫn về ""Core 5 125H"""
-Lệch trong cùng dòng,103,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX PRO 375"" -> segment phải là ""Ryzen AI 9"""
-Lệch trong cùng dòng,103,CPU Segment,Core 7,"CPU là ""Core Ultra 7 155H"" -> segment phải là ""Core Ultra 7"""
-Ánh xạ lệch,103,CPU Orginal,Core 7 155H - Max Turbo: 4.8 GHz,"anh ghi ""Core Ultra 7 155H"" nhưng luật dẫn về ""Core 7 155H"""
-Lệch trong cùng dòng,104,CPU Segment,Ryzen 7 AI PRO,"CPU là ""Ryzen AI 7 PRO 360"" -> segment phải là ""Ryzen AI 7"""
-Ô rác,104,CPU,Core Ultra 7 Đang cập nhật,không phải tên chip
-Ánh xạ hỏng,104,CPU Orginal,Core Ultra 7 Đang cập nhật - Max Turbo: 5.2 GHz,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 7 Đang cập nhật"""
-Ánh xạ lệch,105,CPU Orginal,AMD Ryzen 7530U - Max Turbo: 4.5 GHz,"anh ghi ""Ryzen 7 7530U"" nhưng luật dẫn về ""Ryzen 7 530U"""
-Lệch trong cùng dòng,113,CPU Segment,Ryzen 9 AI HX PRO,"CPU là ""Ryzen  AI 9 PRO 375HX"" -> segment phải là ""Ryzen AI 9"""
-Lệch trong cùng dòng,115,CPU Segment,Ryzen 7 AI PRO,"CPU là ""Ryzen AI 7 PRO 360"" -> segment phải là ""Ryzen AI 7"""
-Ô rác,122,CPU,Core Ultra 5 Đang cập nhật,không phải tên chip
-Ô rác,122,GPU,Graphics,không phải tên GPU
-Ánh xạ hỏng,122,CPU Orginal,Core Ultra 5 Đang cập nhật,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 5 Đang cập nhật"""
-Ánh xạ lệch,122,Card đồ họa,Intel Graphics HD 520,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel HD Graphics 520"""
-Ánh xạ lệch,127,Card đồ họa,Intel Arc B390,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics"""
-Ô rác,128,GPU,Graphics,không phải tên GPU
-Ánh xạ hỏng,128,Card đồ họa,Intel UMA Graphics,"luật không đọc được -> sẽ không dẫn về ""Graphics"""
-Ánh xạ lệch,129,Card đồ họa,NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""MX 570A"""
-Ánh xạ lệch,130,Card đồ họa,Qualcomm Adreno,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
-Ánh xạ lệch,131,Card đồ họa,"NVIDIA GeForce RTX 3070 Ti, 8 GB GDDR6","anh ghi ""RTX 3070"" nhưng luật dẫn về ""RTX 3070Ti"""
-Ánh xạ lệch,133,Card đồ họa,"NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6","anh ghi ""NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6"" nhưng luật dẫn về ""RTX 3080Ti"""
-Ánh xạ lệch,135,Card đồ họa,Intel UHD Graphics 600,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 600"""
-Ô rác,136,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,136,Card đồ họa,AMD Radeon™ RX Vega 10 Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon RX Vega 10"""
-Ánh xạ lệch,137,CPU Orginal,"Snapdragon X X1 26 100 (30MB Cache, up to 2.97GHz, 8 lõi, 8 luồng)","anh ghi ""Snapdragon X - X1 26 100"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
-Ánh xạ lệch,137,Card đồ họa,NVIDIA GeForce RTX 3050Ti 4GB GDDR6 Intel Iris Xe,"anh ghi ""RTX 3050"" nhưng luật dẫn về ""RTX 3050Ti"""
-Lệch trong cùng dòng,138,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 395"" -> segment phải là ""Ryzen AI Max+"""
-Ánh xạ lệch,138,CPU Orginal,"AMD Ryzen AI MAX+ 395 3.0GzHz (80MB Cache, up to 5.1GHz, 16 lõi, 32 luồng)","anh ghi ""Ryzen AI MAX+ 395"" nhưng luật dẫn về ""Ryzen AI Max+ 395"""
-Lệch trong cùng dòng,139,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 250"" -> segment phải là ""Ryzen AI 7"""
-Ánh xạ lệch,139,Card đồ họa,"NVIDIA GeForce 940MX, 2 GB","anh ghi ""NVIDIA GeForce 940MX, 2 GB"" nhưng luật dẫn về ""GeForce 940MX"""
-Ánh xạ lệch,140,Card đồ họa,Nvidia GeForce GTX 960M,"anh ghi ""GTX 960"" nhưng luật dẫn về ""GTX 960M"""
-Lệch trong cùng dòng,141,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX 370"" -> segment phải là ""Ryzen AI 9"""
-Ánh xạ lệch,141,Card đồ họa,NVIDIA GeForce GT 740M,"anh ghi ""NVIDIA GeForce GT 740M"" nhưng luật dẫn về ""GT 740M"""
-Ánh xạ lệch,142,CPU Orginal,"AMD Ryzen AI 9 465 2.0GHz (34MB Cache, up to 5.0GHz, 10 lõi, 20 luồng)","anh ghi ""AMD Ryzen AI 9 465"" nhưng luật dẫn về ""Ryzen AI 9 465"""
-Ánh xạ lệch,142,Card đồ họa,Nvidia Geforce Gtx 1660 Ti,"anh ghi ""Gtx 1660"" nhưng luật dẫn về ""GTX 1660Ti"""
-Ánh xạ lệch,143,Card đồ họa,NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""MX 550"""
-Lệch trong cùng dòng,144,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 465"" -> segment phải là ""Ryzen AI 9"""
-Ô rác,144,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,144,Card đồ họa,AMD Radeon RX Graphics Vega 7,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon Vega 7"""
-Ánh xạ lệch,145,Card đồ họa,"AMD Radeon 520, 2 GB","anh ghi ""AMD Radeon 520, 2 GB"" nhưng luật dẫn về ""AMD Radeon 520"""
-Ô rác,146,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,146,Card đồ họa,AMD Radeon 840M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 840M"""
-Lệch trong cùng dòng,148,CPU Segment,Ryzen 9 AI HX,"CPU là ""Ryzen AI 9 370HX"" -> segment phải là ""Ryzen AI 9"""
-Ánh xạ lệch,148,Card đồ họa,Intel Arc 130V GPU (8GB),"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130V"""
-Ánh xạ lệch,149,CPU Orginal,"AMD Ryzen AI 9 HX 370 2.0GHz (36MB Cache, up to 5.1GHz, 12 lõi, 24 luồng)","anh ghi ""AMD Ryzen AI 9 HX 370"" nhưng luật dẫn về ""Ryzen AI 9 HX 370"""
-Lệch trong cùng dòng,152,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 392"" -> segment phải là ""Ryzen AI Max+"""
-Ánh xạ lệch,152,CPU Orginal,"AMD Ryzen AI MAX+ 392 3.2GHz (80MB Cache, up to 5.0GHz, 12 lõi, 24 luồng)","anh ghi ""Ryzen AI MAX+ 392"" nhưng luật dẫn về ""Ryzen AI Max+ 392"""
-Ánh xạ lệch,152,Card đồ họa,Intel Arc 140V GPU (16GB),"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 140V"""
-Luật chưa nhận ra,153,CPU,A18 Pro,dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật
-Ánh xạ lệch,153,Card đồ họa,Intel Arc 140T GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 140T"""
-Lệch trong cùng dòng,154,CPU Segment,M5,"CPU là ""M5"" -> segment phải là ""Apple M5"""
-Ô rác,154,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,154,Card đồ họa,AMD Radeon 890M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 890M"""
-Lệch trong cùng dòng,155,CPU Segment,M4,"CPU là ""M4"" -> segment phải là ""Apple M4"""
-Ánh xạ lệch,155,Card đồ họa,Intel Arc 130T GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130T"""
-Lệch trong cùng dòng,156,CPU Segment,M4,"CPU là ""M4 Pro"" -> segment phải là ""Apple M4 Pro"""
-Lệch trong cùng dòng,157,CPU Segment,M5,"CPU là ""M5 Pro"" -> segment phải là ""Apple M5 Pro"""
-Ánh xạ lệch,157,Card đồ họa,Card tích hợp - Intel UHD Graphics,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
-Lệch trong cùng dòng,158,CPU Segment,M5,"CPU là ""M5 Max"" -> segment phải là ""Apple M5 Max"""
-Ánh xạ lệch,158,Card đồ họa,Intel UHD Graphics (Iris Xe Graphics chỉ hoạt động với RAM kênh đôi),"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
-Ô rác,159,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,159,Card đồ họa,Intel HD Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel HD Graphics"""
-Ánh xạ lệch,160,Card đồ họa,nVidia Geforce MX130 2GB,"anh ghi ""nVidia Geforce MX130 2GB"" nhưng luật dẫn về ""MX 130"""
-Lệch trong cùng dòng,162,CPU Segment,Ryzen 7,"CPU là ""Ryzen 7 AI 350"" -> segment phải là ""Ryzen AI 7"""
-Ô rác,162,GPU,Graphics,không phải tên GPU
-Ánh xạ lệch,162,Card đồ họa,AMD Radeon 660M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 660M"""
-Ánh xạ lệch,167,CPU Orginal,"Intel Core Ultra 5 325 2.1 GHz (12MB Cache, up to 4.5 GHz, 8 lõi, 8 luồng)","anh ghi ""Intel Core Ultra 5 325"" nhưng luật dẫn về ""Core Ultra 5 325"""
-Lệch trong cùng dòng,168,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 445"" -> segment phải là ""Ryzen AI 7"""
-Lệch trong cùng dòng,168,CPU Segment,Snapdragon X,"CPU là ""Snapdragon X2 Elite X2E-88-100"" -> segment phải là ""Snapdragon X2"""
-Ánh xạ lệch,174,CPU Orginal,"Intel Core i5-13500H 2.6 GHz (18MB Cache, up to 4.7 GHz, 12 lõi / 16 luồng)","anh ghi ""Core i5-13500H"" nhưng luật dẫn về ""Core i5 13500H"""
-Ánh xạ lệch,175,CPU Orginal,"Intel Core i7-1255U 1.7 GHz (12M Cache, up to 4.7 GHz, 10 lõi)","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
-Ánh xạ lệch,176,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti 12GB GDDR7, Boost Clock 2220MHz, TGP 140W, 992 AI TOPS","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
-Ánh xạ lệch,177,CPU Orginal,"AMD Ryzen 9 7945HX (64MB L3 cache, up to 5.4GHz, 16 lõi / 32 luồng)","anh ghi ""AMD Ryzen 9 7945HX"" nhưng luật dẫn về ""Ryzen 9 7945HX"""
-Ánh xạ lệch,179,Card đồ họa,Qualcomm Adreno Tiến trình chip mới nên có thể không kết nối được với các thiết bị có driver cũ,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
-Ánh xạ lệch,180,Card đồ họa,Intel Arc 130T tích hợp hoạt động như Intel Graphics,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130T"""
-Ánh xạ lệch,182,Card đồ họa,Integrated Intel® UHD Graphics,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
-Ánh xạ lệch,183,CPU Orginal,Intel Pentium N6000,"anh ghi ""Intel Pentium N6000"" nhưng luật dẫn về ""Pentium N6000"""
-Ánh xạ lệch,184,CPU Orginal,Intel Core i5-1135G7,"anh ghi ""Core i5-1135G7"" nhưng luật dẫn về ""Core i5 1135G7"""
-Ánh xạ lệch,185,CPU Orginal,Intel Celeron N4500,"anh ghi ""Celeron, N4500"" nhưng luật dẫn về ""Celeron N4500"""
-Ánh xạ lệch,188,CPU Orginal,Intel Pentium Silver N6000,"anh ghi ""Intel Pentium N6000"" nhưng luật dẫn về ""Pentium N6000"""
-Ánh xạ lệch,190,CPU Orginal,"Intel® Core I5-1135G7, upto 4.20GHz, 4 cores 8 threads, 8MB Cache","anh ghi ""Core I5-1135G7"" nhưng luật dẫn về ""Core i5 1135G7"""
-Ánh xạ lệch,193,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti Laptop GPU, GDDR7 12GB Intel Graphics","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
-Ánh xạ hỏng,197,CPU Orginal,8145U Intel Core i3,"luật không đọc được -> sẽ không dẫn về ""Core i3 8145U"""
-Ánh xạ lệch,197,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti Laptop GPU, GDDR7 12GB AMD Radeon 610M","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
-Ánh xạ lệch,198,CPU Orginal,"Intel Core i5-12500H 2.5 GHz (18M Cache, up to 4.5 GHz, 12 lõi: 4 P-cores và 8 E-cores)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,199,CPU Orginal,"Intel Core i5-13450HX 2.4 GHz (20M Cache, up to 4.6 GHz, 10 lõi: 6 P-cores and 4 E-cores)","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
-Ánh xạ lệch,200,CPU Orginal,"Intel Core i5-12500H 2.5 GHz (18M Cache, up to 4.5 GHz, 4P+8E cores)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,201,CPU Orginal,"13th Gen Intel Core i5-13450HX 2.4 GHz (20M Cache, up to 4.6 GHz, 10 lõi: 6 P-cores and 4 E-cores)","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
-Ánh xạ lệch,203,Card đồ họa,NVIDIA GeForce GTX1650 4GB GDDR6,"anh ghi ""GTX1650"" nhưng luật dẫn về ""GTX 1650"""
-Ánh xạ lệch,204,Card đồ họa,nVidia Geforce GTX 1660 Ti Max-Q 6GB GDDR6,"anh ghi ""GTX 1660"" nhưng luật dẫn về ""GTX 1660Ti"""
-Ánh xạ lệch,206,CPU Orginal,"Intel Core i5-12500H (2.5 GHz, 18M Cache, up to 4.5 GHz, 12 lõi: 4 P và 8 E)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,211,CPU Orginal,"Intel Core i5-1340P (1.9 GHz, 12MB Cache, up to 4.6 GHz, 12 lõi / 16 luồng)","anh ghi ""Core i5-1340P"" nhưng luật dẫn về ""Core i5 1340P"""
-Ánh xạ lệch,216,CPU Orginal,Intel Core i7-9750H 2.6GHz up to 4.5GHz 12MB,"anh ghi ""Core i7-9750H"" nhưng luật dẫn về ""Core i7 9750H"""
-Ánh xạ lệch,218,CPU Orginal,Intel Core 7-350,"anh ghi ""Ryzen AI 7 350"" nhưng luật dẫn về ""Core 7 350"""
-Ánh xạ lệch,218,Card đồ họa,NVIDIA GeForce RTX 3050 Ti 4 GB Intel UHD Graphics,"anh ghi ""RTX 3050"" nhưng luật dẫn về ""RTX 3050Ti"""
-Ánh xạ lệch,224,CPU Orginal,Ryzen 9 5900Hs,"anh ghi ""Ryzen 9 5900Hs"" nhưng luật dẫn về ""Ryzen 9 5900HS"""
-Lệch trong cùng dòng,225,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 340"" -> segment phải là ""Ryzen AI 5"""
-Lệch trong cùng dòng,228,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 330"" -> segment phải là ""Ryzen AI 5"""
-Lệch trong cùng dòng,229,CPU Segment,Ryzen 9,"CPU là ""Ryzen AI 9 HX370"" -> segment phải là ""Ryzen AI 9"""
-Lệch trong cùng dòng,230,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX 370"" -> segment phải là ""Ryzen AI 9"""
-Lệch trong cùng dòng,231,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 350"" -> segment phải là ""Ryzen AI 7"""
-Ánh xạ lệch,237,CPU Orginal,"Intel Core i7-12650H (10 lõi / 16 luồng, Tần số Turbo tối đa của E-core : 3.5 GHz,Tần số Turbo tối đa của P-core : 4.7 GHz)","anh ghi ""Core i7-12650H"" nhưng luật dẫn về ""Core i7 12650H"""
-Lệch trong cùng dòng,244,CPU Platform,Qualcom,"CPU là ""Snapdragon X X1 26 100"" -> hãng phải là ""Qualcomm"""
-Lệch trong cùng dòng,245,CPU Platform,Qualcom,"CPU là ""Snapdragon X2 Elite X2E 88 100"" -> hãng phải là ""Qualcomm"""
-Lệch trong cùng dòng,246,CPU Platform,Qualcom,"CPU là ""Snapdragon X Plus X1P 42 100"" -> hãng phải là ""Qualcomm"""
-Lệch trong cùng dòng,247,CPU Platform,Qualcom,"CPU là ""Snapdragon X Plus X1P-64-100"" -> hãng phải là ""Qualcomm"""
-Ánh xạ lệch,247,CPU Orginal,"Intel Core i5-13500H (12 lõi / 16 luồng, Tần số Turbo tối đa của E-core : 3.5 GHz, Tần số Turbo tối đa của P-core : 4.7 GHz, 18 MB Intel Smart Cache)","anh ghi ""Core i5-13500H"" nhưng luật dẫn về ""Core i5 13500H"""
-Lệch trong cùng dòng,248,CPU Platform,Qualcom,"CPU là ""Snapdragon X Elite X1E-78-100"" -> hãng phải là ""Qualcomm"""
-Lệch trong cùng dòng,249,CPU Platform,Qualcom,"CPU là ""Snapdragon X2 Elite Extreme X2E 94 100"" -> hãng phải là ""Qualcomm"""
-Ánh xạ lệch,276,CPU Orginal,"AMD Ryzen 5-4600H, 6 nhân 12 luồng, tốc độ 3.0GHz lên đến 4.0GHz","anh ghi ""Ryzen 5-4600H"" nhưng luật dẫn về ""Ryzen 5 4600H"""
-Ánh xạ lệch,279,CPU Orginal,"Intel Core i5-12500H (upto 4.5 GHz, 18MB), 12 nhân, 16 luồng","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,282,CPU Orginal,"Intel Core i5-12500H (Up to 4.50GHz, 12 lõi, 16 luồng, 18MB Intel Smart Cache)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,283,CPU Orginal,"Intel Core i7-1255U (10 lõi / 12 luồng, 3.5 GHz, turbo boost 4.7 GHz, 12 MB Intel Smart Cache)","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
-Ánh xạ lệch,285,CPU Orginal,"Intel Core i3-1215U (6 lõi / 8 luồng, 1.2 GHz, 4.40 GHz, 10 MB Intel Smart Cache)","anh ghi ""Core i3-1215U"" nhưng luật dẫn về ""Core i3 1215U"""
-Ánh xạ lệch,292,CPU Orginal,"Intel® Core™ i5-12500H (12 nhân, 16 luồng, 3.30 GHz up to 4.50 GHz, 18 MB)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,297,CPU Orginal,"Intel Core 3 N350 (8 lõi / 8 luồng, Tần số turbo tối đa: 3.9 GHz, 6 MB Intel Smart Cache)","anh ghi ""Core 3, N350"" nhưng luật dẫn về ""Core 3 N350"""
-Ánh xạ lệch,317,CPU Orginal,Intel Core Ultra 5 236V vPro,"anh ghi ""Core Ultra 5 236V vPro"" nhưng luật dẫn về ""Core Ultra 5 236V"""
-Ánh xạ lệch,337,CPU Orginal,Intel Core i9-13980HX,"anh ghi ""Core i9-13980HX"" nhưng luật dẫn về ""Core i9 13980HX"""
-Ánh xạ lệch,338,CPU Orginal,Intel Core I5 -8265U,"anh ghi ""Core I5 8265U"" nhưng luật dẫn về ""Core i5 8265U"""
-Lệch trong cùng dòng,339,CPU Segment,i9,"CPU là ""Core i9 12900H"" -> segment phải là ""Core i9"""
-Ánh xạ lệch,339,CPU Orginal,"Intel® Core™ i9-12900HK thế hệ thứ 12 (bộ nhớ đệm 24 MB, 14 lõi, 20 luồng, Turbo lên đến 5,00 GHz)","anh ghi ""Core i9 12900H"" nhưng luật dẫn về ""Core i9 12900HK"""
-Ánh xạ lệch,341,CPU Orginal,Intel Core i5 8265U,"anh ghi ""Core I5 8265U"" nhưng luật dẫn về ""Core i5 8265U"""
-Ánh xạ lệch,343,CPU Orginal,"AMD Ryzen™ R7-3700U Processor, 2.30GHz up to 4.00GHz, 4 nhân 8 luồng, 4MB Cache","anh ghi ""Ryzen R7 3700U"" nhưng luật dẫn về ""Ryzen 7 3700U"""
-Ánh xạ lệch,344,CPU Orginal,Intel Pentium N5030,"anh ghi ""Intel Pentium N5030"" nhưng luật dẫn về ""Pentium N5030"""
-Ánh xạ lệch,346,CPU Orginal,"Intel Core i7-1255U (thế hệ thứ 12 / 10 nhân 12 luồng / 4.70 GHz, 12MB)","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
-Ánh xạ lệch,347,CPU Orginal,"Intel Core i3-1215U (15 W, 6 lõi / 8 luồng, 1.20 GHz to 4.40 GHz, 10 MB)","anh ghi ""Core i3-1215U"" nhưng luật dẫn về ""Core i3 1215U"""
-Lệch trong cùng dòng,353,CPU Segment,I7,"CPU là ""I7-6700HQ"" -> segment phải là ""Core i7"""
-Ánh xạ lệch,353,CPU Orginal,I7-6700HQ,"anh ghi ""I7-6700HQ"" nhưng luật dẫn về ""Core i7 6700HQ"""
-Ánh xạ lệch,354,CPU Orginal,I5-4200U,"anh ghi ""I5-4200U"" nhưng luật dẫn về ""Core i5 4200U"""
-Ánh xạ lệch,355,CPU Orginal,Intel Core I5 -10210U,"anh ghi ""Core I5 -10210U"" nhưng luật dẫn về ""Core i5 10210U"""
-Ánh xạ lệch,356,CPU Orginal,Intel Core i7 10750H,"anh ghi ""Intel Core i7 10750H"" nhưng luật dẫn về ""Core i7 10750H"""
-Ánh xạ lệch,357,CPU Orginal,"Intel Core i7-1255U ( 1.7 GHz - 4.7GHz / 12MB / 10 nhân, 12 luồng )","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
-Ánh xạ hỏng,360,CPU Orginal,Intel Core i5 Kabylake Refresh - 8250U,"luật không đọc được -> sẽ không dẫn về ""Core i5 8250U"""
-Ánh xạ lệch,390,CPU Orginal,AMD Ryzen 7 7735U (8 x 2.70 GHz) - Max. Boost Clock: Up to 4. 75 GHz,"anh ghi ""Ryzen 7 7735HS"" nhưng luật dẫn về ""Ryzen 7 7735U"""
-Ánh xạ hỏng,396,CPU Orginal,AMD RyzenTM AI 7 PRO 360 (8 x 2.00 GHz) - Max. Boost Clock: Up to 5.00 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 7 PRO 360"""
-Ánh xạ lệch,397,CPU Orginal,"Intel Core i7-1365U (10 lõi) - Max Turbo Frequency: 5.20 GHz, 12MB cache","anh ghi ""Core i7-1365U"" nhưng luật dẫn về ""Core i7 1365U"""
-Ánh xạ lệch,398,CPU Orginal,"Intel Core i7-13700HX (up to 5.0 GHz with Intel Turbo Boost Technology, 30 MB L3 cache,16 lõi, 24 luồng)","anh ghi ""Core i7-13700HX"" nhưng luật dẫn về ""Core i7 13700HX"""
-Ánh xạ lệch,404,CPU Orginal,"Intel Core i7-1165G7, tốc độ 2.8GHz tối đa lên đến 4.7GHz, bộ nhớ đệm 12MB","anh ghi ""Core i7-1165G7"" nhưng luật dẫn về ""Core i7 1165G7"""
-Ánh xạ lệch,411,CPU Orginal,"Intel Core i7-8550U (1.8GHz Upto 4.0GHz, 4Cores, 8Threads, 8MB cache, FSB 4GT/s)","anh ghi ""Core i7-8550U"" nhưng luật dẫn về ""Core i7 8550U"""
-Ánh xạ lệch,416,CPU Orginal,Intel Pentium - N3710,"anh ghi ""Intel Pentium - N3710"" nhưng luật dẫn về ""Pentium N3710"""
-Ánh xạ lệch,417,CPU Orginal,Intel Core i5-1035G1,"anh ghi ""Core i5-1035G1"" nhưng luật dẫn về ""Core i5 1035G1"""
-Ánh xạ lệch,418,CPU Orginal,Intel Core i7 - 10510U,"anh ghi ""Intel Core i7 - 10510U"" nhưng luật dẫn về ""Core i7 10510U"""
-Ánh xạ lệch,419,CPU Orginal,Intel Core i5-1155G7,"anh ghi ""Core i5-1155G7"" nhưng luật dẫn về ""Core i5 1155G7"""
-Ánh xạ hỏng,421,CPU Orginal,Intel Core I3- 1125G4,"luật không đọc được -> sẽ không dẫn về ""Core i3 1125G4"""
-Ánh xạ lệch,422,CPU Orginal,Intel Core i7-1165G7,"anh ghi ""Intel Core i7-1165G7"" nhưng luật dẫn về ""Core i7 1165G7"""
-Ánh xạ lệch,438,CPU Orginal,"Intel Core i7-13645HX, 14 lõi (6P + 8E) / 20 luồng, P-core up to 4.9GHz, E-core up to 3.5GHz, 24MB Intel Smart Cache","anh ghi ""Core i7-13645HX"" nhưng luật dẫn về ""Core i7 13645HX"""
-Ánh xạ lệch,444,CPU Orginal,"Intel Core Ultra 5 322, 6 lõi (2P + 4LPE) / 6 luồng, Max Turbo up to 4.4GHz, 12MB Intel Smart Cache","anh ghi ""Intel Core Ultra 5 322"" nhưng luật dẫn về ""Core Ultra 5 322"""
-Ánh xạ lệch,445,CPU Orginal,"Snapdragon X X1-26-100, 8C, Max Turbo up to 3.0GHz, 30MB","anh ghi ""Snapdragon X X1-26-100, 8C"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
-Ánh xạ lệch,447,CPU Orginal,"Intel Core i5-13450HX, 10 lõi (6P + 4E) / 16 luồng, P-core 2.4 / 4.6GHz, E-core 1.8 / 3.4GHz, 20MB","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
-Ánh xạ lệch,454,CPU Orginal,"Intel Core i5-12450HX, 8 lõi (4P + 4E) / 12 luồng, P-core up to 4.4GHz, E-core up to 3.1GHz, 12MB","anh ghi ""Core i5 12450H"" nhưng luật dẫn về ""Core i5 12450HX"""
-Ánh xạ lệch,455,CPU Orginal,AMD Ryzen 7-5800H,"anh ghi ""Ryzen 7-5800H"" nhưng luật dẫn về ""Ryzen 7 5800H"""
-Ánh xạ lệch,456,CPU Orginal,AMD Ryzen 5 6600HS Creator Edition,"anh ghi ""Ryzen 5 6600H"" nhưng luật dẫn về ""Ryzen 5 6600HS"""
-Ánh xạ lệch,457,CPU Orginal,Intel Core i7-10750H 2.6GHz up to 5.0GHz 12MB,"anh ghi ""Core i7-10750H"" nhưng luật dẫn về ""Core i7 10750H"""
-Ánh xạ lệch,459,CPU Orginal,"Intel Core i5-12450HX, 8C (4P + 4E) / 12T, P-core up to 4.4GHz, E-core up to 3.1GHz, 12MB","anh ghi ""Core i5 12450H"" nhưng luật dẫn về ""Core i5 12450HX"""
-Ánh xạ lệch,464,CPU Orginal,"Intel Core i7-14700HX, 20 lõi (8P + 12E) / 28 luồng, P-core 2.1 / 5.5GHz, E-core 1.5 / 3.9GHz, 33MB","anh ghi ""Core i7-14700HX"" nhưng luật dẫn về ""Core i7 14700HX"""
-Ánh xạ lệch,466,CPU Orginal,"Snapdragon X Plus X1P-42-100, 8C, Max Turbo up to 3.4GHz (single-core) / 3.2GHz (8-core), 30MB","anh ghi ""Snapdragon X Plus X1P-42-100, 8C"" nhưng luật dẫn về ""Snapdragon X Plus X1P-42-100"""
-Ánh xạ lệch,472,CPU Orginal,Intel Core i3-1215U,"anh ghi ""Core i3-1215U"" nhưng luật dẫn về ""Core i3 1215U"""
-Ánh xạ lệch,475,CPU Orginal,"Intel Core i5-1240P, 12 lõi/16 luồng, P-core 1.7/4.4GHz, E-core 1.2/3.3GHz, 12MB","anh ghi ""Core i5-1240P"" nhưng luật dẫn về ""Core i5 1240P"""
-Ánh xạ lệch,479,CPU Orginal,"Intel Core i7-10750H (2.6 GHz - 5.0 GHz / 12MB / 6 nhân, 12 luồng)","anh ghi ""Core i7-10750H"" nhưng luật dẫn về ""Core i7 10750H"""
-Lệch trong cùng dòng,482,CPU Segment,Core I7,"CPU là ""Core I7-10510U"" -> segment phải là ""Core i7"""
-Ánh xạ lệch,482,CPU Orginal,"10th Generation Intel Core I7-10510U Processor with vPro™ (1.80GHz upto 4.90GHz, 8MB, 4 nhân/8 luồng)","anh ghi ""Core I7-10510U"" nhưng luật dẫn về ""Core i7 10510U"""
-Lệch trong cùng dòng,483,CPU Segment,i7,"CPU là ""Core i7 10510U"" -> segment phải là ""Core i7"""
-Ánh xạ lệch,515,CPU Orginal,Intel Core i5-8265U,"anh ghi ""Core i5-8265U"" nhưng luật dẫn về ""Core i5 8265U"""
-Ánh xạ lệch,525,CPU Orginal,"Intel Core Ultra 9 290HX Plus (1.8Ghz - 5.5Hz, 24 lõi - 24 luồng, Bộ nhớ đệm: 36MB)","anh ghi ""Core Ultra 9 290HX Plus"" nhưng luật dẫn về ""Core Ultra 9 290HX"""
-Ánh xạ lệch,528,CPU Orginal,"Intel Celeron N4500 (1.10 Ghz, tốc độ tối đa 2.80 Ghz 4 MB L3 Cache)","anh ghi ""Celeron, N4500"" nhưng luật dẫn về ""Celeron N4500"""
-Ánh xạ hỏng,529,CPU Orginal,AMD Ryzen Al 7 350 (8 x 2.00 GHz) - Max. Boost Clock: Up to 5.00 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 7 350"""
-Ánh xạ lệch,536,CPU Orginal,Core i5 13450HX - Max Turbo: 4.6 GHz,"anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
-Ánh xạ lệch,538,CPU Orginal,"Intel Core i5-12500H 2.5 GHz (18M Cache, up to 4.5 GHz, 4P+8E lõi)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
-Ánh xạ lệch,539,CPU Orginal,"i5, 12450HX, Lên đến 4.40 GHz khi tải nặng","anh ghi ""Core i5 12450H"" nhưng luật dẫn về ""Core i5 12450HX"""
-Trùng lặp,137,CPU,"""Snapdragon X - X1 26 100"" (dòng 137)  vs  ""Snapdragon X X1 26 100"" (dòng 244)  vs  ""Snapdragon X X1-26-100, 8C"" (dòng 445)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,529,CPU,"""Ryzen AI 7 350"" (dòng 529)  vs  ""Ryzen 7 AI 350"" (dòng 162)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,247,CPU,"""Core i5-13500H"" (dòng 247)  vs  ""Core i5 13500H"" (dòng 175)  vs  ""Core I5 13500H"" (dòng 176)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,503,CPU,"""Ryzen 9 8940HX"" (dòng 503)  vs  ""Ryzen R9 8940HX"" (dòng 242)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,144,CPU,"""Ryzen AI 9 465"" (dòng 144)  vs  ""AMD Ryzen AI 9 465"" (dòng 142)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,538,CPU,"""Core i5-12500H"" (dòng 538)  vs  ""Core i5 12500H"" (dòng 183)  vs  ""Core i5 12500H"" (dòng 177)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,489,CPU,"""Ryzen AI 9 HX 370"" (dòng 489)  vs  ""Ryzen AI 9 370HX"" (dòng 148)  vs  ""AMD Ryzen AI 9 HX 370"" (dòng 149)  vs  ""Ryzen AI 9 HX370"" (dòng 229)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,536,CPU,"""Core i5-13450HX"" (dòng 536)  vs  ""Core i5 13450HX"" (dòng 215)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,37,CPU,"""Core Ultra 5 325"" (dòng 37)  vs  ""Intel Core Ultra 5 325"" (dòng 167)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,43,CPU,"""i9, 14900HX"" (dòng 43)  vs  ""Core i9 14900HX"" (dòng 161)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,178,CPU,"""Core i7 1255U"" (dòng 178)  vs  ""Core i7-1255U"" (dòng 357)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,46,CPU,"""Ryzen 9 7945HX"" (dòng 46)  vs  ""AMD Ryzen 9 7945HX"" (dòng 177)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,206,CPU,"""Core i5 1340P"" (dòng 206)  vs  ""Core i5 1340P"" (dòng 180)  vs  ""Core i5-1340P"" (dòng 211)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,200,CPU,"""Core i7 13700H"" (dòng 200)  vs  ""Core I7 13700H"" (dòng 181)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,236,CPU,"""Core i3 1305U"" (dòng 236)  vs  ""Core i3-1305U"" (dòng 212)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,174,CPU,"""Core i9 13900H"" (dòng 174)  vs  ""Core i9 13900H"" (dòng 149)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,216,CPU,"""Core i7 12650H"" (dòng 216)  vs  ""Core i7-12650H"" (dòng 237)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,204,CPU,"""Ryzen 5 4600H"" (dòng 204)  vs  ""Ryzen 5-4600H"" (dòng 276)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,97,CPU,"""Core 3 N350"" (dòng 97)  vs  ""Core 3, N350"" (dòng 297)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,105,CPU,"""Core i7 1365U"" (dòng 105)  vs  ""Core i7-1365U"" (dòng 397)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,106,CPU,"""Core i7 13700HX"" (dòng 106)  vs  ""Core i7-13700HX"" (dòng 398)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,109,CPU,"""Core i7 1165G7"" (dòng 109)  vs  ""Core i7-1165G7"" (dòng 404)  vs  ""Intel Core i7-1165G7"" (dòng 422)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,130,CPU,"""Core i7 13645HX"" (dòng 130)  vs  ""Core i7-13645HX"" (dòng 438)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,317,CPU,"""Core Ultra 5 236V vPro"" (dòng 317)  vs  ""Core Ultra 5 236V"" (dòng 128)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,480,CPU,"""Core Ultra 5 322"" (dòng 480)  vs  ""Intel Core Ultra 5 322"" (dòng 444)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,120,CPU,"""Core i9 13980HX"" (dòng 120)  vs  ""Core i9-13980HX"" (dòng 337)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,123,CPU,"""Core i7 6700HQ"" (dòng 123)  vs  ""I7-6700HQ"" (dòng 353)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,124,CPU,"""Core i5 4200U"" (dòng 124)  vs  ""I5-4200U"" (dòng 354)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,518,CPU,"""Core i7 10750H"" (dòng 518)  vs  ""Intel Core i7 10750H"" (dòng 356)  vs  ""Core i7-10750H"" (dòng 479)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,278,CPU,"""Ryzen 7 5800H"" (dòng 278)  vs  ""Ryzen 7-5800H"" (dòng 455)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,523,CPU,"""Core i7 14700HX"" (dòng 523)  vs  ""Core i7-14700HX"" (dòng 464)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,476,CPU,"""Ryzen 7 4700U"" (dòng 476)  vs  ""Ryzen 7-4700U"" (dòng 203)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,350,CPU,"""Core i7 12700H"" (dòng 350)  vs  ""Core i7-12700H"" (dòng 233)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,168,CPU,"""Snapdragon X2 Elite X2E-88-100"" (dòng 168)  vs  ""Snapdragon X2 Elite X2E 88 100"" (dòng 245)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,215,CPU,"""Core i5 1135G7"" (dòng 215)  vs  ""Core i5-1135G7"" (dòng 184)  vs  ""Core I5-1135G7"" (dòng 190)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,191,CPU,"""Core i5 1240P"" (dòng 191)  vs  ""Core I5 1240P"" (dòng 194)  vs  ""Core i5-1240P"" (dòng 475)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,191,CPU,"""Pentium N5030"" (dòng 191)  vs  ""Intel Pentium N5030"" (dòng 344)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,223,CPU,"""Core i3 1215U"" (dòng 223)  vs  ""Core i3-1215U"" (dòng 472)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,477,CPU,"""Core i5 1035G1"" (dòng 477)  vs  ""Core i5-1035G1"" (dòng 417)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,246,CPU,"""Snapdragon X Plus X1P 42 100"" (dòng 246)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (dòng 466)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,341,CPU,"""Core I5 8265U"" (dòng 341)  vs  ""Core i5-8265U"" (dòng 515)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,355,CPU,"""Core I5 -10210U"" (dòng 355)  vs  ""Core i5 10210U"" (dòng 405)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,418,CPU,"""Intel Core i7 - 10510U"" (dòng 418)  vs  ""Core I7-10510U"" (dòng 482)  vs  ""Core i7 10510U"" (dòng 483)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,87,GPU,"""Qualcomm Adreno GPU"" (dòng 87)  vs  ""Adreno"" (dòng 179)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,5,GPU,"""Radeon"" (dòng 5)  vs  ""AMD Radeon Graphics"" (dòng 10)  vs  ""AMD Radeon™ Graphics"" (dòng 48)  vs  ""AMD Radeon"" (dòng 80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (dòng 89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (dòng 95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (dòng 97)  vs  ""AMD Radeon™ RX 6700S"" (dòng 101)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,3,GPU,"""Intel Graphics"" (dòng 3)  vs  ""NVIDIA / Intel Graphics"" (dòng 74)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,4,GPU,"""Intel UHD"" (dòng 4)  vs  ""UHD"" (dòng 182)  vs  ""Intel UHD Graphics"" (dòng 81)  vs  ""Intel® UHD Graphics"" (dòng 90)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,111,GPU,"""Intel Arc Graphics"" (dòng 111)  vs  ""Arc"" (dòng 180)  vs  ""Intel® Arc Graphics"" (dòng 26)  vs  ""Intel® Arc™ Graphics"" (dòng 92)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,173,GPU,"""RTX 2050"" (dòng 173)  vs  ""NVIDIA GeForce RTX 2050 4 GB GDDR6"" (dòng 108)  vs  ""NVIDIA GeForce RTX 2050 4GB GDDR6"" (dòng 112)  vs  ""NVIDIA® GeForce RTX™ 2050 4GB GDDR6, Boost Clock 1575MHz, TGP 65W"" (dòng 113)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,143,GPU,"""Iris Xe"" (dòng 143)  vs  ""Intel Iris Xe Graphics"" (dòng 22)  vs  ""Intel Iris Xe Graphics eligible"" (dòng 29)  vs  ""Intel Iris Xe"" (dòng 47)  vs  ""Intel Iris Xe Graphics"" (dòng 96)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,16,GPU,"""AMD Radeon 8060S"" (dòng 16)  vs  ""AMD Radeon 8060S Graphics"" (dòng 88)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,65,GPU,"""AMD Radeon 840M"" (dòng 65)  vs  ""AMD Radeon 840M Graphics"" (dòng 39)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,61,GPU,"""AMD Radeon 780M"" (dòng 61)  vs  ""AMD Radeon 780M Graphics"" (dòng 72)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,64,GPU,"""AMD Radeon 660M"" (dòng 64)  vs  ""AMD Radeon 660M Graphics"" (dòng 69)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,67,GPU,"""AMD Radeon 610M"" (dòng 67)  vs  ""AMD Radeon 610M Graphics"" (dòng 37)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,23,GPU,"""RTX 4080"" (dòng 23)  vs  ""NVIDIA GeForce RTX 4080"" (dòng 67)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,199,GPU,"""RTX 4060"" (dòng 199)  vs  ""NVIDIA® GeForce RTX™ 4060"" (dòng 86)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,24,GPU,"""RTX 2060"" (dòng 24)  vs  ""NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost)"" (dòng 73)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,206,GPU,"""GTX 1650"" (dòng 206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (dòng 93)  vs  ""Geforce GTX 1650 4GB"" (dòng 91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (dòng 98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (dòng 99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (dòng 103)  vs  ""GTX1650"" (dòng 203)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,42,GPU,"""AMD Radeon 860M Graphics"" (dòng 42)  vs  ""AMD Radeon 860M"" (dòng 50)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,45,GPU,"""AMD Radeon 890M Graphics"" (dòng 45)  vs  ""AMD Radeon 890M"" (dòng 79)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,52,GPU,"""NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics"" (dòng 52)  vs  ""Nvidia GeForce MX570A 2GB / Intel Graphics"" (dòng 63)  vs  ""MX570A"" (dòng 115)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,56,GPU,"""RTX 3080Ti"" (dòng 56)  vs  ""NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6"" (dòng 133)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,142,GPU,"""Gtx 1660"" (dòng 142)  vs  ""GTX 1660"" (dòng 204)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,61,GPU,"""NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics"" (dòng 61)  vs  ""NVIDIA® GeForce® MX550 2GB GDDR6"" (dòng 106)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,62,GPU,"""AMD Radeon RX Graphics Vega 7"" (dòng 62)  vs  ""AMD Radeon™ Vega 7 Graphics"" (dòng 100)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,70,GPU,"""NVIDIA GeForce MX330, 2 GB"" (dòng 70)  vs  ""NVIDIA® GeForce® MX330 2GB GDDR5"" (dòng 71)  vs  ""Nvidia MX330-2GB"" (dòng 74)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,76,GPU,"""RTX 4070"" (dòng 76)  vs  ""NVIDIA GeForce RTX 4070 (321 AI TOPs) 8GB GDDR6 AMD Radeon Graphics"" (dòng 104)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,181,GPU,"""GTX 1650Ti"" (dòng 181)  vs  ""NVIDIA GeForce GTX 1650 Ti (4GB of GDDR6 SDRAM, Bus Width : 128-bit) ; AMD Radeon Graphics"" (dòng 105)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,107,GPU,"""NVIDIA GeForce RTX 3050 Ti, 4GB GDDR6 Card tích hợp - AMD Radeon Graphics"" (dòng 107)  vs  ""RTX 3050 Ti"" (dòng 116)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+﻿Loại,Ô,Dòng,Cột,Giá trị,Ghi chú
+Ánh xạ lệch,N2,2,Card đồ họa,Radeon,"anh ghi ""Radeon"" nhưng luật dẫn về ""AMD Radeon Graphics"""
+Ánh xạ lệch,R3,3,CPU Orginal,"Snapdragon X, X1 26 100, Lên đến 2.97 GHz khi tải nặng","anh ghi ""Snapdragon X - X1 26 100"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
+Ánh xạ lệch,N3,3,Card đồ họa,Qualcomm Adreno GPU,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
+Ô rác,N4,4,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N4,4,Card đồ họa,Intel Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel Graphics"""
+Ánh xạ lệch,N6,6,Card đồ họa,Intel UHD,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
+Ánh xạ lệch,N8,8,Card đồ họa,Intel Arc Graphics,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics"""
+Lệch trong cùng dòng,F11,11,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 350"" -> segment phải là ""Ryzen AI 7"""
+Ánh xạ lệch,N13,13,Card đồ họa,Intel Iris Xe Graphics eligible,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""Intel Iris Xe Graphics"""
+Ô rác,N14,14,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N14,14,Card đồ họa,AMD Radeon 680M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 680M"""
+Lệch trong cùng dòng,F15,15,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 330"" -> segment phải là ""Ryzen AI 5"""
+Ánh xạ lệch,N15,15,Card đồ họa,Intel Iris Xe,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""Intel Iris Xe Graphics"""
+Lệch trong cùng dòng,F16,16,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 445"" -> segment phải là ""Ryzen AI 7"""
+Ô rác,N16,16,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,R16,16,CPU Orginal,"i5, 13500H, 2.60 GHz (Lên đến 4.70 GHz khi tải nặng)","anh ghi ""Core i5-13500H"" nhưng luật dẫn về ""Core i5 13500H"""
+Ánh xạ lệch,N16,16,Card đồ họa,AMD Radeon 860M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 860M"""
+Ô rác,N19,19,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N19,19,Card đồ họa,AMD Radeon 820M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 820M"""
+Ô rác,N22,22,GPU,Graphics,không phải tên GPU
+Lệch trong cùng dòng,F23,23,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 395"" -> segment phải là ""Ryzen AI Max+"""
+Ô rác,N24,24,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N24,24,Card đồ họa,AMD Radeon Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon Graphics"""
+Lệch trong cùng dòng,F25,25,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 465"" -> segment phải là ""Ryzen AI 9"""
+Ánh xạ lệch,N25,25,Card đồ họa,Intel UHD Graphics,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
+Lệch trong cùng dòng,F27,27,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX 370"" -> segment phải là ""Ryzen AI 9"""
+Ánh xạ lệch,R28,28,CPU Orginal,"i5, 12500H, 3.30 GHz (Lên đến 4.50 GHz khi tải nặng)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,N28,28,Card đồ họa,Intel Arc Graphics 130V,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130V"""
+Ánh xạ lệch,N29,29,Card đồ họa,Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""Intel Iris Xe Graphics"""
+Lệch trong cùng dòng,F30,30,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 392"" -> segment phải là ""Ryzen AI Max+"""
+Ô rác,N31,31,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N31,31,Card đồ họa,AMD Radeon 610M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 610M"""
+Ô rác,N32,32,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,R32,32,CPU Orginal,"i5, 13450HX, 2.40 GHz (Lên đến 4.60 GHz khi tải nặng)","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
+Ánh xạ lệch,N32,32,Card đồ họa,AMD Radeon 740M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 740M"""
+Ô rác,N35,35,GPU,Đang cập nhật,không phải tên GPU
+Ô rác,N38,38,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N38,38,Card đồ họa,AMD Radeon 780M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 780M"""
+Ô rác,N39,39,GPU,Intel,không phải tên GPU
+Ánh xạ lệch,N40,40,Card đồ họa,NVIDIA GeForce RTX 5070 Ti 12GB,"anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
+Lệch trong cùng dòng,Q41,41,CPU Segment,Ryzen AI 7,"CPU là ""Ryzen 7 260"" -> segment phải là ""Ryzen 7"""
+Ánh xạ lệch,R41,41,CPU Orginal,"AMD Ryzen AI 7, 260, 3.80 GHz (Lên đến 5.10 GHz khi tải nặng)","anh ghi ""Ryzen 7 260"" nhưng luật dẫn về ""Ryzen AI 7 260"""
+Lệch trong cùng dòng,Q43,43,CPU Segment,i9,"CPU là ""i9, 14900HX"" -> segment phải là ""Core i9"""
+Ánh xạ lệch,R43,43,CPU Orginal,"i9, 14900HX, 2.20 GHz (Lên đến 5.80 GHz khi tải nặng)","anh ghi ""i9, 14900HX"" nhưng luật dẫn về ""Core i9 14900HX"""
+Ô rác,J44,44,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,R44,44,CPU Orginal,"Celeron, N4500, 1.1GHz","anh ghi ""Celeron, N4500"" nhưng luật dẫn về ""Celeron N4500"""
+Ô rác,R47,47,CPU,Ryzen 5 Đang cập nhật,không phải tên chip
+Ánh xạ hỏng,R47,47,CPU Orginal,Ryzen 5 Đang cập nhật - Max Turbo: 4.55 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 5 Đang cập nhật"""
+Ánh xạ lệch,N47,47,Card đồ họa,Qualcomm Adreno GPU Tiến trình chip mới nên có thể không kết nối được với các thiết bị có driver cũ,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
+Ô rác,R50,50,CPU,Ryzen 7 Đang cập nhật,không phải tên chip
+Ánh xạ hỏng,R50,50,CPU Orginal,Ryzen 7 Đang cập nhật - Max Turbo: 4.75 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 7 Đang cập nhật"""
+Luật chưa nhận ra,J51,51,GPU,Intel UMA Graphics,dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật
+Ô rác,R53,53,CPU,Ryzen AI 5 Đang cập nhật,không phải tên chip
+Ánh xạ hỏng,R53,53,CPU Orginal,Ryzen AI 5 Đang cập nhật - Max Turbo: 4 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 5 Đang cập nhật"""
+Ô rác,N54,54,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N54,54,Card đồ họa,AMD Radeon 8060S Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 8060S"""
+Ánh xạ lệch,N58,58,Card đồ họa,Intel Arc 130V GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130V"""
+Lệch trong cùng dòng,F60,60,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 445"" -> segment phải là ""Ryzen AI 7"""
+Lệch trong cùng dòng,F61,61,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 465"" -> segment phải là ""Ryzen AI 9"""
+Ánh xạ hỏng,R61,61,CPU Orginal,Snapdragon X Series X1-26,"luật không đọc được -> sẽ không dẫn về ""Snapdragon X - X1 26 100"""
+Ánh xạ lệch,N62,62,Card đồ họa,Intel Arc 140V GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 140V"""
+Ánh xạ lệch,N63,63,Card đồ họa,NVIDIA GeForce RTX 5070 Ti 12GB GDDR7 AMD Radeon Graphics,"anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
+Ánh xạ lệch,N67,67,Card đồ họa,NVIDIA GeForce RTX 4080,"anh ghi ""NVIDIA GeForce RTX 4080"" nhưng luật dẫn về ""RTX 4080"""
+Ô rác,J68,68,GPU,Đang cập nhật,không phải tên GPU
+Ánh xạ lệch,N68,68,Card đồ họa,Intel UHD Graphics 620,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 620"""
+Ánh xạ lệch,N70,70,Card đồ họa,"NVIDIA GeForce MX330, 2 GB","anh ghi ""NVIDIA GeForce MX330, 2 GB"" nhưng luật dẫn về ""MX 330"""
+Lệch trong cùng dòng,F71,71,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 365"" -> segment phải là ""Ryzen AI 9"""
+Ánh xạ lệch,N71,71,Card đồ họa,NVIDIA® GeForce® MX330 2GB GDDR5,"anh ghi ""NVIDIA® GeForce® MX330 2GB GDDR5"" nhưng luật dẫn về ""MX 330"""
+Ánh xạ lệch,N72,72,Card đồ họa,Intel UHD Graphics 605,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 605"""
+Ánh xạ lệch,N73,73,Card đồ họa,NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost),"anh ghi ""NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost)"" nhưng luật dẫn về ""RTX 2060"""
+Ánh xạ lệch,N74,74,Card đồ họa,Nvidia MX330-2GB,"anh ghi ""Nvidia MX330-2GB"" nhưng luật dẫn về ""MX 330"""
+Ô rác,R75,75,CPU,Core Ultra 5 Đang cập nhật,không phải tên chip
+Ánh xạ hỏng,R75,75,CPU Orginal,Core Ultra 5 Đang cập nhật - Max Turbo: 4.2 GHz,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 5 Đang cập nhật"""
+Ánh xạ lệch,N76,76,Card đồ họa,Card tích hợp Intel UHD 620,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 620"""
+Ô rác,J77,77,GPU,#N/A,không phải tên GPU
+Ánh xạ lệch,N81,81,Card đồ họa,Intel® Arc Graphics,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics"""
+Ô rác,J82,82,GPU,Apple,không phải tên GPU
+Ánh xạ lệch,N83,83,Card đồ họa,NVIDIA GeForce RTX 3050 4GB GDDR6 Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""RTX 3050"""
+Ô rác,J86,86,GPU,Intel,không phải tên GPU
+Ánh xạ lệch,N86,86,Card đồ họa,NVIDIA® GeForce RTX™ 4060,"anh ghi ""NVIDIA® GeForce RTX™ 4060"" nhưng luật dẫn về ""RTX 4060"""
+Lệch trong cùng dòng,F88,88,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 340"" -> segment phải là ""Ryzen AI 5"""
+Ô rác,N93,93,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N93,93,Card đồ họa,Intel Graphics UHD,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel UHD Graphics"""
+Luật chưa nhận ra,R94,94,CPU,Oryon X1P,dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật
+Ô rác,N94,94,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,R94,94,CPU Orginal,Oryon X1P-64-100 - Max Turbo: 3.4 GHz,"anh ghi ""Oryon X1P"" nhưng luật dẫn về ""Snapdragon X Plus X1P-64-100"""
+Ánh xạ lệch,N94,94,Card đồ họa,AMD Radeon™ Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon Graphics"""
+Ánh xạ lệch,R96,96,CPU Orginal,Snapdragon X Series X1-26-100,"anh ghi ""Snapdragon X - X1 26 100"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
+Lệch trong cùng dòng,F99,99,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX PRO 375"" -> segment phải là ""Ryzen AI 9"""
+Ô rác,R99,99,CPU,Ryzen 5 Đang cập nhật,không phải tên chip
+Ánh xạ hỏng,R99,99,CPU Orginal,Ryzen 5 Đang cập nhật - Max Turbo: 4.9 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 5 Đang cập nhật"""
+Lệch trong cùng dòng,F100,100,CPU Segment,Ryzen 7 AI PRO,"CPU là ""Ryzen AI 7 PRO 360"" -> segment phải là ""Ryzen AI 7"""
+Ánh xạ lệch,N101,101,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti với 12 GB GDDR7 VRAM chuyên dụng, hỗ trợ 5888 lõi NVIDIA CUDA","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
+Ánh xạ lệch,R102,102,CPU Orginal,Core 5 125H - Max Turbo: 4.5 GHz,"anh ghi ""Core Ultra 5 125H"" nhưng luật dẫn về ""Core 5 125H"""
+Lệch trong cùng dòng,Q103,103,CPU Segment,Core 7,"CPU là ""Core Ultra 7 155H"" -> segment phải là ""Core Ultra 7"""
+Ánh xạ lệch,R103,103,CPU Orginal,Core 7 155H - Max Turbo: 4.8 GHz,"anh ghi ""Core Ultra 7 155H"" nhưng luật dẫn về ""Core 7 155H"""
+Ô rác,R104,104,CPU,Core Ultra 7 Đang cập nhật,không phải tên chip
+Ánh xạ hỏng,R104,104,CPU Orginal,Core Ultra 7 Đang cập nhật - Max Turbo: 5.2 GHz,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 7 Đang cập nhật"""
+Ánh xạ lệch,R105,105,CPU Orginal,AMD Ryzen 7530U - Max Turbo: 4.5 GHz,"anh ghi ""Ryzen 7 7530U"" nhưng luật dẫn về ""Ryzen 7 530U"""
+Lệch trong cùng dòng,F109,109,CPU Segment,Ryzen 9 AI HX PRO,"CPU là ""Ryzen  AI 9 PRO 375HX"" -> segment phải là ""Ryzen AI 9"""
+Lệch trong cùng dòng,F111,111,CPU Segment,Ryzen 7 AI PRO,"CPU là ""Ryzen AI 7 PRO 360"" -> segment phải là ""Ryzen AI 7"""
+Ô rác,R122,122,CPU,Core Ultra 5 Đang cập nhật,không phải tên chip
+Ô rác,N122,122,GPU,Graphics,không phải tên GPU
+Ánh xạ hỏng,R122,122,CPU Orginal,Core Ultra 5 Đang cập nhật,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 5 Đang cập nhật"""
+Ánh xạ lệch,N122,122,Card đồ họa,Intel Graphics HD 520,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel HD Graphics 520"""
+Ánh xạ lệch,N127,127,Card đồ họa,Intel Arc B390,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics"""
+Ô rác,N128,128,GPU,Graphics,không phải tên GPU
+Ánh xạ hỏng,N128,128,Card đồ họa,Intel UMA Graphics,"luật không đọc được -> sẽ không dẫn về ""Graphics"""
+Ánh xạ lệch,N129,129,Card đồ họa,NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""MX 570A"""
+Ánh xạ lệch,N130,130,Card đồ họa,Qualcomm Adreno,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
+Ánh xạ lệch,N131,131,Card đồ họa,"NVIDIA GeForce RTX 3070 Ti, 8 GB GDDR6","anh ghi ""RTX 3070"" nhưng luật dẫn về ""RTX 3070Ti"""
+Lệch trong cùng dòng,F133,133,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 250"" -> segment phải là ""Ryzen AI 7"""
+Ánh xạ lệch,N133,133,Card đồ họa,"NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6","anh ghi ""NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6"" nhưng luật dẫn về ""RTX 3080Ti"""
+Lệch trong cùng dòng,F135,135,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX 370"" -> segment phải là ""Ryzen AI 9"""
+Ánh xạ lệch,N135,135,Card đồ họa,Intel UHD Graphics 600,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics 600"""
+Ô rác,N136,136,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N136,136,Card đồ họa,AMD Radeon™ RX Vega 10 Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon RX Vega 10"""
+Ánh xạ lệch,R137,137,CPU Orginal,"Snapdragon X X1 26 100 (30MB Cache, up to 2.97GHz, 8 lõi, 8 luồng)","anh ghi ""Snapdragon X - X1 26 100"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
+Ánh xạ lệch,N137,137,Card đồ họa,NVIDIA GeForce RTX 3050Ti 4GB GDDR6 Intel Iris Xe,"anh ghi ""RTX 3050"" nhưng luật dẫn về ""RTX 3050Ti"""
+Lệch trong cùng dòng,F138,138,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 465"" -> segment phải là ""Ryzen AI 9"""
+Lệch trong cùng dòng,Q138,138,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 395"" -> segment phải là ""Ryzen AI Max+"""
+Ánh xạ lệch,R138,138,CPU Orginal,"AMD Ryzen AI MAX+ 395 3.0GzHz (80MB Cache, up to 5.1GHz, 16 lõi, 32 luồng)","anh ghi ""Ryzen AI MAX+ 395"" nhưng luật dẫn về ""Ryzen AI Max+ 395"""
+Ánh xạ lệch,N139,139,Card đồ họa,"NVIDIA GeForce 940MX, 2 GB","anh ghi ""NVIDIA GeForce 940MX, 2 GB"" nhưng luật dẫn về ""GeForce 940MX"""
+Ánh xạ lệch,N140,140,Card đồ họa,Nvidia GeForce GTX 960M,"anh ghi ""GTX 960"" nhưng luật dẫn về ""GTX 960M"""
+Ánh xạ lệch,N141,141,Card đồ họa,NVIDIA GeForce GT 740M,"anh ghi ""NVIDIA GeForce GT 740M"" nhưng luật dẫn về ""GT 740M"""
+Lệch trong cùng dòng,F142,142,CPU Segment,Ryzen 9 AI HX,"CPU là ""Ryzen AI 9 370HX"" -> segment phải là ""Ryzen AI 9"""
+Ánh xạ lệch,R142,142,CPU Orginal,"AMD Ryzen AI 9 465 2.0GHz (34MB Cache, up to 5.0GHz, 10 lõi, 20 luồng)","anh ghi ""AMD Ryzen AI 9 465"" nhưng luật dẫn về ""Ryzen AI 9 465"""
+Ánh xạ lệch,N142,142,Card đồ họa,Nvidia Geforce Gtx 1660 Ti,"anh ghi ""Gtx 1660"" nhưng luật dẫn về ""GTX 1660Ti"""
+Ánh xạ lệch,N143,143,Card đồ họa,NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics,"anh ghi ""Iris Xe"" nhưng luật dẫn về ""MX 550"""
+Ô rác,N144,144,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N144,144,Card đồ họa,AMD Radeon RX Graphics Vega 7,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon Vega 7"""
+Ánh xạ lệch,N145,145,Card đồ họa,"AMD Radeon 520, 2 GB","anh ghi ""AMD Radeon 520, 2 GB"" nhưng luật dẫn về ""AMD Radeon 520"""
+Ô rác,N146,146,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N146,146,Card đồ họa,AMD Radeon 840M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 840M"""
+Luật chưa nhận ra,G147,147,CPU,A18 Pro,dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật
+Lệch trong cùng dòng,F148,148,CPU Segment,M5,"CPU là ""M5"" -> segment phải là ""Apple M5"""
+Ánh xạ lệch,N148,148,Card đồ họa,Intel Arc 130V GPU (8GB),"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130V"""
+Lệch trong cùng dòng,F149,149,CPU Segment,M4,"CPU là ""M4"" -> segment phải là ""Apple M4"""
+Ánh xạ lệch,R149,149,CPU Orginal,"AMD Ryzen AI 9 HX 370 2.0GHz (36MB Cache, up to 5.1GHz, 12 lõi, 24 luồng)","anh ghi ""AMD Ryzen AI 9 HX 370"" nhưng luật dẫn về ""Ryzen AI 9 HX 370"""
+Lệch trong cùng dòng,F150,150,CPU Segment,M4,"CPU là ""M4 Pro"" -> segment phải là ""Apple M4 Pro"""
+Lệch trong cùng dòng,F151,151,CPU Segment,M5,"CPU là ""M5 Pro"" -> segment phải là ""Apple M5 Pro"""
+Lệch trong cùng dòng,F152,152,CPU Segment,M5,"CPU là ""M5 Max"" -> segment phải là ""Apple M5 Max"""
+Lệch trong cùng dòng,Q152,152,CPU Segment,Ryzen AI MAX+,"CPU là ""Ryzen AI MAX+ 392"" -> segment phải là ""Ryzen AI Max+"""
+Ánh xạ lệch,R152,152,CPU Orginal,"AMD Ryzen AI MAX+ 392 3.2GHz (80MB Cache, up to 5.0GHz, 12 lõi, 24 luồng)","anh ghi ""Ryzen AI MAX+ 392"" nhưng luật dẫn về ""Ryzen AI Max+ 392"""
+Ánh xạ lệch,N152,152,Card đồ họa,Intel Arc 140V GPU (16GB),"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 140V"""
+Ánh xạ lệch,N153,153,Card đồ họa,Intel Arc 140T GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 140T"""
+Ô rác,N154,154,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N154,154,Card đồ họa,AMD Radeon 890M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 890M"""
+Ánh xạ lệch,N155,155,Card đồ họa,Intel Arc 130T GPU,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130T"""
+Lệch trong cùng dòng,F156,156,CPU Segment,Ryzen 7,"CPU là ""Ryzen 7 AI 350"" -> segment phải là ""Ryzen AI 7"""
+Ánh xạ lệch,N157,157,Card đồ họa,Card tích hợp - Intel UHD Graphics,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
+Ánh xạ lệch,N158,158,Card đồ họa,Intel UHD Graphics (Iris Xe Graphics chỉ hoạt động với RAM kênh đôi),"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
+Ô rác,N159,159,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N159,159,Card đồ họa,Intel HD Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""Intel HD Graphics"""
+Ánh xạ lệch,N160,160,Card đồ họa,nVidia Geforce MX130 2GB,"anh ghi ""nVidia Geforce MX130 2GB"" nhưng luật dẫn về ""MX 130"""
+Lệch trong cùng dòng,F161,161,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 445"" -> segment phải là ""Ryzen AI 7"""
+Ô rác,N162,162,GPU,Graphics,không phải tên GPU
+Ánh xạ lệch,N162,162,Card đồ họa,AMD Radeon 660M Graphics,"anh ghi ""Graphics"" nhưng luật dẫn về ""AMD Radeon 660M"""
+Ánh xạ lệch,R167,167,CPU Orginal,"Intel Core Ultra 5 325 2.1 GHz (12MB Cache, up to 4.5 GHz, 8 lõi, 8 luồng)","anh ghi ""Intel Core Ultra 5 325"" nhưng luật dẫn về ""Core Ultra 5 325"""
+Lệch trong cùng dòng,Q168,168,CPU Segment,Snapdragon X,"CPU là ""Snapdragon X2 Elite X2E-88-100"" -> segment phải là ""Snapdragon X2"""
+Ánh xạ lệch,R174,174,CPU Orginal,"Intel Core i5-13500H 2.6 GHz (18MB Cache, up to 4.7 GHz, 12 lõi / 16 luồng)","anh ghi ""Core i5-13500H"" nhưng luật dẫn về ""Core i5 13500H"""
+Ánh xạ lệch,R175,175,CPU Orginal,"Intel Core i7-1255U 1.7 GHz (12M Cache, up to 4.7 GHz, 10 lõi)","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
+Ánh xạ lệch,N176,176,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti 12GB GDDR7, Boost Clock 2220MHz, TGP 140W, 992 AI TOPS","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
+Ánh xạ lệch,R177,177,CPU Orginal,"AMD Ryzen 9 7945HX (64MB L3 cache, up to 5.4GHz, 16 lõi / 32 luồng)","anh ghi ""AMD Ryzen 9 7945HX"" nhưng luật dẫn về ""Ryzen 9 7945HX"""
+Ánh xạ lệch,N179,179,Card đồ họa,Qualcomm Adreno Tiến trình chip mới nên có thể không kết nối được với các thiết bị có driver cũ,"anh ghi ""Adreno"" nhưng luật dẫn về ""Qualcomm Adreno"""
+Ánh xạ lệch,N180,180,Card đồ họa,Intel Arc 130T tích hợp hoạt động như Intel Graphics,"anh ghi ""Arc"" nhưng luật dẫn về ""Intel Arc Graphics 130T"""
+Ánh xạ lệch,N182,182,Card đồ họa,Integrated Intel® UHD Graphics,"anh ghi ""UHD"" nhưng luật dẫn về ""Intel UHD Graphics"""
+Ánh xạ lệch,R183,183,CPU Orginal,Intel Pentium N6000,"anh ghi ""Intel Pentium N6000"" nhưng luật dẫn về ""Pentium N6000"""
+Ánh xạ lệch,R184,184,CPU Orginal,Intel Core i5-1135G7,"anh ghi ""Core i5-1135G7"" nhưng luật dẫn về ""Core i5 1135G7"""
+Ánh xạ lệch,R185,185,CPU Orginal,Intel Celeron N4500,"anh ghi ""Celeron, N4500"" nhưng luật dẫn về ""Celeron N4500"""
+Ánh xạ lệch,R188,188,CPU Orginal,Intel Pentium Silver N6000,"anh ghi ""Intel Pentium N6000"" nhưng luật dẫn về ""Pentium N6000"""
+Ánh xạ lệch,R190,190,CPU Orginal,"Intel® Core I5-1135G7, upto 4.20GHz, 4 cores 8 threads, 8MB Cache","anh ghi ""Core I5-1135G7"" nhưng luật dẫn về ""Core i5 1135G7"""
+Ánh xạ lệch,N193,193,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti Laptop GPU, GDDR7 12GB Intel Graphics","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
+Ánh xạ hỏng,R197,197,CPU Orginal,8145U Intel Core i3,"luật không đọc được -> sẽ không dẫn về ""Core i3 8145U"""
+Ánh xạ lệch,N197,197,Card đồ họa,"NVIDIA GeForce RTX 5070 Ti Laptop GPU, GDDR7 12GB AMD Radeon 610M","anh ghi ""RTX 5070"" nhưng luật dẫn về ""RTX 5070Ti"""
+Ánh xạ lệch,R198,198,CPU Orginal,"Intel Core i5-12500H 2.5 GHz (18M Cache, up to 4.5 GHz, 12 lõi: 4 P-cores và 8 E-cores)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,R199,199,CPU Orginal,"Intel Core i5-13450HX 2.4 GHz (20M Cache, up to 4.6 GHz, 10 lõi: 6 P-cores and 4 E-cores)","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
+Ánh xạ lệch,R200,200,CPU Orginal,"Intel Core i5-12500H 2.5 GHz (18M Cache, up to 4.5 GHz, 4P+8E cores)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,R201,201,CPU Orginal,"13th Gen Intel Core i5-13450HX 2.4 GHz (20M Cache, up to 4.6 GHz, 10 lõi: 6 P-cores and 4 E-cores)","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
+Ánh xạ lệch,N203,203,Card đồ họa,NVIDIA GeForce GTX1650 4GB GDDR6,"anh ghi ""GTX1650"" nhưng luật dẫn về ""GTX 1650"""
+Ánh xạ lệch,N204,204,Card đồ họa,nVidia Geforce GTX 1660 Ti Max-Q 6GB GDDR6,"anh ghi ""GTX 1660"" nhưng luật dẫn về ""GTX 1660Ti"""
+Ánh xạ lệch,R206,206,CPU Orginal,"Intel Core i5-12500H (2.5 GHz, 18M Cache, up to 4.5 GHz, 12 lõi: 4 P và 8 E)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,R211,211,CPU Orginal,"Intel Core i5-1340P (1.9 GHz, 12MB Cache, up to 4.6 GHz, 12 lõi / 16 luồng)","anh ghi ""Core i5-1340P"" nhưng luật dẫn về ""Core i5 1340P"""
+Lệch trong cùng dòng,F216,216,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 340"" -> segment phải là ""Ryzen AI 5"""
+Ánh xạ lệch,R216,216,CPU Orginal,Intel Core i7-9750H 2.6GHz up to 4.5GHz 12MB,"anh ghi ""Core i7-9750H"" nhưng luật dẫn về ""Core i7 9750H"""
+Ánh xạ lệch,R218,218,CPU Orginal,Intel Core 7-350,"anh ghi ""Ryzen AI 7 350"" nhưng luật dẫn về ""Core 7 350"""
+Ánh xạ lệch,N218,218,Card đồ họa,NVIDIA GeForce RTX 3050 Ti 4 GB Intel UHD Graphics,"anh ghi ""RTX 3050"" nhưng luật dẫn về ""RTX 3050Ti"""
+Lệch trong cùng dòng,F219,219,CPU Segment,Ryzen 5 AI,"CPU là ""Ryzen AI 5 330"" -> segment phải là ""Ryzen AI 5"""
+Lệch trong cùng dòng,F220,220,CPU Segment,Ryzen 9,"CPU là ""Ryzen AI 9 HX370"" -> segment phải là ""Ryzen AI 9"""
+Lệch trong cùng dòng,F221,221,CPU Segment,Ryzen 9 AI,"CPU là ""Ryzen AI 9 HX 370"" -> segment phải là ""Ryzen AI 9"""
+Lệch trong cùng dòng,F222,222,CPU Segment,Ryzen 7 AI,"CPU là ""Ryzen AI 7 350"" -> segment phải là ""Ryzen AI 7"""
+Ánh xạ lệch,R224,224,CPU Orginal,Ryzen 9 5900Hs,"anh ghi ""Ryzen 9 5900Hs"" nhưng luật dẫn về ""Ryzen 9 5900HS"""
+Lệch trong cùng dòng,H234,234,CPU Platform,Qualcom,"CPU là ""Snapdragon X X1 26 100"" -> hãng phải là ""Qualcomm"""
+Lệch trong cùng dòng,H235,235,CPU Platform,Qualcom,"CPU là ""Snapdragon X2 Elite X2E 88 100"" -> hãng phải là ""Qualcomm"""
+Lệch trong cùng dòng,H236,236,CPU Platform,Qualcom,"CPU là ""Snapdragon X Plus X1P 42 100"" -> hãng phải là ""Qualcomm"""
+Lệch trong cùng dòng,H237,237,CPU Platform,Qualcom,"CPU là ""Snapdragon X Plus X1P-64-100"" -> hãng phải là ""Qualcomm"""
+Ánh xạ lệch,R237,237,CPU Orginal,"Intel Core i7-12650H (10 lõi / 16 luồng, Tần số Turbo tối đa của E-core : 3.5 GHz,Tần số Turbo tối đa của P-core : 4.7 GHz)","anh ghi ""Core i7-12650H"" nhưng luật dẫn về ""Core i7 12650H"""
+Lệch trong cùng dòng,H238,238,CPU Platform,Qualcom,"CPU là ""Snapdragon X Elite X1E-78-100"" -> hãng phải là ""Qualcomm"""
+Lệch trong cùng dòng,H239,239,CPU Platform,Qualcom,"CPU là ""Snapdragon X2 Elite Extreme X2E 94 100"" -> hãng phải là ""Qualcomm"""
+Ánh xạ lệch,R247,247,CPU Orginal,"Intel Core i5-13500H (12 lõi / 16 luồng, Tần số Turbo tối đa của E-core : 3.5 GHz, Tần số Turbo tối đa của P-core : 4.7 GHz, 18 MB Intel Smart Cache)","anh ghi ""Core i5-13500H"" nhưng luật dẫn về ""Core i5 13500H"""
+Ánh xạ lệch,R276,276,CPU Orginal,"AMD Ryzen 5-4600H, 6 nhân 12 luồng, tốc độ 3.0GHz lên đến 4.0GHz","anh ghi ""Ryzen 5-4600H"" nhưng luật dẫn về ""Ryzen 5 4600H"""
+Ánh xạ lệch,R279,279,CPU Orginal,"Intel Core i5-12500H (upto 4.5 GHz, 18MB), 12 nhân, 16 luồng","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,R282,282,CPU Orginal,"Intel Core i5-12500H (Up to 4.50GHz, 12 lõi, 16 luồng, 18MB Intel Smart Cache)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,R283,283,CPU Orginal,"Intel Core i7-1255U (10 lõi / 12 luồng, 3.5 GHz, turbo boost 4.7 GHz, 12 MB Intel Smart Cache)","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
+Ánh xạ lệch,R285,285,CPU Orginal,"Intel Core i3-1215U (6 lõi / 8 luồng, 1.2 GHz, 4.40 GHz, 10 MB Intel Smart Cache)","anh ghi ""Core i3-1215U"" nhưng luật dẫn về ""Core i3 1215U"""
+Ánh xạ lệch,R292,292,CPU Orginal,"Intel® Core™ i5-12500H (12 nhân, 16 luồng, 3.30 GHz up to 4.50 GHz, 18 MB)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,R297,297,CPU Orginal,"Intel Core 3 N350 (8 lõi / 8 luồng, Tần số turbo tối đa: 3.9 GHz, 6 MB Intel Smart Cache)","anh ghi ""Core 3, N350"" nhưng luật dẫn về ""Core 3 N350"""
+Ánh xạ lệch,R317,317,CPU Orginal,Intel Core Ultra 5 236V vPro,"anh ghi ""Core Ultra 5 236V vPro"" nhưng luật dẫn về ""Core Ultra 5 236V"""
+Ánh xạ lệch,R337,337,CPU Orginal,Intel Core i9-13980HX,"anh ghi ""Core i9-13980HX"" nhưng luật dẫn về ""Core i9 13980HX"""
+Ánh xạ lệch,R338,338,CPU Orginal,Intel Core I5 -8265U,"anh ghi ""Core I5 8265U"" nhưng luật dẫn về ""Core i5 8265U"""
+Lệch trong cùng dòng,Q339,339,CPU Segment,i9,"CPU là ""Core i9 12900H"" -> segment phải là ""Core i9"""
+Ánh xạ lệch,R339,339,CPU Orginal,"Intel® Core™ i9-12900HK thế hệ thứ 12 (bộ nhớ đệm 24 MB, 14 lõi, 20 luồng, Turbo lên đến 5,00 GHz)","anh ghi ""Core i9 12900H"" nhưng luật dẫn về ""Core i9 12900HK"""
+Ánh xạ lệch,R341,341,CPU Orginal,Intel Core i5 8265U,"anh ghi ""Core I5 8265U"" nhưng luật dẫn về ""Core i5 8265U"""
+Ánh xạ lệch,R343,343,CPU Orginal,"AMD Ryzen™ R7-3700U Processor, 2.30GHz up to 4.00GHz, 4 nhân 8 luồng, 4MB Cache","anh ghi ""Ryzen R7 3700U"" nhưng luật dẫn về ""Ryzen 7 3700U"""
+Ánh xạ lệch,R344,344,CPU Orginal,Intel Pentium N5030,"anh ghi ""Intel Pentium N5030"" nhưng luật dẫn về ""Pentium N5030"""
+Ánh xạ lệch,R346,346,CPU Orginal,"Intel Core i7-1255U (thế hệ thứ 12 / 10 nhân 12 luồng / 4.70 GHz, 12MB)","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
+Ánh xạ lệch,R347,347,CPU Orginal,"Intel Core i3-1215U (15 W, 6 lõi / 8 luồng, 1.20 GHz to 4.40 GHz, 10 MB)","anh ghi ""Core i3-1215U"" nhưng luật dẫn về ""Core i3 1215U"""
+Lệch trong cùng dòng,Q353,353,CPU Segment,I7,"CPU là ""I7-6700HQ"" -> segment phải là ""Core i7"""
+Ánh xạ lệch,R353,353,CPU Orginal,I7-6700HQ,"anh ghi ""I7-6700HQ"" nhưng luật dẫn về ""Core i7 6700HQ"""
+Ánh xạ lệch,R354,354,CPU Orginal,I5-4200U,"anh ghi ""I5-4200U"" nhưng luật dẫn về ""Core i5 4200U"""
+Ánh xạ lệch,R355,355,CPU Orginal,Intel Core I5 -10210U,"anh ghi ""Core I5 -10210U"" nhưng luật dẫn về ""Core i5 10210U"""
+Ánh xạ lệch,R356,356,CPU Orginal,Intel Core i7 10750H,"anh ghi ""Intel Core i7 10750H"" nhưng luật dẫn về ""Core i7 10750H"""
+Ánh xạ lệch,R357,357,CPU Orginal,"Intel Core i7-1255U ( 1.7 GHz - 4.7GHz / 12MB / 10 nhân, 12 luồng )","anh ghi ""Core i7-1255U"" nhưng luật dẫn về ""Core i7 1255U"""
+Ánh xạ hỏng,R360,360,CPU Orginal,Intel Core i5 Kabylake Refresh - 8250U,"luật không đọc được -> sẽ không dẫn về ""Core i5 8250U"""
+Ánh xạ lệch,R390,390,CPU Orginal,AMD Ryzen 7 7735U (8 x 2.70 GHz) - Max. Boost Clock: Up to 4. 75 GHz,"anh ghi ""Ryzen 7 7735HS"" nhưng luật dẫn về ""Ryzen 7 7735U"""
+Ánh xạ hỏng,R396,396,CPU Orginal,AMD RyzenTM AI 7 PRO 360 (8 x 2.00 GHz) - Max. Boost Clock: Up to 5.00 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 7 PRO 360"""
+Ánh xạ lệch,R397,397,CPU Orginal,"Intel Core i7-1365U (10 lõi) - Max Turbo Frequency: 5.20 GHz, 12MB cache","anh ghi ""Core i7-1365U"" nhưng luật dẫn về ""Core i7 1365U"""
+Ánh xạ lệch,R398,398,CPU Orginal,"Intel Core i7-13700HX (up to 5.0 GHz with Intel Turbo Boost Technology, 30 MB L3 cache,16 lõi, 24 luồng)","anh ghi ""Core i7-13700HX"" nhưng luật dẫn về ""Core i7 13700HX"""
+Ánh xạ lệch,R404,404,CPU Orginal,"Intel Core i7-1165G7, tốc độ 2.8GHz tối đa lên đến 4.7GHz, bộ nhớ đệm 12MB","anh ghi ""Core i7-1165G7"" nhưng luật dẫn về ""Core i7 1165G7"""
+Ánh xạ lệch,R411,411,CPU Orginal,"Intel Core i7-8550U (1.8GHz Upto 4.0GHz, 4Cores, 8Threads, 8MB cache, FSB 4GT/s)","anh ghi ""Core i7-8550U"" nhưng luật dẫn về ""Core i7 8550U"""
+Ánh xạ lệch,R416,416,CPU Orginal,Intel Pentium - N3710,"anh ghi ""Intel Pentium - N3710"" nhưng luật dẫn về ""Pentium N3710"""
+Ánh xạ lệch,R417,417,CPU Orginal,Intel Core i5-1035G1,"anh ghi ""Core i5-1035G1"" nhưng luật dẫn về ""Core i5 1035G1"""
+Ánh xạ lệch,R418,418,CPU Orginal,Intel Core i7 - 10510U,"anh ghi ""Intel Core i7 - 10510U"" nhưng luật dẫn về ""Core i7 10510U"""
+Ánh xạ lệch,R419,419,CPU Orginal,Intel Core i5-1155G7,"anh ghi ""Core i5-1155G7"" nhưng luật dẫn về ""Core i5 1155G7"""
+Ánh xạ hỏng,R421,421,CPU Orginal,Intel Core I3- 1125G4,"luật không đọc được -> sẽ không dẫn về ""Core i3 1125G4"""
+Ánh xạ lệch,R422,422,CPU Orginal,Intel Core i7-1165G7,"anh ghi ""Intel Core i7-1165G7"" nhưng luật dẫn về ""Core i7 1165G7"""
+Ánh xạ lệch,R438,438,CPU Orginal,"Intel Core i7-13645HX, 14 lõi (6P + 8E) / 20 luồng, P-core up to 4.9GHz, E-core up to 3.5GHz, 24MB Intel Smart Cache","anh ghi ""Core i7-13645HX"" nhưng luật dẫn về ""Core i7 13645HX"""
+Ánh xạ lệch,R444,444,CPU Orginal,"Intel Core Ultra 5 322, 6 lõi (2P + 4LPE) / 6 luồng, Max Turbo up to 4.4GHz, 12MB Intel Smart Cache","anh ghi ""Intel Core Ultra 5 322"" nhưng luật dẫn về ""Core Ultra 5 322"""
+Ánh xạ lệch,R445,445,CPU Orginal,"Snapdragon X X1-26-100, 8C, Max Turbo up to 3.0GHz, 30MB","anh ghi ""Snapdragon X X1-26-100, 8C"" nhưng luật dẫn về ""Snapdragon X X1-26-100"""
+Ánh xạ lệch,R447,447,CPU Orginal,"Intel Core i5-13450HX, 10 lõi (6P + 4E) / 16 luồng, P-core 2.4 / 4.6GHz, E-core 1.8 / 3.4GHz, 20MB","anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
+Ánh xạ lệch,R454,454,CPU Orginal,"Intel Core i5-12450HX, 8 lõi (4P + 4E) / 12 luồng, P-core up to 4.4GHz, E-core up to 3.1GHz, 12MB","anh ghi ""Core i5 12450H"" nhưng luật dẫn về ""Core i5 12450HX"""
+Ánh xạ lệch,R455,455,CPU Orginal,AMD Ryzen 7-5800H,"anh ghi ""Ryzen 7-5800H"" nhưng luật dẫn về ""Ryzen 7 5800H"""
+Ánh xạ lệch,R456,456,CPU Orginal,AMD Ryzen 5 6600HS Creator Edition,"anh ghi ""Ryzen 5 6600H"" nhưng luật dẫn về ""Ryzen 5 6600HS"""
+Ánh xạ lệch,R457,457,CPU Orginal,Intel Core i7-10750H 2.6GHz up to 5.0GHz 12MB,"anh ghi ""Core i7-10750H"" nhưng luật dẫn về ""Core i7 10750H"""
+Ánh xạ lệch,R459,459,CPU Orginal,"Intel Core i5-12450HX, 8C (4P + 4E) / 12T, P-core up to 4.4GHz, E-core up to 3.1GHz, 12MB","anh ghi ""Core i5 12450H"" nhưng luật dẫn về ""Core i5 12450HX"""
+Ánh xạ lệch,R464,464,CPU Orginal,"Intel Core i7-14700HX, 20 lõi (8P + 12E) / 28 luồng, P-core 2.1 / 5.5GHz, E-core 1.5 / 3.9GHz, 33MB","anh ghi ""Core i7-14700HX"" nhưng luật dẫn về ""Core i7 14700HX"""
+Ánh xạ lệch,R466,466,CPU Orginal,"Snapdragon X Plus X1P-42-100, 8C, Max Turbo up to 3.4GHz (single-core) / 3.2GHz (8-core), 30MB","anh ghi ""Snapdragon X Plus X1P-42-100, 8C"" nhưng luật dẫn về ""Snapdragon X Plus X1P-42-100"""
+Ánh xạ lệch,R472,472,CPU Orginal,Intel Core i3-1215U,"anh ghi ""Core i3-1215U"" nhưng luật dẫn về ""Core i3 1215U"""
+Ánh xạ lệch,R475,475,CPU Orginal,"Intel Core i5-1240P, 12 lõi/16 luồng, P-core 1.7/4.4GHz, E-core 1.2/3.3GHz, 12MB","anh ghi ""Core i5-1240P"" nhưng luật dẫn về ""Core i5 1240P"""
+Ánh xạ lệch,R479,479,CPU Orginal,"Intel Core i7-10750H (2.6 GHz - 5.0 GHz / 12MB / 6 nhân, 12 luồng)","anh ghi ""Core i7-10750H"" nhưng luật dẫn về ""Core i7 10750H"""
+Lệch trong cùng dòng,Q482,482,CPU Segment,Core I7,"CPU là ""Core I7-10510U"" -> segment phải là ""Core i7"""
+Ánh xạ lệch,R482,482,CPU Orginal,"10th Generation Intel Core I7-10510U Processor with vPro™ (1.80GHz upto 4.90GHz, 8MB, 4 nhân/8 luồng)","anh ghi ""Core I7-10510U"" nhưng luật dẫn về ""Core i7 10510U"""
+Lệch trong cùng dòng,Q483,483,CPU Segment,i7,"CPU là ""Core i7 10510U"" -> segment phải là ""Core i7"""
+Ánh xạ lệch,R515,515,CPU Orginal,Intel Core i5-8265U,"anh ghi ""Core i5-8265U"" nhưng luật dẫn về ""Core i5 8265U"""
+Ánh xạ lệch,R525,525,CPU Orginal,"Intel Core Ultra 9 290HX Plus (1.8Ghz - 5.5Hz, 24 lõi - 24 luồng, Bộ nhớ đệm: 36MB)","anh ghi ""Core Ultra 9 290HX Plus"" nhưng luật dẫn về ""Core Ultra 9 290HX"""
+Ánh xạ lệch,R528,528,CPU Orginal,"Intel Celeron N4500 (1.10 Ghz, tốc độ tối đa 2.80 Ghz 4 MB L3 Cache)","anh ghi ""Celeron, N4500"" nhưng luật dẫn về ""Celeron N4500"""
+Ánh xạ hỏng,R529,529,CPU Orginal,AMD Ryzen Al 7 350 (8 x 2.00 GHz) - Max. Boost Clock: Up to 5.00 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 7 350"""
+Ánh xạ lệch,R536,536,CPU Orginal,Core i5 13450HX - Max Turbo: 4.6 GHz,"anh ghi ""Core i5-13450HX"" nhưng luật dẫn về ""Core i5 13450HX"""
+Ánh xạ lệch,R538,538,CPU Orginal,"Intel Core i5-12500H 2.5 GHz (18M Cache, up to 4.5 GHz, 4P+8E lõi)","anh ghi ""Core i5-12500H"" nhưng luật dẫn về ""Core i5 12500H"""
+Ánh xạ lệch,R539,539,CPU Orginal,"i5, 12450HX, Lên đến 4.40 GHz khi tải nặng","anh ghi ""Core i5 12450H"" nhưng luật dẫn về ""Core i5 12450HX"""
+Trùng lặp,,137,CPU,"""Snapdragon X - X1 26 100"" (dòng 137)  vs  ""Snapdragon X X1 26 100"" (dòng 234)  vs  ""Snapdragon X X1-26-100, 8C"" (dòng 445)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,529,CPU,"""Ryzen AI 7 350"" (dòng 529)  vs  ""Ryzen 7 AI 350"" (dòng 156)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,247,CPU,"""Core i5-13500H"" (dòng 247)  vs  ""Core i5 13500H"" (dòng 166)  vs  ""Core I5 13500H"" (dòng 167)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,503,CPU,"""Ryzen 9 8940HX"" (dòng 503)  vs  ""Ryzen R9 8940HX"" (dòng 233)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,138,CPU,"""Ryzen AI 9 465"" (dòng 138)  vs  ""AMD Ryzen AI 9 465"" (dòng 142)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,489,CPU,"""Ryzen AI 9 HX 370"" (dòng 489)  vs  ""Ryzen AI 9 370HX"" (dòng 142)  vs  ""AMD Ryzen AI 9 HX 370"" (dòng 149)  vs  ""Ryzen AI 9 HX370"" (dòng 220)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,538,CPU,"""Core i5-12500H"" (dòng 538)  vs  ""Core i5 12500H"" (dòng 174)  vs  ""Core i5 12500H"" (dòng 168)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,536,CPU,"""Core i5-13450HX"" (dòng 536)  vs  ""Core i5 13450HX"" (dòng 206)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,35,CPU,"""Core Ultra 5 325"" (dòng 35)  vs  ""Intel Core Ultra 5 325"" (dòng 167)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,169,CPU,"""Core i7 1255U"" (dòng 169)  vs  ""Core i7-1255U"" (dòng 357)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,43,CPU,"""Ryzen 9 7945HX"" (dòng 43)  vs  ""AMD Ryzen 9 7945HX"" (dòng 177)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,43,CPU,"""i9, 14900HX"" (dòng 43)  vs  ""Core i9 14900HX"" (dòng 155)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,197,CPU,"""Core i5 1340P"" (dòng 197)  vs  ""Core i5 1340P"" (dòng 171)  vs  ""Core i5-1340P"" (dòng 211)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,191,CPU,"""Core i7 13700H"" (dòng 191)  vs  ""Core I7 13700H"" (dòng 172)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,236,CPU,"""Core i3 1305U"" (dòng 236)  vs  ""Core i3-1305U"" (dòng 203)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,165,CPU,"""Core i9 13900H"" (dòng 165)  vs  ""Core i9 13900H"" (dòng 143)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,207,CPU,"""Core i7 12650H"" (dòng 207)  vs  ""Core i7-12650H"" (dòng 237)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,195,CPU,"""Ryzen 5 4600H"" (dòng 195)  vs  ""Ryzen 5-4600H"" (dòng 276)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,93,CPU,"""Core 3 N350"" (dòng 93)  vs  ""Core 3, N350"" (dòng 297)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,101,CPU,"""Core i7 1365U"" (dòng 101)  vs  ""Core i7-1365U"" (dòng 397)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,102,CPU,"""Core i7 13700HX"" (dòng 102)  vs  ""Core i7-13700HX"" (dòng 398)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,105,CPU,"""Core i7 1165G7"" (dòng 105)  vs  ""Core i7-1165G7"" (dòng 404)  vs  ""Intel Core i7-1165G7"" (dòng 422)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,317,CPU,"""Core Ultra 5 236V vPro"" (dòng 317)  vs  ""Core Ultra 5 236V"" (dòng 123)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,115,CPU,"""Core i9 13980HX"" (dòng 115)  vs  ""Core i9-13980HX"" (dòng 337)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,125,CPU,"""Core i7 13645HX"" (dòng 125)  vs  ""Core i7-13645HX"" (dòng 438)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,118,CPU,"""Core i7 6700HQ"" (dòng 118)  vs  ""I7-6700HQ"" (dòng 353)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,480,CPU,"""Core Ultra 5 322"" (dòng 480)  vs  ""Intel Core Ultra 5 322"" (dòng 444)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,119,CPU,"""Core i5 4200U"" (dòng 119)  vs  ""I5-4200U"" (dòng 354)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,518,CPU,"""Core i7 10750H"" (dòng 518)  vs  ""Intel Core i7 10750H"" (dòng 356)  vs  ""Core i7-10750H"" (dòng 479)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,278,CPU,"""Ryzen 7 5800H"" (dòng 278)  vs  ""Ryzen 7-5800H"" (dòng 455)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,523,CPU,"""Core i7 14700HX"" (dòng 523)  vs  ""Core i7-14700HX"" (dòng 464)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,476,CPU,"""Ryzen 7 4700U"" (dòng 476)  vs  ""Ryzen 7-4700U"" (dòng 194)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,350,CPU,"""Core i7 12700H"" (dòng 350)  vs  ""Core i7-12700H"" (dòng 224)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,168,CPU,"""Snapdragon X2 Elite X2E-88-100"" (dòng 168)  vs  ""Snapdragon X2 Elite X2E 88 100"" (dòng 235)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,215,CPU,"""Core i5 1135G7"" (dòng 215)  vs  ""Core i5-1135G7"" (dòng 184)  vs  ""Core I5-1135G7"" (dòng 190)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,182,CPU,"""Core i5 1240P"" (dòng 182)  vs  ""Core I5 1240P"" (dòng 185)  vs  ""Core i5-1240P"" (dòng 475)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,191,CPU,"""Pentium N5030"" (dòng 191)  vs  ""Intel Pentium N5030"" (dòng 344)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,214,CPU,"""Core i3 1215U"" (dòng 214)  vs  ""Core i3-1215U"" (dòng 472)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,477,CPU,"""Core i5 1035G1"" (dòng 477)  vs  ""Core i5-1035G1"" (dòng 417)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,236,CPU,"""Snapdragon X Plus X1P 42 100"" (dòng 236)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (dòng 466)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,341,CPU,"""Core I5 8265U"" (dòng 341)  vs  ""Core i5-8265U"" (dòng 515)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,355,CPU,"""Core I5 -10210U"" (dòng 355)  vs  ""Core i5 10210U"" (dòng 405)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,418,CPU,"""Intel Core i7 - 10510U"" (dòng 418)  vs  ""Core I7-10510U"" (dòng 482)  vs  ""Core i7 10510U"" (dòng 483)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,87,GPU,"""Qualcomm Adreno GPU"" (dòng 87)  vs  ""Adreno"" (dòng 179)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,5,GPU,"""Radeon"" (dòng 5)  vs  ""AMD Radeon Graphics"" (dòng 10)  vs  ""AMD Radeon™ Graphics"" (dòng 48)  vs  ""AMD Radeon"" (dòng 80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (dòng 89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (dòng 95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (dòng 97)  vs  ""AMD Radeon™ RX 6700S"" (dòng 101)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,3,GPU,"""Intel Graphics"" (dòng 3)  vs  ""NVIDIA / Intel Graphics"" (dòng 74)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,4,GPU,"""Intel UHD"" (dòng 4)  vs  ""UHD"" (dòng 182)  vs  ""Intel UHD Graphics"" (dòng 81)  vs  ""Intel® UHD Graphics"" (dòng 90)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,111,GPU,"""Intel Arc Graphics"" (dòng 111)  vs  ""Arc"" (dòng 180)  vs  ""Intel® Arc Graphics"" (dòng 26)  vs  ""Intel® Arc™ Graphics"" (dòng 92)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,173,GPU,"""RTX 2050"" (dòng 173)  vs  ""NVIDIA GeForce RTX 2050 4 GB GDDR6"" (dòng 108)  vs  ""NVIDIA GeForce RTX 2050 4GB GDDR6"" (dòng 112)  vs  ""NVIDIA® GeForce RTX™ 2050 4GB GDDR6, Boost Clock 1575MHz, TGP 65W"" (dòng 113)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,143,GPU,"""Iris Xe"" (dòng 143)  vs  ""Intel Iris Xe Graphics"" (dòng 22)  vs  ""Intel Iris Xe Graphics eligible"" (dòng 29)  vs  ""Intel Iris Xe"" (dòng 47)  vs  ""Intel Iris Xe Graphics"" (dòng 96)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,16,GPU,"""AMD Radeon 8060S"" (dòng 16)  vs  ""AMD Radeon 8060S Graphics"" (dòng 88)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,65,GPU,"""AMD Radeon 840M"" (dòng 65)  vs  ""AMD Radeon 840M Graphics"" (dòng 39)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,61,GPU,"""AMD Radeon 780M"" (dòng 61)  vs  ""AMD Radeon 780M Graphics"" (dòng 72)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,64,GPU,"""AMD Radeon 660M"" (dòng 64)  vs  ""AMD Radeon 660M Graphics"" (dòng 69)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,67,GPU,"""AMD Radeon 610M"" (dòng 67)  vs  ""AMD Radeon 610M Graphics"" (dòng 37)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,23,GPU,"""RTX 4080"" (dòng 23)  vs  ""NVIDIA GeForce RTX 4080"" (dòng 67)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,199,GPU,"""RTX 4060"" (dòng 199)  vs  ""NVIDIA® GeForce RTX™ 4060"" (dòng 86)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,24,GPU,"""RTX 2060"" (dòng 24)  vs  ""NVIDIA GeForce RTX™ 2060 6GB GDDR6 with Max-Q Design (ROG Boost)"" (dòng 73)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,206,GPU,"""GTX 1650"" (dòng 206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (dòng 93)  vs  ""Geforce GTX 1650 4GB"" (dòng 91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (dòng 98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (dòng 99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (dòng 103)  vs  ""GTX1650"" (dòng 203)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,42,GPU,"""AMD Radeon 860M Graphics"" (dòng 42)  vs  ""AMD Radeon 860M"" (dòng 50)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,45,GPU,"""AMD Radeon 890M Graphics"" (dòng 45)  vs  ""AMD Radeon 890M"" (dòng 79)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,52,GPU,"""NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics"" (dòng 52)  vs  ""Nvidia GeForce MX570A 2GB / Intel Graphics"" (dòng 63)  vs  ""MX570A"" (dòng 115)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,56,GPU,"""RTX 3080Ti"" (dòng 56)  vs  ""NVIDIA® GeForce RTX™ 3080 Ti, 16 GB GDDR6"" (dòng 133)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,142,GPU,"""Gtx 1660"" (dòng 142)  vs  ""GTX 1660"" (dòng 204)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,61,GPU,"""NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics"" (dòng 61)  vs  ""NVIDIA® GeForce® MX550 2GB GDDR6"" (dòng 106)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,62,GPU,"""AMD Radeon RX Graphics Vega 7"" (dòng 62)  vs  ""AMD Radeon™ Vega 7 Graphics"" (dòng 100)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,70,GPU,"""NVIDIA GeForce MX330, 2 GB"" (dòng 70)  vs  ""NVIDIA® GeForce® MX330 2GB GDDR5"" (dòng 71)  vs  ""Nvidia MX330-2GB"" (dòng 74)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,76,GPU,"""RTX 4070"" (dòng 76)  vs  ""NVIDIA GeForce RTX 4070 (321 AI TOPs) 8GB GDDR6 AMD Radeon Graphics"" (dòng 104)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,181,GPU,"""GTX 1650Ti"" (dòng 181)  vs  ""NVIDIA GeForce GTX 1650 Ti (4GB of GDDR6 SDRAM, Bus Width : 128-bit) ; AMD Radeon Graphics"" (dòng 105)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,,107,GPU,"""NVIDIA GeForce RTX 3050 Ti, 4GB GDDR6 Card tích hợp - AMD Radeon Graphics"" (dòng 107)  vs  ""RTX 3050 Ti"" (dòng 116)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một

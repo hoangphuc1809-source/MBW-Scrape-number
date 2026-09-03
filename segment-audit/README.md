@@ -1,13 +1,29 @@
 # Kiểm tra tab `Segment`
 
-Cập nhật: **07:33:28 3/9/2026** — tự sinh bởi job `segment-audit` (ops-tools).
+Cập nhật: **11:19:35 3/9/2026** — tự sinh bởi job `segment-audit` (ops-tools).
 Chỉ đọc Sheet, không ghi. Chạy lại: Actions → Ops Tools → tick `run_segment_audit`.
 
 | File | Nội dung |
 |---|---|
-| [`segment-fixlist.csv`](segment-fixlist.csv) | **Bắt đầu từ đây.** Ô cần sửa kèm giá trị đúng. Cột `Dòng` là số dòng thật trong tab `Segment`. |
+| [`segment-fixlist.csv`](segment-fixlist.csv) | **Bắt đầu từ đây.** Ô cần sửa kèm giá trị đúng. |
 | [`segment-audit.csv`](segment-audit.csv) | Toàn bộ vấn đề, phân theo loại. |
 | [`segment-normalized.csv`](segment-normalized.csv) | Danh sách giá trị chuẩn, kèm mọi cách viết đang có. |
+
+## Cách dùng `segment-fixlist.csv`
+
+Cột **`Ô`** là địa chỉ ô thật trong tab `Segment` (ví dụ `R41`).
+Dán nó vào ô Name Box của Google Sheets (góc trên bên trái, cạnh thanh công thức)
+rồi Enter — con trỏ nhảy thẳng tới đúng ô. Gõ đè giá trị ở cột `Sửa thành`.
+
+Cần địa chỉ ô vì tab có **hai khối CPU** (cột F–H và Q–S), nên chỉ nói
+"dòng 41, cột CPU" là không đủ để biết ô nào.
+
+File đã sắp xếp theo **cặp sửa**: các ô sửa giống hệt nhau nằm liền nhau,
+làm một mạch cho nhanh. Không bắt buộc làm hết một lượt — sửa tới đâu,
+lần scrape sau áp tới đó.
+
+**Không sửa** cột chuỗi gốc (`CPU Orginal`, `Card đồ họa`) — đó là dữ liệu thô
+từ retailer, sửa vào là hỏng bảng ánh xạ.
 
 ## Các loại vấn đề
 
