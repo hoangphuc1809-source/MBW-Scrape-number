@@ -641,6 +641,11 @@ jobs:
             exit 0
           fi
           git commit -m "chore(segment-audit): cap nhat ket qua kiem tra tab Segment [skip ci]"
+          # Buoc "Cai googleapis" o tren lam doi package.json + package-lock.json.
+          # git pull --rebase tu choi chay khi con thay doi chua commit, nen phai
+          # vut bo chung TRUOC. An toan: day la ban checkout moi tren runner,
+          # khong co gi dang giu.
+          git checkout -- . 2>/dev/null || true
           # Job khac (reenrich/scrape) cung push vao main -> rebase roi thu lai
           for i in 1 2 3; do
             git pull --rebase origin main && git push origin HEAD:main && exit 0
