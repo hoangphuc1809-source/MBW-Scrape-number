@@ -107,20 +107,56 @@ function attrJoin(rec, key) {
   return v.join(' ').trim();
 }
 
-// ~10% SP (92/937 ngay 02/09) khong co attribute-summary, nhung ten SP luon co
-// dang "Laptop <model> (<CPU> | <GPU> | <RAM> | ...)". Vot lai CPU/GPU tu ten.
-// CO Y KHONG doan RAM/SSD/Screen: trong ngoac ca "16GB" (RAM) lan "512GB" (SSD)
-// deu la "<so>GB", thu tu khong co dinh giua cac hang -> doan se sai im lang,
-// nguy hiem hon la de trong. RAM/Screen da co san 96% tu attribute-summary.
-const CPU_RE = /\b(Intel\s+)?(Core\s+Ultra\s+\d[\w-]*|Core\s+i\d[\w-]*|Core\s+\d{1,2}[\w-]*|Ryzen\s+AI\s+(?:Max\s+)?\d[\w+-]*|Ryzen\s+\d[\w-]*|Snapdragon[\w\s-]*?(?=\s*[|)])|Celeron[\w\s-]*?(?=\s*[|)])|Pentium[\w\s-]*?(?=\s*[|)])|Athlon[\w-]*|Mendocino\s+\w+)/i;
-const GPU_RE = /\b(RTX\s?\d{4}\s?(?:Ti)?|GTX\s?\d{3,4}\s?(?:Ti)?|Radeon\s+Graphics|AMD\s+Radeon|Intel\s+Arc\s+Graphics|Arc\s+Graphics|Iris\s+Xe(?:\s+Graphics)?|UHD\s+Graphics|Intel\s+Graphics|MX\s?\d{3})/i;
+// ~10% SP khong co attribute-summary. Va quan trong hon: attribute-summary
+// thuong CHI tra ve DONG CHIP ("Intel Core 5", "Ryzen 7") trong khi ma so day
+// du lai nam trong TEN SP ("Intel Core 5 120U", "Ryzen 7 170").
+// Luat cu uu tien thuoc tinh nen khong bao gio cham toi ten -> dashboard hien
+// "Core 5", "Ryzen 7" khong co hau to. Gio thu CA HAI nguon va lay cai nao ra
+// duoc ten DAY DU.
+const { normalizeCpu } = require('./spec_normalize.js');
+const { K } = require('./spec_dictionary.js');
 
-function fromName(name, re) {
-  // Bo ™ ® © truoc khi match: An Phat viet "Ryzen™ 7 8845HS", "Snapdragon® X
-  // Elite" -> ky tu nay chen giua ten va so, lam regex truot.
-  const clean = (name || '').replace(/[™®©]/g, ' ').replace(/\s+/g, ' ');
-  const m = clean.match(re);
-  return m ? m[0].replace(/\s+/g, ' ').trim() : '';
+// CPU/GPU luon nam trong ngoac cua ten SP — phan ngoai ngoac la ten dong may
+// va ma san pham, de lot vao se bat nham.
+// BAY: nhieu ten co HAI cap ngoac, cap cuoi la nhan quang cao:
+//   "Laptop Acer Swift Go SFG14-71-513F NX.KPZSV.003 (Hàng Giá Sốc)"
+//   "Laptop ASUS ... (Intel Core Ultra 5 Processor 225H | 16GB) (Hàng chính hãng)"
+// Lay cap CUOI se trung nhan quang cao va bo lo khoi thong so. Nen tra ve TAT
+// CA cac cap, de ben goi thu lan luot.
+function specBlocks(name) {
+  const out = (String(name || '').match(/\(([^)]*)\)/g) || []).map(s => s.slice(1, -1));
+  out.push(String(name || ''));   // lop cuoi: ca ten, phong khi khong co ngoac
+  return out;
+}
+
+// Chon dang DAY DU nhat giua thuoc tinh va ten SP.
+function bestCpu(attrVal, name) {
+  const a = normalizeCpu(attrVal);
+  if (a.confidence === 'full') return a.cpu;          // thuoc tinh da du
+  for (const b of specBlocks(name)) {                 // ten SP du hon
+    const n = normalizeCpu(b);
+    if (n.confidence === 'full') return n.cpu;
+  }
+  return attrVal || '';                               // ca hai deu thieu -> giu tho
+}
+
+function bestGpu(attrVal, name) {
+  // GPU roi luon dang tin hon GPU tich hop chung chung: neu thuoc tinh chi noi
+  // "AMD Radeon Graphics" ma ten SP ghi ro "RTX 5050" thi lay cai sau.
+  const generic = /^(AMD Radeon Graphics|Intel Graphics|Intel UHD Graphics|Qualcomm Adreno)$/;
+  const a = K.gpu(attrVal || '');
+  if (a && !generic.test(a)) return a;
+  // Quet ten SP: uu tien GPU roi, nhung VAN GIU lai GPU tich hop tim duoc de
+  // dung lam duong lui. Ban dau em vut no di -> GPU tut tu 915 xuong 809 SP,
+  // vi nhung may chi co GPU tich hop ma thuoc tinh de trong thi mat sach.
+  let fallback = a;
+  for (const b of specBlocks(name)) {
+    const n = K.gpu(b);
+    if (!n) continue;
+    if (!generic.test(n)) return n;
+    if (!fallback) fallback = n;
+  }
+  return fallback || attrVal || '';
 }
 
 function mapProduct(p, attr) {
@@ -137,8 +173,8 @@ function mapProduct(p, attr) {
   const a = attr || {};
   const storage = attrJoin(a, 'dung-luong-o-cung-laptop') || attrJoin(a, 'dung-luong-ssd');
   const name = (p.productName || '').trim();
-  const cpu = attrJoin(a, 'bo-vi-xu-ly-laptop') || fromName(name, CPU_RE);
-  const gpu = attrJoin(a, 'card-do-hoa-laptop') || fromName(name, GPU_RE);
+  const cpu = bestCpu(attrJoin(a, 'bo-vi-xu-ly-laptop'), name);
+  const gpu = bestGpu(attrJoin(a, 'card-do-hoa-laptop'), name);
 
   // Truong `quantity` KHONG dung de xac dinh con hang: 707/939 SP co
   // quantity=0 nhung van ban binh thuong (gia > 0, trang SP van cho mua).

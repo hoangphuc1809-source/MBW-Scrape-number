@@ -95,6 +95,7 @@ html, body { height:100%; }
 .dlr-fpt{background:#1e40af;color:#fff}
 .dlr-cps{background:#991b1b;color:#fff}
 .dlr-pv{background:#fed7aa;color:#9a3412}
+.dlr-apc{background:#0f766e;color:#fff}
 .dlr-key{background:#7c3aed;color:#fff}
 .prices{display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap}
 .p-old{color:var(--text2);text-decoration:line-through;font-size:12px}
@@ -784,7 +785,11 @@ let csvDates  = [];   // sorted desc: ["16/06/2026", "15/06/2026", ...]
 
 // ── FORMAT ──────────────────────────────────────────────
 const vnd = n => n?Number(n).toLocaleString('vi-VN')+'₫':'–';
-const dlrCls = d => d==='MBW'?'dlr-mbw':d==='FPT Retail'?'dlr-fpt':d==='Phong Vu'?'dlr-pv':'dlr-cps';
+// An Phat truoc day roi vao nhanh mac dinh 'dlr-cps' nen hien ra DUNG mau
+// do dam cua CellPhone S — nhin khong phan biet duoc. Gio moi dealer mot
+// nhanh ro rang, va mac dinh la 'dlr-key' de dealer moi lo ra ngay thay vi
+// im lang mang mau cua dealer khac.
+const dlrCls = d => d==='MBW'?'dlr-mbw':d==='FPT Retail'?'dlr-fpt':d==='Phong Vu'?'dlr-pv':d==='CellPhone S'?'dlr-cps':d==='An Phat'?'dlr-apc':'dlr-key';
 const rnCls  = i => i===0?'rn1':i===1?'rn2':i===2?'rn3':'rno';
 const isBP   = p => p.gamingGroup !== 'Gaming';
 

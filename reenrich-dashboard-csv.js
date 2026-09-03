@@ -242,14 +242,28 @@ async function main() {
       //
       // Luon giu gia tri cu lam lop cuoi: luat khong doc duoc thi de nguyen,
       // KHONG de trong — mat du lieu te hon hien thi xau.
-      const before = [row[COL.CPUSegment], row[COL.CPU], row[COL.RAM], row[COL.SSD], row[COL.GPU]].join('\u0000');
+      const before = [row[COL.SeriesGroup], row[COL.Segment], row[COL.CPUSegment], row[COL.CPU], row[COL.RAM], row[COL.SSD], row[COL.GPU]].join('\u0000');
+
+      // Products Family (cot Segment) + Series Group: guessSegment() doi chieu
+      // ten SP voi danh sach dong may trong tab Segment, KHONG can khop Part #.
+      // Truoc day chi dien khi khop Part #, nen 937 dong An Phat trong tron cot
+      // "Products Family" tren dashboard — trong khi Google Sheet lai co, vi
+      // multi_dealer_scraper co goi matchSegment. Hai noi lech nhau.
+      if (!row[COL.Segment]) {
+        const g = guessSegment(row[COL.SKU]);
+        if (g) {
+          row[COL.Segment] = g.segment;
+          if (!row[COL.SeriesGroup]) row[COL.SeriesGroup] = g.seriesGroup || '';
+        }
+      }
+
       const n = normalizeCpu(row[COL.CPU] || '');
       if (n.confidence === 'full') row[COL.CPU] = n.cpu;
       if (!row[COL.CPUSegment] && n.segment) row[COL.CPUSegment] = n.segment;
       row[COL.RAM] = K.ram(row[COL.RAM] || '') || row[COL.RAM];
       row[COL.SSD] = K.ssd(row[COL.SSD] || '') || row[COL.SSD];
       row[COL.GPU] = K.gpu(row[COL.GPU] || '') || row[COL.GPU];
-      const after = [row[COL.CPUSegment], row[COL.CPU], row[COL.RAM], row[COL.SSD], row[COL.GPU]].join('\u0000');
+      const after = [row[COL.SeriesGroup], row[COL.Segment], row[COL.CPUSegment], row[COL.CPU], row[COL.RAM], row[COL.SSD], row[COL.GPU]].join('\u0000');
       if (before !== after) normalized++;
     }
     outRows.push(row);
