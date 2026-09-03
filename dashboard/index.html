@@ -31,6 +31,7 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-se
 .badge.fpt{border-left:3px solid #a78bfa}
 .badge.cps{border-left:3px solid #34d399}
 .badge.pv{border-left:3px solid #fbbf24}
+.badge.apc{border-left:3px solid #2dd4bf}
 
 /* TABS */
 .tabs{background:var(--card);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto;gap:0}
@@ -502,7 +503,7 @@ tbody tr:hover{background:#fafafa}
 <div id="wfModal" class="hidden">
   <div class="wf-box">
     <h3>🔄 Trigger Scraper Run</h3>
-    <p>This will start a new scrape of <strong>MBW · FPT Retail · CellPhone S · Phong Vu</strong> and update the Google Sheet.<br><br>The runner <strong>BARACK</strong> must be online. Estimated time: ~5 minutes.</p>
+    <p>This will start a new scrape of <strong>MBW · FPT Retail · CellPhone S · Phong Vu · An Phat</strong> and update the Google Sheet.<br><br>The runner <strong>BARACK</strong> must be online. Estimated time: ~5 minutes.</p>
     <div id="wfResult"></div>
     <div class="wf-row">
       <button class="wf-btn-cancel" onclick="closeWfModal()">Cancel</button>
@@ -545,6 +546,7 @@ tbody tr:hover{background:#fafafa}
     <span class="badge fpt" id="bFPT">FPT –</span>
     <span class="badge cps" id="bCPS">CPS –</span>
     <span class="badge pv" id="bPV">PV –</span>
+    <span class="badge apc" id="bAPC">APC –</span>
     <button class="btn-refresh" id="btnRefresh" onclick="openWfModal()" title="Trigger scraper on GitHub Actions">
       <span class="spin-icon">🌐</span> Refresh from website
     </button>
@@ -801,6 +803,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
   document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
   document.getElementById('bPV').textContent = `PV ${stats.pv}`;
+  { const _b = document.getElementById('bAPC'); if (_b) _b.textContent = `APC ${stats.apc ?? '–'}`; }
   const _todayLbl = document.getElementById('todayLbl'); if(_todayLbl) _todayLbl.textContent = todayDate;
   const _prevLbl  = document.getElementById('prevLbl');  if(_prevLbl)  _prevLbl.textContent  = prevDate;
 
@@ -2167,6 +2170,7 @@ function buildDerivedData(rows) {
     fpt:    newAllToday.filter(p => p.dealer==='FPT Retail').length,
     cps:    newAllToday.filter(p => p.dealer==='CellPhone S').length,
     pv:     newAllToday.filter(p => p.dealer==='Phong Vu').length,
+    apc:    newAllToday.filter(p => p.dealer==='An Phat').length,
   };
 
   return { newToday, newPrev, newPrev2, newAllToday, newAllUnique, newDrops, newRises, newChanges, newStats, newLookup: lookup, newDates: [...dateSet].reverse() };
@@ -2207,6 +2211,12 @@ function rebuildDropdowns() {
   const cpuDl = document.getElementById('al_cpu_list');
   if(cpuDl) cpuDl.innerHTML = cpuVals.map(v=>`<option value="${v}">`).join('');
 
+  // Dealer: sinh TU DU LIEU chu khong cung trong HTML. Truoc day 2 dropdown
+  // dealer liet ke cung 4 dealer, nen An Phat khong xuat hien trong bo loc du
+  // da co 937 SP. Lam kieu nay thi dealer moi tu hien, khong phai sua HTML.
+  rebuildSel('d_dealer', [...new Set(changes.map(p=>p.dealer).filter(Boolean))].sort(), 'All Dealers');
+  rebuildSel('as_dealer', [...new Set(allToday.map(p=>p.dealer).filter(Boolean))].sort(), 'All Dealers');
+
   // drops tab — d_brand, d_series, d_gpu, d_cpu (all <select> + Tom Select)
   rebuildSel('d_brand', [...new Set(changes.map(p=>p.brand).filter(Boolean))].sort(), 'All Vendors');
   rebuildSel('d_series', [...new Set(changes.map(p=>p.segment).filter(Boolean))].sort(), 'All Series');
@@ -2239,6 +2249,7 @@ function applyNewData(derived, csv) {
   document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
   document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
   document.getElementById('bPV').textContent = `PV ${stats.pv}`;
+  { const _b = document.getElementById('bAPC'); if (_b) _b.textContent = `APC ${stats.apc ?? '–'}`; }
   const _todayLbl2 = document.getElementById('todayLbl'); if(_todayLbl2) _todayLbl2.textContent = todayDate;
   const _prevLbl2  = document.getElementById('prevLbl');  if(_prevLbl2)  _prevLbl2.textContent  = prevDate;
 
