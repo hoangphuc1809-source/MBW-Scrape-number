@@ -31,7 +31,7 @@ Lệch trong cùng dòng,Q94,94,CPU Segment,Không tìm thấy,"CPU là ""Snapdr
 Ánh xạ lệch,R103,103,CPU Orginal,Core 7 155H - Max Turbo: 4.8 GHz,"anh ghi ""Core Ultra 7 155H"" nhưng luật dẫn về ""Core 7 155H"""
 Ô rác,R104,104,CPU,Core Ultra 7 Đang cập nhật,không phải tên chip
 Ánh xạ hỏng,R104,104,CPU Orginal,Core Ultra 7 Đang cập nhật - Max Turbo: 5.2 GHz,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 7 Đang cập nhật"""
-Ánh xạ lệch,R105,105,CPU Orginal,AMD Ryzen 7530U - Max Turbo: 4.5 GHz,"anh ghi ""Ryzen 7 7530U"" nhưng luật dẫn về ""Ryzen 7 530U"""
+Ánh xạ hỏng,R105,105,CPU Orginal,AMD Ryzen 7530U - Max Turbo: 4.5 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 7 7530U"""
 Ô rác,R122,122,CPU,Core Ultra 5 Đang cập nhật,không phải tên chip
 Ánh xạ hỏng,R122,122,CPU Orginal,Core Ultra 5 Đang cập nhật,"luật không đọc được -> sẽ không dẫn về ""Core Ultra 5 Đang cập nhật"""
 Ô rác,N128,128,GPU,Graphics,không phải tên GPU
@@ -54,53 +54,78 @@ Lệch trong cùng dòng,Q218,218,CPU Segment,Ryzen AI 7,"CPU là ""Core 7 350""
 Ánh xạ lệch,R466,466,CPU Orginal,"Snapdragon X Plus X1P-42-100, 8C, Max Turbo up to 3.4GHz (single-core) / 3.2GHz (8-core), 30MB","anh ghi ""Snapdragon X Plus X1P-42-100, 8C"" nhưng luật dẫn về ""Snapdragon X Plus X1P-42-100"""
 Ánh xạ lệch,R525,525,CPU Orginal,"Intel Core Ultra 9 290HX Plus (1.8Ghz - 5.5Hz, 24 lõi - 24 luồng, Bộ nhớ đệm: 36MB)","anh ghi ""Core Ultra 9 290HX Plus"" nhưng luật dẫn về ""Core Ultra 9 290HX"""
 Ánh xạ hỏng,R529,529,CPU Orginal,AMD Ryzen Al 7 350 (8 x 2.00 GHz) - Max. Boost Clock: Up to 5.00 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 7 350"""
-Trùng lặp,,445,CPU,"""Snapdragon X X1-26-100"" (dòng 445)  vs  ""Snapdragon X X1 26 100"" (dòng 234)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,529,CPU,"""Ryzen AI 7 350"" (dòng 529)  vs  ""Ryzen 7 AI 350"" (dòng 156)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,247,CPU,"""Core i5 13500H"" (dòng 247)  vs  ""Core I5 13500H"" (dòng 167)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,23,CPU,"""Ryzen AI MAX+ 395"" (dòng 23)  vs  ""Ryzen AI Max+ 395"" (dòng 138)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,503,CPU,"""Ryzen 9 8940HX"" (dòng 503)  vs  ""Ryzen R9 8940HX"" (dòng 233)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,489,CPU,"""Ryzen AI 9 HX 370"" (dòng 489)  vs  ""Ryzen AI 9 370HX"" (dòng 142)  vs  ""Ryzen AI 9 HX370"" (dòng 220)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,538,CPU,"""Core i5 12500H"" (dòng 538)  vs  ""Core i5 12500H"" (dòng 168)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,30,CPU,"""Ryzen AI MAX+ 392"" (dòng 30)  vs  ""Ryzen AI Max+ 392"" (dòng 152)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,211,CPU,"""Core i5 1340P"" (dòng 211)  vs  ""Core i5 1340P"" (dòng 171)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,56,CPU,"""Ryzen 9 5900Hs"" (dòng 56)  vs  ""Ryzen 9 5900HS"" (dòng 224)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,191,CPU,"""Core i7 13700H"" (dòng 191)  vs  ""Core I7 13700H"" (dòng 172)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,236,CPU,"""Core i3 1305U"" (dòng 236)  vs  ""Core i3-1305U"" (dòng 203)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,165,CPU,"""Core i9 13900H"" (dòng 165)  vs  ""Core i9 13900H"" (dòng 143)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,237,CPU,"""Core i7 12650H"" (dòng 237)  vs  ""Core i7-12650H"" (dòng 225)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,317,CPU,"""Core Ultra 5 236V vPro"" (dòng 317)  vs  ""Core Ultra 5 236V"" (dòng 123)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,117,CPU,"""Ryzen R7 3700U"" (dòng 117)  vs  ""Ryzen 7 3700U"" (dòng 343)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,476,CPU,"""Ryzen 7 4700U"" (dòng 476)  vs  ""Ryzen 7-4700U"" (dòng 194)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,350,CPU,"""Core i7 12700H"" (dòng 350)  vs  ""Core i7-12700H"" (dòng 224)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,168,CPU,"""Snapdragon X2 Elite X2E-88-100"" (dòng 168)  vs  ""Snapdragon X2 Elite X2E 88 100"" (dòng 235)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,475,CPU,"""Core i5 1240P"" (dòng 475)  vs  ""Core I5 1240P"" (dòng 185)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,236,CPU,"""Snapdragon X Plus X1P 42 100"" (dòng 236)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (dòng 466)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,87,GPU,"""Qualcomm Adreno GPU"" (dòng 87)  vs  ""Qualcomm Adreno"" (dòng 179)  vs  ""Adreno"" (dòng 119)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,94,GPU,"""AMD Radeon Graphics"" (dòng 94)  vs  ""Radeon"" (dòng 5)  vs  ""AMD Radeon™ Graphics"" (dòng 48)  vs  ""AMD Radeon"" (dòng 80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (dòng 89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (dòng 95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (dòng 97)  vs  ""AMD Radeon™ RX 6700S"" (dòng 101)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,4,GPU,"""Intel Graphics"" (dòng 4)  vs  ""NVIDIA / Intel Graphics"" (dòng 74)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,4,GPU,"""Intel UHD"" (dòng 4)  vs  ""Intel UHD Graphics"" (dòng 182)  vs  ""Intel® UHD Graphics"" (dòng 90)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,180,GPU,"""Intel Arc Graphics"" (dòng 180)  vs  ""Intel® Arc Graphics"" (dòng 26)  vs  ""Intel® Arc™ Graphics"" (dòng 92)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,173,GPU,"""RTX 2050"" (dòng 173)  vs  ""NVIDIA GeForce RTX 2050 4 GB GDDR6"" (dòng 108)  vs  ""NVIDIA GeForce RTX 2050 4GB GDDR6"" (dòng 112)  vs  ""NVIDIA® GeForce RTX™ 2050 4GB GDDR6, Boost Clock 1575MHz, TGP 65W"" (dòng 113)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,29,GPU,"""Intel Iris Xe Graphics"" (dòng 29)  vs  ""Intel Iris Xe Graphics eligible"" (dòng 29)  vs  ""Intel Iris Xe"" (dòng 47)  vs  ""Intel Iris Xe Graphics"" (dòng 96)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,14,GPU,"""AMD Radeon 680M"" (dòng 14)  vs  ""AMD Radeon 680M Graphics"" (dòng 30)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,54,GPU,"""AMD Radeon 8060S"" (dòng 54)  vs  ""AMD Radeon 8060S Graphics"" (dòng 88)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,50,GPU,"""AMD Radeon 860M"" (dòng 50)  vs  ""AMD Radeon 860M Graphics"" (dòng 42)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,146,GPU,"""AMD Radeon 840M"" (dòng 146)  vs  ""AMD Radeon 840M Graphics"" (dòng 39)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,61,GPU,"""AMD Radeon 780M"" (dòng 61)  vs  ""AMD Radeon 780M Graphics"" (dòng 72)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,19,GPU,"""AMD Radeon 820M"" (dòng 19)  vs  ""AMD Radeon 820M Graphics"" (dòng 66)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,162,GPU,"""AMD Radeon 660M"" (dòng 162)  vs  ""AMD Radeon 660M Graphics"" (dòng 69)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,67,GPU,"""AMD Radeon 610M"" (dòng 67)  vs  ""AMD Radeon 610M Graphics"" (dòng 37)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,23,GPU,"""RTX 4080"" (dòng 23)  vs  ""NVIDIA GeForce RTX 4080"" (dòng 67)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,32,GPU,"""AMD Radeon 740M"" (dòng 32)  vs  ""AMD Radeon 740M Graphics"" (dòng 38)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,206,GPU,"""GTX 1650"" (dòng 206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (dòng 93)  vs  ""Geforce GTX 1650 4GB"" (dòng 91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (dòng 98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (dòng 99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (dòng 103)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,35,GPU,"""Intel Graphics HD 520"" (dòng 35)  vs  ""Intel HD Graphics 520"" (dòng 122)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,45,GPU,"""AMD Radeon 890M Graphics"" (dòng 45)  vs  ""AMD Radeon 890M"" (dòng 154)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,52,GPU,"""NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics"" (dòng 52)  vs  ""Nvidia GeForce MX570A 2GB / Intel Graphics"" (dòng 63)  vs  ""MX570A"" (dòng 115)  vs  ""MX 570A"" (dòng 129)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,57,GPU,"""AMD Radeon™ RX Vega 10 Graphics"" (dòng 57)  vs  ""AMD Radeon RX Vega 10"" (dòng 136)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,58,GPU,"""Nvidia GeForce GTX 960M"" (dòng 58)  vs  ""GTX 960M"" (dòng 140)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,59,GPU,"""NVIDIA GeForce GT 740M"" (dòng 59)  vs  ""GT 740M"" (dòng 141)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,61,GPU,"""NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics"" (dòng 61)  vs  ""NVIDIA® GeForce® MX550 2GB GDDR6"" (dòng 106)  vs  ""MX 550"" (dòng 143)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,62,GPU,"""AMD Radeon RX Graphics Vega 7"" (dòng 62)  vs  ""AMD Radeon™ Vega 7 Graphics"" (dòng 100)  vs  ""AMD Radeon Vega 7"" (dòng 144)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,76,GPU,"""RTX 4070"" (dòng 76)  vs  ""NVIDIA GeForce RTX 4070 (321 AI TOPs) 8GB GDDR6 AMD Radeon Graphics"" (dòng 104)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,181,GPU,"""GTX 1650Ti"" (dòng 181)  vs  ""NVIDIA GeForce GTX 1650 Ti (4GB of GDDR6 SDRAM, Bus Width : 128-bit) ; AMD Radeon Graphics"" (dòng 105)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
-Trùng lặp,,107,GPU,"""NVIDIA GeForce RTX 3050 Ti, 4GB GDDR6 Card tích hợp - AMD Radeon Graphics"" (dòng 107)  vs  ""RTX 3050 Ti"" (dòng 116)  vs  ""RTX 3050Ti"" (dòng 218)",cùng một thứ nhưng hai cách viết — phải bỏ bớt một
+Trùng lặp,G234,234,CPU,Snapdragon X X1 26 100,"trùng với ""Snapdragon X X1-26-100"" (R445)  vs  ""Snapdragon X X1 26 100"" (G234) — sửa thành ""Snapdragon X X1-26-100"""
+Trùng lặp,G156,156,CPU,Ryzen 7 AI 350,"trùng với ""Ryzen AI 7 350"" (R529)  vs  ""Ryzen 7 AI 350"" (G156) — sửa thành ""Ryzen AI 7 350"""
+Trùng lặp,G167,167,CPU,Core I5 13500H,"trùng với ""Core i5 13500H"" (R247)  vs  ""Core I5 13500H"" (G167) — sửa thành ""Core i5 13500H"""
+Trùng lặp,G23,23,CPU,Ryzen AI MAX+ 395,"trùng với ""Ryzen AI MAX+ 395"" (G23)  vs  ""Ryzen AI Max+ 395"" (R138) — sửa thành ""Ryzen AI Max+ 395"""
+Trùng lặp,G233,233,CPU,Ryzen R9 8940HX,"trùng với ""Ryzen 9 8940HX"" (R503)  vs  ""Ryzen R9 8940HX"" (G233) — sửa thành ""Ryzen 9 8940HX"""
+Trùng lặp,G142,142,CPU,Ryzen AI 9 370HX,"trùng với ""Ryzen AI 9 HX 370"" (R489)  vs  ""Ryzen AI 9 370HX"" (G142)  vs  ""Ryzen AI 9 HX370"" (G220) — sửa thành ""Ryzen AI 9 HX 370"""
+Trùng lặp,G220,220,CPU,Ryzen AI 9 HX370,"trùng với ""Ryzen AI 9 HX 370"" (R489)  vs  ""Ryzen AI 9 370HX"" (G142)  vs  ""Ryzen AI 9 HX370"" (G220) — sửa thành ""Ryzen AI 9 HX 370"""
+Trùng lặp,G168,168,CPU,Core i5 12500H,"trùng với ""Core i5 12500H"" (R538)  vs  ""Core i5 12500H"" (G168) — sửa thành ""Core i5 12500H"""
+Trùng lặp,G30,30,CPU,Ryzen AI MAX+ 392,"trùng với ""Ryzen AI MAX+ 392"" (G30)  vs  ""Ryzen AI Max+ 392"" (R152) — sửa thành ""Ryzen AI Max+ 392"""
+Trùng lặp,G171,171,CPU,Core i5 1340P,"trùng với ""Core i5 1340P"" (R211)  vs  ""Core i5 1340P"" (G171) — sửa thành ""Core i5 1340P"""
+Trùng lặp,G56,56,CPU,Ryzen 9 5900Hs,"trùng với ""Ryzen 9 5900Hs"" (G56)  vs  ""Ryzen 9 5900HS"" (R224) — sửa thành ""Ryzen 9 5900HS"""
+Trùng lặp,G172,172,CPU,Core I7 13700H,"trùng với ""Core i7 13700H"" (G191)  vs  ""Core I7 13700H"" (G172) — sửa thành ""Core i7 13700H"""
+Trùng lặp,G203,203,CPU,Core i3-1305U,"trùng với ""Core i3 1305U"" (R236)  vs  ""Core i3-1305U"" (G203) — sửa thành ""Core i3 1305U"""
+Trùng lặp,G143,143,CPU,Core i9 13900H,"trùng với ""Core i9 13900H"" (G165)  vs  ""Core i9 13900H"" (G143) — sửa thành ""Core i9 13900H"""
+Trùng lặp,G225,225,CPU,Core i7-12650H,"trùng với ""Core i7 12650H"" (R237)  vs  ""Core i7-12650H"" (G225) — sửa thành ""Core i7 12650H"""
+Trùng lặp,R317,317,CPU,Core Ultra 5 236V vPro,"trùng với ""Core Ultra 5 236V vPro"" (R317)  vs  ""Core Ultra 5 236V"" (G123) — sửa thành ""Core Ultra 5 236V"""
+Trùng lặp,G117,117,CPU,Ryzen R7 3700U,"trùng với ""Ryzen R7 3700U"" (G117)  vs  ""Ryzen 7 3700U"" (R343) — sửa thành ""Ryzen 7 3700U"""
+Trùng lặp,G194,194,CPU,Ryzen 7-4700U,"trùng với ""Ryzen 7 4700U"" (R476)  vs  ""Ryzen 7-4700U"" (G194) — sửa thành ""Ryzen 7 4700U"""
+Trùng lặp,G224,224,CPU,Core i7-12700H,"trùng với ""Core i7 12700H"" (R350)  vs  ""Core i7-12700H"" (G224) — sửa thành ""Core i7 12700H"""
+Trùng lặp,G235,235,CPU,Snapdragon X2 Elite X2E 88 100,"trùng với ""Snapdragon X2 Elite X2E-88-100"" (R168)  vs  ""Snapdragon X2 Elite X2E 88 100"" (G235) — sửa thành ""Snapdragon X2 Elite X2E-88-100"""
+Trùng lặp,G185,185,CPU,Core I5 1240P,"trùng với ""Core i5 1240P"" (R475)  vs  ""Core I5 1240P"" (G185) — sửa thành ""Core i5 1240P"""
+Trùng lặp,G236,236,CPU,Snapdragon X Plus X1P 42 100,"trùng với ""Snapdragon X Plus X1P 42 100"" (G236)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (R466) — sửa thành ""Snapdragon X Plus X1P-42-100"""
+Trùng lặp,R466,466,CPU,"Snapdragon X Plus X1P-42-100, 8C","trùng với ""Snapdragon X Plus X1P 42 100"" (G236)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (R466) — sửa thành ""Snapdragon X Plus X1P-42-100"""
+Trùng lặp,J87,87,GPU,Qualcomm Adreno GPU,"trùng với ""Qualcomm Adreno GPU"" (J87)  vs  ""Qualcomm Adreno"" (N179)  vs  ""Adreno"" (J119) — sửa thành ""Qualcomm Adreno"""
+Trùng lặp,J119,119,GPU,Adreno,"trùng với ""Qualcomm Adreno GPU"" (J87)  vs  ""Qualcomm Adreno"" (N179)  vs  ""Adreno"" (J119) — sửa thành ""Qualcomm Adreno"""
+Trùng lặp,J5,5,GPU,Radeon,"trùng với ""AMD Radeon Graphics"" (N94)  vs  ""Radeon"" (J5)  vs  ""AMD Radeon™ Graphics"" (J48)  vs  ""AMD Radeon"" (J80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (J89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (J95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (J97)  vs  ""AMD Radeon™ RX 6700S"" (J101) — sửa thành ""AMD Radeon Graphics"""
+Trùng lặp,J48,48,GPU,AMD Radeon™ Graphics,"trùng với ""AMD Radeon Graphics"" (N94)  vs  ""Radeon"" (J5)  vs  ""AMD Radeon™ Graphics"" (J48)  vs  ""AMD Radeon"" (J80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (J89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (J95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (J97)  vs  ""AMD Radeon™ RX 6700S"" (J101) — sửa thành ""AMD Radeon Graphics"""
+Trùng lặp,J80,80,GPU,AMD Radeon,"trùng với ""AMD Radeon Graphics"" (N94)  vs  ""Radeon"" (J5)  vs  ""AMD Radeon™ Graphics"" (J48)  vs  ""AMD Radeon"" (J80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (J89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (J95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (J97)  vs  ""AMD Radeon™ RX 6700S"" (J101) — sửa thành ""AMD Radeon Graphics"""
+Trùng lặp,J89,89,GPU,"AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)","trùng với ""AMD Radeon Graphics"" (N94)  vs  ""Radeon"" (J5)  vs  ""AMD Radeon™ Graphics"" (J48)  vs  ""AMD Radeon"" (J80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (J89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (J95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (J97)  vs  ""AMD Radeon™ RX 6700S"" (J101) — sửa thành ""AMD Radeon Graphics"""
+Trùng lặp,J95,95,GPU,AMD Radeon™ RX 7600S 8GB GDDR6,"trùng với ""AMD Radeon Graphics"" (N94)  vs  ""Radeon"" (J5)  vs  ""AMD Radeon™ Graphics"" (J48)  vs  ""AMD Radeon"" (J80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (J89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (J95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (J97)  vs  ""AMD Radeon™ RX 6700S"" (J101) — sửa thành ""AMD Radeon Graphics"""
+Trùng lặp,J97,97,GPU,AMD Radeon RX 6800S 8GB GDDR6,"trùng với ""AMD Radeon Graphics"" (N94)  vs  ""Radeon"" (J5)  vs  ""AMD Radeon™ Graphics"" (J48)  vs  ""AMD Radeon"" (J80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (J89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (J95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (J97)  vs  ""AMD Radeon™ RX 6700S"" (J101) — sửa thành ""AMD Radeon Graphics"""
+Trùng lặp,J101,101,GPU,AMD Radeon™ RX 6700S,"trùng với ""AMD Radeon Graphics"" (N94)  vs  ""Radeon"" (J5)  vs  ""AMD Radeon™ Graphics"" (J48)  vs  ""AMD Radeon"" (J80)  vs  ""AMD Radeon RX 7600S 8GB GDDR6, up to 95W(SmartShift)"" (J89)  vs  ""AMD Radeon™ RX 7600S 8GB GDDR6"" (J95)  vs  ""AMD Radeon RX 6800S 8GB GDDR6"" (J97)  vs  ""AMD Radeon™ RX 6700S"" (J101) — sửa thành ""AMD Radeon Graphics"""
+Trùng lặp,J74,74,GPU,NVIDIA / Intel Graphics,"trùng với ""Intel Graphics"" (N4)  vs  ""NVIDIA / Intel Graphics"" (J74) — sửa thành ""Intel Graphics"""
+Trùng lặp,J4,4,GPU,Intel UHD,"trùng với ""Intel UHD"" (J4)  vs  ""Intel UHD Graphics"" (N182)  vs  ""Intel® UHD Graphics"" (J90) — sửa thành ""Intel UHD Graphics"""
+Trùng lặp,J90,90,GPU,Intel® UHD Graphics,"trùng với ""Intel UHD"" (J4)  vs  ""Intel UHD Graphics"" (N182)  vs  ""Intel® UHD Graphics"" (J90) — sửa thành ""Intel UHD Graphics"""
+Trùng lặp,J26,26,GPU,Intel® Arc Graphics,"trùng với ""Intel Arc Graphics"" (N180)  vs  ""Intel® Arc Graphics"" (J26)  vs  ""Intel® Arc™ Graphics"" (J92) — sửa thành ""Intel Arc Graphics"""
+Trùng lặp,J92,92,GPU,Intel® Arc™ Graphics,"trùng với ""Intel Arc Graphics"" (N180)  vs  ""Intel® Arc Graphics"" (J26)  vs  ""Intel® Arc™ Graphics"" (J92) — sửa thành ""Intel Arc Graphics"""
+Trùng lặp,J108,108,GPU,NVIDIA GeForce RTX 2050 4 GB GDDR6,"trùng với ""RTX 2050"" (N173)  vs  ""NVIDIA GeForce RTX 2050 4 GB GDDR6"" (J108)  vs  ""NVIDIA GeForce RTX 2050 4GB GDDR6"" (J112)  vs  ""NVIDIA® GeForce RTX™ 2050 4GB GDDR6, Boost Clock 1575MHz, TGP 65W"" (J113) — sửa thành ""RTX 2050"""
+Trùng lặp,J112,112,GPU,NVIDIA GeForce RTX 2050 4GB GDDR6,"trùng với ""RTX 2050"" (N173)  vs  ""NVIDIA GeForce RTX 2050 4 GB GDDR6"" (J108)  vs  ""NVIDIA GeForce RTX 2050 4GB GDDR6"" (J112)  vs  ""NVIDIA® GeForce RTX™ 2050 4GB GDDR6, Boost Clock 1575MHz, TGP 65W"" (J113) — sửa thành ""RTX 2050"""
+Trùng lặp,J113,113,GPU,"NVIDIA® GeForce RTX™ 2050 4GB GDDR6, Boost Clock 1575MHz, TGP 65W","trùng với ""RTX 2050"" (N173)  vs  ""NVIDIA GeForce RTX 2050 4 GB GDDR6"" (J108)  vs  ""NVIDIA GeForce RTX 2050 4GB GDDR6"" (J112)  vs  ""NVIDIA® GeForce RTX™ 2050 4GB GDDR6, Boost Clock 1575MHz, TGP 65W"" (J113) — sửa thành ""RTX 2050"""
+Trùng lặp,J29,29,GPU,Intel Iris Xe Graphics eligible,"trùng với ""Intel Iris Xe Graphics"" (N29)  vs  ""Intel Iris Xe Graphics eligible"" (J29)  vs  ""Intel Iris Xe"" (J47)  vs  ""Intel Iris Xe Graphics"" (J96) — sửa thành ""Intel Iris Xe Graphics"""
+Trùng lặp,J47,47,GPU,Intel Iris Xe,"trùng với ""Intel Iris Xe Graphics"" (N29)  vs  ""Intel Iris Xe Graphics eligible"" (J29)  vs  ""Intel Iris Xe"" (J47)  vs  ""Intel Iris Xe Graphics"" (J96) — sửa thành ""Intel Iris Xe Graphics"""
+Trùng lặp,J96,96,GPU,Intel Iris Xe Graphics,"trùng với ""Intel Iris Xe Graphics"" (N29)  vs  ""Intel Iris Xe Graphics eligible"" (J29)  vs  ""Intel Iris Xe"" (J47)  vs  ""Intel Iris Xe Graphics"" (J96) — sửa thành ""Intel Iris Xe Graphics"""
+Trùng lặp,J30,30,GPU,AMD Radeon 680M Graphics,"trùng với ""AMD Radeon 680M"" (N14)  vs  ""AMD Radeon 680M Graphics"" (J30) — sửa thành ""AMD Radeon 680M"""
+Trùng lặp,J88,88,GPU,AMD Radeon 8060S Graphics,"trùng với ""AMD Radeon 8060S"" (N54)  vs  ""AMD Radeon 8060S Graphics"" (J88) — sửa thành ""AMD Radeon 8060S"""
+Trùng lặp,J42,42,GPU,AMD Radeon 860M Graphics,"trùng với ""AMD Radeon 860M"" (J50)  vs  ""AMD Radeon 860M Graphics"" (J42) — sửa thành ""AMD Radeon 860M"""
+Trùng lặp,J39,39,GPU,AMD Radeon 840M Graphics,"trùng với ""AMD Radeon 840M"" (N146)  vs  ""AMD Radeon 840M Graphics"" (J39) — sửa thành ""AMD Radeon 840M"""
+Trùng lặp,J72,72,GPU,AMD Radeon 780M Graphics,"trùng với ""AMD Radeon 780M"" (N61)  vs  ""AMD Radeon 780M Graphics"" (J72) — sửa thành ""AMD Radeon 780M"""
+Trùng lặp,J66,66,GPU,AMD Radeon 820M Graphics,"trùng với ""AMD Radeon 820M"" (N19)  vs  ""AMD Radeon 820M Graphics"" (J66) — sửa thành ""AMD Radeon 820M"""
+Trùng lặp,J69,69,GPU,AMD Radeon 660M Graphics,"trùng với ""AMD Radeon 660M"" (N162)  vs  ""AMD Radeon 660M Graphics"" (J69) — sửa thành ""AMD Radeon 660M"""
+Trùng lặp,J37,37,GPU,AMD Radeon 610M Graphics,"trùng với ""AMD Radeon 610M"" (J67)  vs  ""AMD Radeon 610M Graphics"" (J37) — sửa thành ""AMD Radeon 610M"""
+Trùng lặp,J23,23,GPU,RTX 4080,"trùng với ""RTX 4080"" (J23)  vs  ""NVIDIA GeForce RTX 4080"" (N67) — sửa thành ""RTX 4080"""
+Trùng lặp,N67,67,GPU,NVIDIA GeForce RTX 4080,"trùng với ""RTX 4080"" (J23)  vs  ""NVIDIA GeForce RTX 4080"" (N67) — sửa thành ""RTX 4080"""
+Trùng lặp,J38,38,GPU,AMD Radeon 740M Graphics,"trùng với ""AMD Radeon 740M"" (N32)  vs  ""AMD Radeon 740M Graphics"" (J38) — sửa thành ""AMD Radeon 740M"""
+Trùng lặp,J93,93,GPU,NVIDIA GeForce GTX 1650 4GB GDDR6,"trùng với ""GTX 1650"" (N206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (J93)  vs  ""Geforce GTX 1650 4GB"" (J91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (J98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (J99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (J103) — sửa thành ""GTX 1650"""
+Trùng lặp,J91,91,GPU,Geforce GTX 1650 4GB,"trùng với ""GTX 1650"" (N206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (J93)  vs  ""Geforce GTX 1650 4GB"" (J91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (J98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (J99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (J103) — sửa thành ""GTX 1650"""
+Trùng lặp,J98,98,GPU,"NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)","trùng với ""GTX 1650"" (N206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (J93)  vs  ""Geforce GTX 1650 4GB"" (J91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (J98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (J99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (J103) — sửa thành ""GTX 1650"""
+Trùng lặp,J99,99,GPU,"NVIDIA GeForce GTX 1650, 4GB GDDR6","trùng với ""GTX 1650"" (N206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (J93)  vs  ""Geforce GTX 1650 4GB"" (J91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (J98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (J99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (J103) — sửa thành ""GTX 1650"""
+Trùng lặp,J103,103,GPU,NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics,"trùng với ""GTX 1650"" (N206)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6"" (J93)  vs  ""Geforce GTX 1650 4GB"" (J91)  vs  ""NVIDIA GeForce® GTX 1650 4GB GDDR6 (Boost Clock: 1615MHz, 50W)"" (J98)  vs  ""NVIDIA GeForce GTX 1650, 4GB GDDR6"" (J99)  vs  ""NVIDIA GeForce GTX 1650 4GB GDDR6 + AMD Radeon™ Graphics"" (J103) — sửa thành ""GTX 1650"""
+Trùng lặp,J35,35,GPU,Intel Graphics HD 520,"trùng với ""Intel Graphics HD 520"" (J35)  vs  ""Intel HD Graphics 520"" (N122) — sửa thành ""Intel HD Graphics 520"""
+Trùng lặp,J45,45,GPU,AMD Radeon 890M Graphics,"trùng với ""AMD Radeon 890M Graphics"" (J45)  vs  ""AMD Radeon 890M"" (N154) — sửa thành ""AMD Radeon 890M"""
+Trùng lặp,J52,52,GPU,NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics,"trùng với ""NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics"" (J52)  vs  ""Nvidia GeForce MX570A 2GB / Intel Graphics"" (J63)  vs  ""MX570A"" (J115)  vs  ""MX 570A"" (N129) — sửa thành ""MX 570A"""
+Trùng lặp,J63,63,GPU,Nvidia GeForce MX570A 2GB / Intel Graphics,"trùng với ""NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics"" (J52)  vs  ""Nvidia GeForce MX570A 2GB / Intel Graphics"" (J63)  vs  ""MX570A"" (J115)  vs  ""MX 570A"" (N129) — sửa thành ""MX 570A"""
+Trùng lặp,J115,115,GPU,MX570A,"trùng với ""NVIDIA GeForce MX570A 2GB GDDR6 Intel Iris Xe Graphics"" (J52)  vs  ""Nvidia GeForce MX570A 2GB / Intel Graphics"" (J63)  vs  ""MX570A"" (J115)  vs  ""MX 570A"" (N129) — sửa thành ""MX 570A"""
+Trùng lặp,J57,57,GPU,AMD Radeon™ RX Vega 10 Graphics,"trùng với ""AMD Radeon™ RX Vega 10 Graphics"" (J57)  vs  ""AMD Radeon RX Vega 10"" (N136) — sửa thành ""AMD Radeon RX Vega 10"""
+Trùng lặp,J58,58,GPU,Nvidia GeForce GTX 960M,"trùng với ""Nvidia GeForce GTX 960M"" (J58)  vs  ""GTX 960M"" (N140) — sửa thành ""GTX 960M"""
+Trùng lặp,J59,59,GPU,NVIDIA GeForce GT 740M,"trùng với ""NVIDIA GeForce GT 740M"" (J59)  vs  ""GT 740M"" (N141) — sửa thành ""GT 740M"""
+Trùng lặp,J61,61,GPU,NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics,"trùng với ""NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics"" (J61)  vs  ""NVIDIA® GeForce® MX550 2GB GDDR6"" (J106)  vs  ""MX 550"" (N143) — sửa thành ""MX 550"""
+Trùng lặp,J106,106,GPU,NVIDIA® GeForce® MX550 2GB GDDR6,"trùng với ""NVIDIA GeForce MX550 2GB GDDR6 / Intel Iris Xe Graphics"" (J61)  vs  ""NVIDIA® GeForce® MX550 2GB GDDR6"" (J106)  vs  ""MX 550"" (N143) — sửa thành ""MX 550"""
+Trùng lặp,J62,62,GPU,AMD Radeon RX Graphics Vega 7,"trùng với ""AMD Radeon RX Graphics Vega 7"" (J62)  vs  ""AMD Radeon™ Vega 7 Graphics"" (J100)  vs  ""AMD Radeon Vega 7"" (N144) — sửa thành ""AMD Radeon Vega 7"""
+Trùng lặp,J100,100,GPU,AMD Radeon™ Vega 7 Graphics,"trùng với ""AMD Radeon RX Graphics Vega 7"" (J62)  vs  ""AMD Radeon™ Vega 7 Graphics"" (J100)  vs  ""AMD Radeon Vega 7"" (N144) — sửa thành ""AMD Radeon Vega 7"""
+Trùng lặp,J104,104,GPU,NVIDIA GeForce RTX 4070 (321 AI TOPs) 8GB GDDR6 AMD Radeon Graphics,"trùng với ""RTX 4070"" (J76)  vs  ""NVIDIA GeForce RTX 4070 (321 AI TOPs) 8GB GDDR6 AMD Radeon Graphics"" (J104) — sửa thành ""RTX 4070"""
+Trùng lặp,J105,105,GPU,"NVIDIA GeForce GTX 1650 Ti (4GB of GDDR6 SDRAM, Bus Width : 128-bit) ; AMD Radeon Graphics","trùng với ""GTX 1650Ti"" (N181)  vs  ""NVIDIA GeForce GTX 1650 Ti (4GB of GDDR6 SDRAM, Bus Width : 128-bit) ; AMD Radeon Graphics"" (J105) — sửa thành ""GTX 1650Ti"""
+Trùng lặp,J107,107,GPU,"NVIDIA GeForce RTX 3050 Ti, 4GB GDDR6 Card tích hợp - AMD Radeon Graphics","trùng với ""NVIDIA GeForce RTX 3050 Ti, 4GB GDDR6 Card tích hợp - AMD Radeon Graphics"" (J107)  vs  ""RTX 3050 Ti"" (J116)  vs  ""RTX 3050Ti"" (N218) — sửa thành ""RTX 3050Ti"""
+Trùng lặp,J116,116,GPU,RTX 3050 Ti,"trùng với ""NVIDIA GeForce RTX 3050 Ti, 4GB GDDR6 Card tích hợp - AMD Radeon Graphics"" (J107)  vs  ""RTX 3050 Ti"" (J116)  vs  ""RTX 3050Ti"" (N218) — sửa thành ""RTX 3050Ti"""
