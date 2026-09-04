@@ -69,7 +69,6 @@ Trùng lặp,R317,317,CPU,Core Ultra 5 236V vPro,"trùng với ""Core Ultra 5 23
 Trùng lặp,G117,117,CPU,Ryzen R7 3700U,"trùng với ""Ryzen R7 3700U"" (G117)  vs  ""Ryzen 7 3700U"" (R343) — sửa thành ""Ryzen 7 3700U"""
 Trùng lặp,G194,194,CPU,Ryzen 7-4700U,"trùng với ""Ryzen 7 4700U"" (R476)  vs  ""Ryzen 7-4700U"" (G194) — sửa thành ""Ryzen 7 4700U"""
 Trùng lặp,G235,235,CPU,Snapdragon X2 Elite X2E 88 100,"trùng với ""Snapdragon X2 Elite X2E-88-100"" (R168)  vs  ""Snapdragon X2 Elite X2E 88 100"" (G235) — sửa thành ""Snapdragon X2 Elite X2E-88-100"""
-Trùng lặp,G185,185,CPU,Core I5 1240P,"trùng với ""Core i5 1240P"" (R475)  vs  ""Core I5 1240P"" (G185) — sửa thành ""Core i5 1240P"""
 Trùng lặp,G236,236,CPU,Snapdragon X Plus X1P 42 100,"trùng với ""Snapdragon X Plus X1P 42 100"" (G236)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (R466) — sửa thành ""Snapdragon X Plus X1P-42-100"""
 Trùng lặp,R466,466,CPU,"Snapdragon X Plus X1P-42-100, 8C","trùng với ""Snapdragon X Plus X1P 42 100"" (G236)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (R466) — sửa thành ""Snapdragon X Plus X1P-42-100"""
 Trùng lặp,J87,87,GPU,Qualcomm Adreno GPU,"trùng với ""Qualcomm Adreno GPU"" (J87)  vs  ""Qualcomm Adreno"" (N179)  vs  ""Adreno"" (J119) — sửa thành ""Qualcomm Adreno"""
