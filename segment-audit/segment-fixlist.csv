@@ -1,15 +1,10 @@
 ﻿Ô,Dòng,Cột,Giá trị hiện tại,Sửa thành,Loại
-Q94,94,CPU Segment,Không tìm thấy,Snapdragon X,Lệch trong cùng dòng
-F148,148,CPU Segment,M5,Apple M5,Lệch trong cùng dòng
-Q218,218,CPU Segment,Ryzen AI 7,Core 7,Lệch trong cùng dòng
-G203,203,CPU,Core i3-1305U,Core i3 1305U,Trùng lặp
 G185,185,CPU,Core I5 1240P,Core i5 1240P,Trùng lặp
 G168,168,CPU,Core i5 12500H,Core i5 12500H,Trùng lặp
 G171,171,CPU,Core i5 1340P,Core i5 1340P,Trùng lặp
 G167,167,CPU,Core I5 13500H,Core i5 13500H,Trùng lặp
 G172,172,CPU,Core I7 13700H,Core i7 13700H,Trùng lặp
 G225,225,CPU,Core i7-12650H,Core i7 12650H,Trùng lặp
-G224,224,CPU,Core i7-12700H,Core i7 12700H,Trùng lặp
 G143,143,CPU,Core i9 13900H,Core i9 13900H,Trùng lặp
 R102,102,CPU,Core Ultra 5 125H,Core 5 125H,Ánh xạ lệch
 R317,317,CPU,Core Ultra 5 236V vPro,Core Ultra 5 236V,Ánh xạ lệch

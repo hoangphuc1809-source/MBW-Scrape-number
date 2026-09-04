@@ -24,7 +24,6 @@ Luật chưa nhận ra,J51,51,GPU,Intel UMA Graphics,dữ liệu scraper sẽ kh
 Ô rác,J77,77,GPU,#N/A,không phải tên GPU
 Ô rác,J82,82,GPU,Apple,không phải tên GPU
 Ô rác,J86,86,GPU,Intel,không phải tên GPU
-Lệch trong cùng dòng,Q94,94,CPU Segment,Không tìm thấy,"CPU là ""Snapdragon X Plus X1P-64-100"" -> segment phải là ""Snapdragon X"""
 Ô rác,R99,99,CPU,Ryzen 5 Đang cập nhật,không phải tên chip
 Ánh xạ hỏng,R99,99,CPU Orginal,Ryzen 5 Đang cập nhật - Max Turbo: 4.9 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen 5 Đang cập nhật"""
 Ánh xạ lệch,R102,102,CPU Orginal,Core 5 125H - Max Turbo: 4.5 GHz,"anh ghi ""Core Ultra 5 125H"" nhưng luật dẫn về ""Core 5 125H"""
@@ -39,14 +38,12 @@ Lệch trong cùng dòng,Q94,94,CPU Segment,Không tìm thấy,"CPU là ""Snapdr
 Ánh xạ lệch,N131,131,Card đồ họa,"NVIDIA GeForce RTX 3070 Ti, 8 GB GDDR6","anh ghi ""RTX 3070"" nhưng luật dẫn về ""RTX 3070Ti"""
 Ánh xạ lệch,N145,145,Card đồ họa,AMD Radeon 520,"anh ghi ""AMD Radeon 520, 2 GB"" nhưng luật dẫn về ""AMD Radeon 520"""
 Luật chưa nhận ra,G147,147,CPU,A18 Pro,dữ liệu scraper sẽ không khớp vào dòng này — em cần sửa luật
-Lệch trong cùng dòng,F148,148,CPU Segment,M5,"CPU là ""M5"" -> segment phải là ""Apple M5"""
 Ánh xạ lệch,N148,148,Card đồ họa,Intel Arc 130V GPU (8GB),"anh ghi ""Intel Arc Graphics"" nhưng luật dẫn về ""Intel Arc Graphics 130V"""
 Ánh xạ lệch,N152,152,Card đồ họa,Intel Arc 140V GPU (16GB),"anh ghi ""Intel Arc Graphics"" nhưng luật dẫn về ""Intel Arc Graphics 140V"""
 Ánh xạ lệch,N153,153,Card đồ họa,Intel Arc 140T GPU,"anh ghi ""Intel Arc Graphics"" nhưng luật dẫn về ""Intel Arc Graphics 140T"""
 Ánh xạ lệch,N155,155,Card đồ họa,Intel Arc 130T GPU,"anh ghi ""Intel Arc Graphics"" nhưng luật dẫn về ""Intel Arc Graphics 130T"""
 Ánh xạ lệch,N180,180,Card đồ họa,Intel Arc 130T tích hợp hoạt động như Intel Graphics,"anh ghi ""Intel Arc Graphics"" nhưng luật dẫn về ""Intel Arc Graphics 130T"""
 Ánh xạ hỏng,R197,197,CPU Orginal,8145U Intel Core i3,"luật không đọc được -> sẽ không dẫn về ""Core i3 8145U"""
-Lệch trong cùng dòng,Q218,218,CPU Segment,Ryzen AI 7,"CPU là ""Core 7 350"" -> segment phải là ""Core 7"""
 Ánh xạ lệch,R317,317,CPU Orginal,Intel Core Ultra 5 236V vPro,"anh ghi ""Core Ultra 5 236V vPro"" nhưng luật dẫn về ""Core Ultra 5 236V"""
 Ánh xạ hỏng,R360,360,CPU Orginal,Intel Core i5 Kabylake Refresh - 8250U,"luật không đọc được -> sẽ không dẫn về ""Core i5 8250U"""
 Ánh xạ hỏng,R396,396,CPU Orginal,AMD RyzenTM AI 7 PRO 360 (8 x 2.00 GHz) - Max. Boost Clock: Up to 5.00 GHz,"luật không đọc được -> sẽ không dẫn về ""Ryzen AI 7 PRO 360"""
@@ -66,13 +63,11 @@ Trùng lặp,G30,30,CPU,Ryzen AI MAX+ 392,"trùng với ""Ryzen AI MAX+ 392"" (G
 Trùng lặp,G171,171,CPU,Core i5 1340P,"trùng với ""Core i5 1340P"" (R211)  vs  ""Core i5 1340P"" (G171) — sửa thành ""Core i5 1340P"""
 Trùng lặp,G56,56,CPU,Ryzen 9 5900Hs,"trùng với ""Ryzen 9 5900Hs"" (G56)  vs  ""Ryzen 9 5900HS"" (R224) — sửa thành ""Ryzen 9 5900HS"""
 Trùng lặp,G172,172,CPU,Core I7 13700H,"trùng với ""Core i7 13700H"" (G191)  vs  ""Core I7 13700H"" (G172) — sửa thành ""Core i7 13700H"""
-Trùng lặp,G203,203,CPU,Core i3-1305U,"trùng với ""Core i3 1305U"" (R236)  vs  ""Core i3-1305U"" (G203) — sửa thành ""Core i3 1305U"""
 Trùng lặp,G143,143,CPU,Core i9 13900H,"trùng với ""Core i9 13900H"" (G165)  vs  ""Core i9 13900H"" (G143) — sửa thành ""Core i9 13900H"""
 Trùng lặp,G225,225,CPU,Core i7-12650H,"trùng với ""Core i7 12650H"" (R237)  vs  ""Core i7-12650H"" (G225) — sửa thành ""Core i7 12650H"""
 Trùng lặp,R317,317,CPU,Core Ultra 5 236V vPro,"trùng với ""Core Ultra 5 236V vPro"" (R317)  vs  ""Core Ultra 5 236V"" (G123) — sửa thành ""Core Ultra 5 236V"""
 Trùng lặp,G117,117,CPU,Ryzen R7 3700U,"trùng với ""Ryzen R7 3700U"" (G117)  vs  ""Ryzen 7 3700U"" (R343) — sửa thành ""Ryzen 7 3700U"""
 Trùng lặp,G194,194,CPU,Ryzen 7-4700U,"trùng với ""Ryzen 7 4700U"" (R476)  vs  ""Ryzen 7-4700U"" (G194) — sửa thành ""Ryzen 7 4700U"""
-Trùng lặp,G224,224,CPU,Core i7-12700H,"trùng với ""Core i7 12700H"" (R350)  vs  ""Core i7-12700H"" (G224) — sửa thành ""Core i7 12700H"""
 Trùng lặp,G235,235,CPU,Snapdragon X2 Elite X2E 88 100,"trùng với ""Snapdragon X2 Elite X2E-88-100"" (R168)  vs  ""Snapdragon X2 Elite X2E 88 100"" (G235) — sửa thành ""Snapdragon X2 Elite X2E-88-100"""
 Trùng lặp,G185,185,CPU,Core I5 1240P,"trùng với ""Core i5 1240P"" (R475)  vs  ""Core I5 1240P"" (G185) — sửa thành ""Core i5 1240P"""
 Trùng lặp,G236,236,CPU,Snapdragon X Plus X1P 42 100,"trùng với ""Snapdragon X Plus X1P 42 100"" (G236)  vs  ""Snapdragon X Plus X1P-42-100, 8C"" (R466) — sửa thành ""Snapdragon X Plus X1P-42-100"""
