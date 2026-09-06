@@ -1,6 +1,6 @@
 === Archive RAW DATA (cửa sổ trượt) — THỰC THI ===
 RAW DATA giữ 15 ngày, RAW DATA ARCHIVE giữ thêm 15 ngày (tổng 30 ngày). Cũ hơn 30 ngày → XOÁ VĨNH VIỄN.
-Tab "Daily SRP Tracking": grid rowCount=85626
+Tab "Daily SRP Tracking": grid rowCount=103376
 Tab "RAW DATA ARCHIVE": grid rowCount=20001
 
 Đang đọc RAW DATA...
@@ -20,9 +20,12 @@ Tab "RAW DATA ARCHIVE": grid rowCount=20001
    đọc Daily SRP Tracking 65002-70001: 5000 dòng thô
    đọc Daily SRP Tracking 70002-75001: 5000 dòng thô
    đọc Daily SRP Tracking 75002-80001: 5000 dòng thô
-   đọc Daily SRP Tracking 80002-85001: 625 dòng thô
-   đọc Daily SRP Tracking 85002-85626: 0 dòng thô
-→ 80625 dòng có dữ liệu thật trong RAW DATA
+   đọc Daily SRP Tracking 80002-85001: 5000 dòng thô
+   đọc Daily SRP Tracking 85002-90001: 5000 dòng thô
+   đọc Daily SRP Tracking 90002-95001: 5000 dòng thô
+   đọc Daily SRP Tracking 95002-100001: 3379 dòng thô
+   đọc Daily SRP Tracking 100002-103376: 0 dòng thô
+→ 98379 dòng có dữ liệu thật trong RAW DATA
 
 Đang đọc RAW DATA ARCHIVE...
    đọc RAW DATA ARCHIVE 2-5001: 5000 dòng thô
@@ -31,16 +34,16 @@ Tab "RAW DATA ARCHIVE": grid rowCount=20001
    đọc RAW DATA ARCHIVE 15002-20001: 5000 dòng thô
 → 20000 dòng có dữ liệu thật trong RAW DATA ARCHIVE
 
-Ngưỡng RAW DATA (giữ nếu Ngày >=): 15/8/2026
-Ngưỡng tổng (xoá vĩnh viễn nếu Ngày <): 31/7/2026
+Ngưỡng RAW DATA (giữ nếu Ngày >=): 22/8/2026
+Ngưỡng tổng (xoá vĩnh viễn nếu Ngày <): 7/8/2026
 
 === KẾT QUẢ ===
-RAW DATA (giữ 15 ngày): 26677 dòng
-RAW DATA ARCHIVE (giữ thêm 15 ngày): 26189 dòng
-XOÁ VĨNH VIỄN (cũ hơn 30 ngày): 47759 dòng
-Không parse được ngày (giữ lại trong RAW DATA để an toàn): 63
+RAW DATA (giữ 15 ngày): 32141 dòng
+RAW DATA ARCHIVE (giữ thêm 15 ngày): 35295 dòng
+XOÁ VĨNH VIỄN (cũ hơn 30 ngày): 50943 dòng
+Không parse được ngày (giữ lại trong RAW DATA để an toàn): 0
 
-Đang ghi lại RAW DATA ARCHIVE (26189 dòng)...
+Đang ghi lại RAW DATA ARCHIVE (35295 dòng)...
    ✓ Đã ghi RAW DATA ARCHIVE lô 0-5000
    ✓ Đã ghi RAW DATA ARCHIVE lô 5000-10000
    ✓ Đã ghi RAW DATA ARCHIVE lô 10000-15000
