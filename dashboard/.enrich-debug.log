@@ -1,14 +1,13 @@
-[2026-09-09T01:29:28.072Z] --- Bắt đầu enrich-and-export.js ---
-[2026-09-09T01:29:28.083Z] Đọc được 2787 SP từ 5 file artifact (scrape-artifacts)
-[2026-09-09T01:29:28.083Z] Đọc Part # (FORMULA render)...
-[2026-09-09T01:29:28.752Z]   10276 dòng
-[2026-09-09T01:29:28.752Z] Đọc Segment (FORMULA render)...
-[2026-09-09T01:29:28.880Z]   120 dòng
-[2026-09-09T01:29:28.880Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-09-09T01:29:28.919Z] Part# map: 4050 SKU
-[2026-09-09T01:29:28.919Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
-[2026-09-09T01:29:28.960Z] Tính xong 2644 dòng enriched (loại 143 SP EOL)
-[2026-09-09T01:29:29.946Z] data.csv cũ: 61594 dòng, giữ lại 61594 dòng (loại dòng 09/09/2026 nếu có, sẽ thêm bản mới)
-[2026-09-09T01:29:30.078Z] ✅ Không có giá bất thường (kiểm tra 2644 dòng vs trung vị 7 ngày)
-[2026-09-09T01:29:30.093Z] Cắt còn 35 ngày gần nhất (63129 dòng)
-[2026-09-09T01:29:30.700Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 63130 dòng (kể cả header), 21689 KB
+[2026-09-09T04:18:03.843Z] --- Bắt đầu enrich-and-export.js ---
+[2026-09-09T04:18:03.851Z] Đọc được 2812 SP từ 5 file artifact (scrape-artifacts)
+[2026-09-09T04:18:03.852Z] Đọc Part # (FORMULA render)...
+[2026-09-09T04:18:11.758Z]   10276 dòng
+[2026-09-09T04:18:11.758Z] Đọc Segment (FORMULA render)...
+[2026-09-09T04:18:12.060Z]   120 dòng
+[2026-09-09T04:18:12.060Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-09-09T04:18:12.088Z] Part# map: 4050 SKU
+[2026-09-09T04:18:12.088Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
+[2026-09-09T04:18:12.124Z] Tính xong 2671 dòng enriched (loại 141 SP EOL)
+[2026-09-09T04:18:12.884Z] data.csv cũ: 63129 dòng, giữ lại 60485 dòng (loại dòng 09/09/2026 nếu có, sẽ thêm bản mới)
+[2026-09-09T04:18:13.084Z] ✅ Không có giá bất thường (kiểm tra 2671 dòng vs trung vị 7 ngày)
+[2026-09-09T04:18:13.826Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 63157 dòng (kể cả header), 21696 KB
