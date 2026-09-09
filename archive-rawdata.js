@@ -67,7 +67,7 @@ async function readAllRows(sheets, tabName, totalRows, lastCol = 'S') {
   return out;
 }
 
-async function writeFullReplace(sheets, tabName, rows) {
+/* FIX 09/09/2026: RAW DATA ARCHIVE co grid rowCount co dinh (20001), gay loi exceeds grid limits khi can ghi nhieu hon - vi safety design chi dong RAW_DATA_TAB sau khi ARCHIVE xac nhan thanh cong, nen khi ARCHIVE ghi loi thi RAW DATA (Daily SRP Tracking) chua bao gio duoc rut gon, van con nguyen tu 22/07. Ham nay mo rong grid TRUOC KHI ghi, giong co che da dung trong multi_dealer_scraper.js. */ async function ensureGridRows(sheets, sheetId, neededRows, label) { const meta = await withRetry(() => sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID, fields: 'sheets(properties(sheetId,gridProperties))' }, { timeout: 60000 }), `Doc grid ${label}`); const sheetMeta = meta.data.sheets.find((s) => s.properties.sheetId === sheetId); const currentRows = sheetMeta.properties.gridProperties.rowCount; const needed = neededRows + 1; if (needed > currentRows) { const newRows = needed + 5000; console.log(`   Mo rong ${label} tu ${currentRows} den ${newRows} dong (can ${needed})`); await withRetry(() => sheets.spreadsheets.batchUpdate({ spreadsheetId: SPREADSHEET_ID, requestBody: { requests: [{ updateSheetProperties: { properties: { sheetId, gridProperties: { rowCount: newRows } }, fields: 'gridProperties.rowCount' } }] } }, { timeout: 60000 }), `Mo rong grid ${label}`); } } async function writeFullReplace(sheets, tabName, rows) {
   await withRetry(
     () => sheets.spreadsheets.values.clear({ spreadsheetId: SPREADSHEET_ID, range: `'${tabName}'!A2:S` }, { timeout: 60000 }),
     `Clear ${tabName}`
@@ -151,7 +151,7 @@ async function writeFullReplace(sheets, tabName, rows) {
   }
 
   console.log(`\nĐang ghi lại ${ARCHIVE_TAB} (${newArchive.length} dòng)...`);
-  await writeFullReplace(sheets, ARCHIVE_TAB, newArchive);
+  await ensureGridRows(sheets, archiveSheet.properties.sheetId, newArchive.length, ARCHIVE_TAB); await writeFullReplace(sheets, ARCHIVE_TAB, newArchive);
 
   const verifyArchive = await withRetry(
     () => sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `'${ARCHIVE_TAB}'!A2:A`, valueRenderOption: 'FORMULA' }, { timeout: 60000 }),
@@ -167,7 +167,7 @@ async function writeFullReplace(sheets, tabName, rows) {
   console.log('✅ Xác nhận RAW DATA ARCHIVE thành công.');
 
   console.log(`\nĐang ghi lại ${RAW_DATA_TAB} (${newRawData.length} dòng)...`);
-  await writeFullReplace(sheets, RAW_DATA_TAB, newRawData);
+  await ensureGridRows(sheets, rawSheet.properties.sheetId, newRawData.length, RAW_DATA_TAB); await writeFullReplace(sheets, RAW_DATA_TAB, newRawData);
 
   console.log(`\n✅ HOÀN TẤT. RAW DATA: ${newRawData.length} dòng. RAW DATA ARCHIVE: ${newArchive.length} dòng. Đã xoá vĩnh viễn ${toDelete} dòng cũ hơn ${TOTAL_KEEP_DAYS} ngày.`);
 })().catch((e) => {
