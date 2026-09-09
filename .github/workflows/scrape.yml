@@ -629,7 +629,7 @@ jobs:
     needs: [scrape-mbw, scrape-cps, scrape-pv, scrape-pv-api, scrape-fpt, scrape-fpt-online, scrape-pv-online, scrape-apc]
     if: ${{ always() && (inputs.run_scrape || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     permissions:
       contents: write
     steps:
@@ -660,7 +660,7 @@ jobs:
         run: set -o pipefail; npm start 2>&1 | tee combine-write-debug.log
 
       - name: Neu buoc tren that bai, luu log de chan doan
-        if: failure()
+        if: failure() || cancelled()
         run: |
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
