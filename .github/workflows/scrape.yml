@@ -679,6 +679,17 @@ jobs:
           COMBINE_INPUT_DIR: scrape-artifacts
         run: node enrich-and-export.js
 
+      # 10/09/2026: snapshot nhung trong index.html truoc day bake mot lan hoi
+      # 11/06/2026 roi khong bao gio doi - chi co 3 dealer, stats thieu pv/apc
+      # (badge in "undefined"), va hien gia thang 6 nhu the la gia hom nay.
+      # Buoc nay mo chinh trang bang Puppeteer de no tu dung du lieu tu data.csv
+      # roi ghi ket qua nguoc lai - khong viet lai logic bang Node nen khong lech
+      # pha khi frontend doi. Best-effort: loi thi bo qua, khong lam do job.
+      - name: Refresh snapshot du phong nhung trong dashboard/index.html
+        if: always()
+        continue-on-error: true
+        run: node refresh-embedded-snapshot.js
+
       - name: Commit + push data.csv / debug log nếu có thay đổi
         if: always()
         continue-on-error: true
@@ -688,6 +699,10 @@ jobs:
           ADDED=0
           if [ -f dashboard/data.csv ] && [ -n "$(git status --porcelain dashboard/data.csv)" ]; then
             git add dashboard/data.csv
+            ADDED=1
+          fi
+          if [ -f dashboard/index.html ] && [ -n "$(git status --porcelain dashboard/index.html)" ]; then
+            git add dashboard/index.html
             ADDED=1
           fi
           if [ -f dashboard/.enrich-debug.log ] && [ -n "$(git status --porcelain dashboard/.enrich-debug.log)" ]; then
