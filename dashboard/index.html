@@ -6,20 +6,21 @@
 <title>Laptop Price Monitor – VN Retail</title>
 <style>
 :root{
-  --bg:#f0f2f5;--card:#fff;--hdr:#0f1729;--accent:#2563eb;--accent2:#7c3aed;
-  --teal:#0d9488;
+  --bg:#F6F6F2;--card:#FFFFFF;--hdr:#151A21;--accent:#0E5A54;--accent2:#14706A;
+  --teal:#0E5A54;
+  --rule:#EDEEE9;--text3:#9AA1AA;
   /* PRICE LOGIC: drop = RED (bad for buyer = price went down is good, but Vietnamese retail context: 
      user requested drop=red, rise=green */
-  --drop:#dc2626;   /* red  = price drop */
-  --rise:#16a34a;   /* green = price rise */
-  --drop-bg:#fee2e2; --drop-light:#fef2f2;
-  --rise-bg:#dcfce7; --rise-light:#f0fdf4;
-  --orange:#ea580c;
-  --text:#111827;--text2:#6b7280;--border:#e5e7eb;--radius:10px;
-  --shadow:0 1px 4px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.04);
+  --drop:#A32218;   /* red  = price drop */
+  --rise:#0B6E3F;   /* green = price rise */
+  --drop-bg:#F7E7E5; --drop-light:#FCF5F4;
+  --rise-bg:#E2EFE8; --rise-light:#F4F9F6;
+  --orange:#B26B1E;
+  --text:#151A21;--text2:#6E7681;--border:#E2E3DD;--radius:10px;
+  --shadow:0 0 0 1px #E2E3DD;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text);font-size:14px}
+body{background:var(--bg);font-family:"Inter","SF Pro Text",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);font-size:14px}
 
 /* HEADER */
 .hdr{background:var(--hdr);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid rgba(255,255,255,.08)}
@@ -27,11 +28,11 @@ body{background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-se
 .hdr-left .meta{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
 .badges{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .badge{background:rgba(255,255,255,.1);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;white-space:nowrap}
-.badge.mbw{border-left:3px solid #60a5fa}
-.badge.fpt{border-left:3px solid #a78bfa}
-.badge.cps{border-left:3px solid #34d399}
-.badge.pv{border-left:3px solid #fbbf24}
-.badge.apc{border-left:3px solid #2dd4bf}
+.badge.mbw{border-left:3px solid #5E8CA8}
+.badge.fpt{border-left:3px solid #8A6A9C}
+.badge.cps{border-left:3px solid #6B7F5B}
+.badge.pv{border-left:3px solid #C08A2E}
+.badge.apc{border-left:3px solid #2F8A7E}
 
 /* TABS */
 .tabs{background:var(--card);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto;gap:0}
@@ -68,7 +69,7 @@ html, body { height:100%; }
 /* KPI ROW */
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:16px}
 .kpi{background:var(--card);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
-.kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);margin-bottom:4px}
+.kpi-lbl{font-size:11.5px;font-weight:500;color:var(--text2);margin-bottom:4px}
 .kpi-val{font-size:22px;font-weight:800}
 .kpi-sub{font-size:11px;color:var(--text2);margin-top:2px}
 
@@ -76,7 +77,7 @@ html, body { height:100%; }
 .filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
 .filter-bar select,.filter-bar input{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text);background:#fff;outline:none;transition:border .15s}
 .filter-bar select:focus,.filter-bar input:focus{border-color:var(--accent)}
-.filter-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.filter-lbl{font-size:11.5px;font-weight:500;color:var(--text2)}
 .filter-sep{width:1px;height:20px;background:var(--border)}
 
 /* SECTION TITLE */
@@ -112,10 +113,10 @@ html, body { height:100%; }
 /* RANKING TABLES */
 .rank-wrap{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
 .rank-hdr{color:#fff;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
-.rank-hdr.drop-hdr{background:linear-gradient(135deg,#b91c1c,#dc2626)}
-.rank-hdr.rise-hdr{background:linear-gradient(135deg,#14532d,#16a34a)}
-.rank-hdr.blue-hdr{background:linear-gradient(135deg,var(--accent),var(--accent2))}
-.rank-hdr.teal-hdr{background:linear-gradient(135deg,var(--teal),#0284c7)}
+.rank-hdr.drop-hdr{background:var(--drop)}
+.rank-hdr.rise-hdr{background:var(--rise)}
+.rank-hdr.blue-hdr{background:var(--accent)}
+.rank-hdr.teal-hdr{background:var(--accent2)}
 .rank-hdr h3{font-size:13px;font-weight:700}
 .rank-hdr small{font-size:11px;opacity:.75}
 .tbl-wrap{overflow-x:auto}
@@ -131,8 +132,8 @@ html, body { height:100%; }
    chặn sticky giống .tbl-wrap trước đó — bỏ luôn overflow ở đây cho All SKUs. */
 #allSkusContainer .rank-wrap{overflow:visible}
 table{width:100%;border-collapse:collapse}
-thead th{background:#f9fafb;padding:8px 11px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
-thead th:hover{background:#f0f2f5;color:var(--text)}
+thead th{background:var(--card);padding:9px 11px;font-size:11.5px;font-weight:550;color:var(--text2);text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{background:#FAFAF7;color:var(--text)}
 tbody td{padding:8px 11px;border-bottom:1px solid #f3f4f6;font-size:12px;vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover{background:#fafafa}
@@ -140,7 +141,7 @@ tbody tr:hover{background:#fafafa}
 .rn1{background:#fef9c3;color:#a16207}
 .rn2{background:#f1f5f9;color:#475569}
 .rn3{background:#fef3c7;color:#92400e}
-.rno{background:#f0f2f5;color:var(--text2)}
+.rno{background:#FAFAF7;color:var(--text2)}
 .mname{font-weight:600;line-height:1.3}
 .gtag{background:#e0e7ff;color:#3730a3;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;white-space:nowrap}
 .ctag{background:#ecfdf5;color:#065f46;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:700;white-space:nowrap}
@@ -181,19 +182,19 @@ tbody tr:hover{background:#fafafa}
 }
 
 /* ── LOGIN OVERLAY ── */
-#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#0f1729 0%,#1e2d4a 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+#loginOverlay{position:fixed;inset:0;background:var(--hdr);display:flex;align-items:center;justify-content:center;z-index:9999;}
 #loginOverlay.hidden{display:none}
 .login-box{background:#fff;border-radius:16px;padding:40px 36px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
 .login-logo{font-size:32px;text-align:center;margin-bottom:6px}
 .login-title{font-size:18px;font-weight:700;text-align:center;color:var(--hdr);margin-bottom:4px}
 .login-sub{font-size:12px;color:var(--text2);text-align:center;margin-bottom:24px}
-.login-box label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);display:block;margin-bottom:5px}
+.login-box label{font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px}
 .login-box input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);outline:none;transition:border .15s;box-sizing:border-box}
 .login-box input:focus{border-color:var(--accent)}
 .login-field{margin-bottom:16px}
 .login-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .15s}
 .login-btn:hover{opacity:.88}
-.login-err{color:#dc2626;font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+.login-err{color:var(--drop);font-size:12px;text-align:center;margin-top:10px;min-height:18px}
 
 /* ── REFRESH BUTTON ── */
 .btn-refresh{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
@@ -226,20 +227,20 @@ tbody tr:hover{background:#fafafa}
 .chgpwd-box{background:#fff;border-radius:12px;padding:28px 28px 22px;width:380px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
 .chgpwd-box h3{font-size:16px;font-weight:700;color:var(--hdr);margin-bottom:18px}
 .chgpwd-box .login-field{margin-bottom:13px}
-.chgpwd-box label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);display:block;margin-bottom:5px}
+.chgpwd-box label{font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px}
 .chgpwd-box input{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);outline:none;transition:border .15s;box-sizing:border-box}
 .chgpwd-box input:focus{border-color:var(--accent)}
 .chgpwd-row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
-.chgpwd-err{font-size:12px;color:#dc2626;min-height:16px;margin-top:4px}
-.chgpwd-ok{font-size:12px;color:#16a34a;min-height:16px;margin-top:4px;font-weight:600}
+.chgpwd-err{font-size:12px;color:var(--drop);min-height:16px;margin-top:4px}
+.chgpwd-ok{font-size:12px;color:var(--rise);min-height:16px;margin-top:4px;font-weight:600}
 .btn-chgpwd{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:5px 11px;border-radius:8px;font-size:11px;cursor:pointer;transition:all .15s}
 .btn-chgpwd:hover{color:#fff;background:rgba(255,255,255,.15)}
 
 
 /* ── ALL PRICES TABLE ── */
 #allPriceTable thead th{
-  background:#f0f2f5;padding:8px 10px;font-size:10px;font-weight:700;
-  text-transform:uppercase;letter-spacing:.5px;color:var(--text2);
+  background:#FAFAF7;padding:8px 10px;font-size:11.5px;font-weight:550;
+  color:var(--text2);
   text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;
   cursor:pointer;user-select:none;position:sticky;top:0;z-index:1;
 }
@@ -388,7 +389,7 @@ tbody tr:hover{background:#fafafa}
   border-radius: 8px; font-size: 12px; background: #f9fafb;
   box-sizing: border-box; outline: none;
 }
-#posSKUInput:focus, #miSKUInput:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+#posSKUInput:focus, #miSKUInput:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(14,90,84,.12); }
 .pp-combo::after {
   content: '▾'; position: absolute; right: 10px; top: 50%;
   transform: translateY(-50%); color: #9ca3af; font-size: 13px; pointer-events: none;
@@ -453,7 +454,7 @@ tbody tr:hover{background:#fafafa}
 .pp-bar-val   { font-size: 11px; color: #374151; white-space: nowrap; min-width: 130px; }
 
 /* section title */
-.pp-section-title { font-size: 13px; font-weight: 700; color: #374151; margin: 18px 0 8px; border-left: 3px solid #2563eb; padding-left: 9px; }
+.pp-section-title { font-size: 13px; font-weight: 700; color: #374151; margin: 18px 0 8px; border-left: 3px solid var(--accent); padding-left: 9px; }
 
 /* tables */
 .pp-equiv-wrapper, .pp-seg-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
@@ -473,6 +474,22 @@ tbody tr:hover{background:#fafafa}
 .pp-history-table thead { background: #f8fafc; }
 .pp-no-sel { text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 20px; }
 
+
+/* ===== Lop dong bo he thong thiet ke (them cuoi de ghi de an toan) ===== */
+body{-webkit-font-smoothing:antialiased;}
+table{font-variant-numeric:tabular-nums;}
+thead th{border-bottom:1px solid var(--text);color:var(--text2);}
+tbody td{border-bottom:1px solid var(--rule);}
+.kpi-val,.kpi-value{font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+
+table.sortable thead th{cursor:pointer;user-select:none;}
+table.sortable thead th:hover{color:var(--text);}
+table.sortable thead th::after{content:"";display:inline-block;width:9px;margin-left:4px;font-size:8px;color:var(--accent);}
+table.sortable thead th.sorted-asc::after{content:"\25b2";}
+table.sortable thead th.sorted-desc::after{content:"\25bc";}
+table.sortable thead th.sorted-asc,table.sortable thead th.sorted-desc{color:var(--accent);font-weight:650;}
 </style>
   <!-- Tom Select: searchable dropdowns -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
@@ -673,7 +690,7 @@ tbody tr:hover{background:#fafafa}
     </button>
   </div>
   <div id="allSkusContainer">
-    <table id="allSkusTable" style="width:100%;border-collapse:collapse;font-size:12px">
+    <table id="allSkusTable" class="sortable" style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr id="allSkusHead"></tr></thead>
       <tbody id="allSkusBody"></tbody>
     </table>
@@ -1423,7 +1440,7 @@ function renderAllSkus() {
         <small>All dealers · Price ${dateRange} · % change vs previous day${staleInView > 0 ? ` · <span style="color:#92400e">⚠ = giá ngày gần nhất, chưa có data hôm nay</span>` : ''}</small>
       </div>
       <div class="tbl-wrap">
-        <table id="allSkusTable" style="border-collapse:collapse;font-size:12px;width:100%">
+        <table id="allSkusTable" class="sortable" style="border-collapse:collapse;font-size:12px;width:100%">
           ${thead}
           <tbody>${rows}</tbody>
         </table>
@@ -1549,18 +1566,18 @@ function renderAlert() {
     }
 
     return `<div class="rank-wrap">
-      <div class="rank-hdr" style="background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 100%)">
+      <div class="rank-hdr" style="background:var(--hdr)">
         <h3>🎮 ${gpuName} — ${items.length} SKUs · ${dealers} Dealers</h3>
         <small>${todayDate} · ▼ % = drop today vs yesterday</small>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border)">
         <div style="border-right:1px solid var(--border)">
           <div style="background:#065f46;color:#fff;padding:7px 10px;font-size:11px;font-weight:700">💚 5 GIÁ THẤP NHẤT</div>
-          <table style="width:100%;border-collapse:collapse;font-size:12px"><tbody>${miniRows(cheapest)}</tbody></table>
+          <table class="sortable" style="width:100%;border-collapse:collapse;font-size:12px"><tbody>${miniRows(cheapest)}</tbody></table>
         </div>
         <div>
           <div style="background:#7f1d1d;color:#fff;padding:7px 10px;font-size:11px;font-weight:700">🔥 5 GIÁ CAO NHẤT</div>
-          <table style="width:100%;border-collapse:collapse;font-size:12px"><tbody>${miniRows(priciest)}</tbody></table>
+          <table class="sortable" style="width:100%;border-collapse:collapse;font-size:12px"><tbody>${miniRows(priciest)}</tbody></table>
         </div>
       </div>
     </div>`;
@@ -1916,8 +1933,8 @@ const BRAND_COLORS = {
   'ASUS':     '#0d9488', // Cyan/Teal
   'Lenovo':   '#f97316', // Cam
   'Acer':     '#84cc16', // Xanh lá nhạt (Olive/Lime)
-  'MSI':      '#dc2626', // Đỏ
-  'HP':       '#2563eb', // Xanh dương
+  'MSI':      '#A32218', // Đỏ
+  'HP':       '#3D6B8F', // Xanh dương
   'Gigabyte': '#9ca3af', // Xám nhạt
 };
 function brandColor(b) {
@@ -2833,7 +2850,7 @@ function ppSKUMap(groups){
 
 // Dealer display names
 const PP_DEALER_KEYS = ['MBW','FPT Retail','CellPhone S','Phong Vu'];
-const PP_DEALER_COLORS = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+const PP_DEALER_COLORS = {'MBW':'#3D6B8F','FPT Retail':'#B5763F','CellPhone S':'#6B7F5B','Phong Vu':'#C08A2E'};
 const PP_DEALER_SHORT = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
 // ── Main render ──────────────────────────────────────────────────
@@ -2908,12 +2925,12 @@ function renderPositioning(){
   <!-- 2-tab switcher: CPU match | Price Segment match -->
   <div style="display:flex;gap:0;margin-bottom:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;width:fit-content">
     <button onclick="ppSetCompTab('cpu')" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;
-      background:${_ppCompTab==='cpu'?'#2563eb':'#f8fafc'};color:${_ppCompTab==='cpu'?'#fff':'#64748b'};
+      background:${_ppCompTab==='cpu'?'#0E5A54':'#F0F1EC'};color:${_ppCompTab==='cpu'?'#fff':'var(--text2)'};
       border-right:1px solid #e2e8f0;transition:all 0.15s">
       🧠 Theo CPU
     </button>
     <button onclick="ppSetCompTab('price')" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;
-      background:${_ppCompTab==='price'?'#2563eb':'#f8fafc'};color:${_ppCompTab==='price'?'#fff':'#64748b'};
+      background:${_ppCompTab==='price'?'#0E5A54':'#F0F1EC'};color:${_ppCompTab==='price'?'#fff':'var(--text2)'};
       transition:all 0.15s">
       💰 Theo Price Segment
     </button>
@@ -2973,7 +2990,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
       const staleRowBg = p.isStale && !isSelected ? 'background:rgba(251,191,36,0.07)' : rowBg;
       rowIdx++;
 
-      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'}[p.dealer]||'#666';
+      const dlrColor = {'MBW':'#3D6B8F','FPT Retail':'#B5763F','CellPhone S':'#6B7F5B','Phong Vu':'#C08A2E'}[p.dealer]||'#666';
       const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'}[p.dealer]||p.dealer;
 
       const p0 = p.todayPrice  || 0;
@@ -3007,7 +3024,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
       rows += '<tr style="' + staleRowBg + '">'
         + '<td style="' + L + ';padding:5px 8px;vertical-align:top">'
           + '<div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word">'
-            + (isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : '')
+            + (isSelected ? '<span style="color:#0E5A54;font-weight:700">▶ </span>' : '')
             + p.model
           + '</div>'
           + '<span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:' + dlrColor + ';background:' + dlrColor + '18;padding:1px 6px;border-radius:4px;border:1px solid ' + dlrColor + '40">' + dlrShort + '</span>'
@@ -3022,7 +3039,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
         + mkPriceCell(p0, p1, isSelected)
         + '<td style="' + C + ';padding:5px 8px;vertical-align:top">' + soldFmt + '</td>'
         + '<td style="' + C + ';padding:5px 8px;vertical-align:top">'
-          + (p.link ? '<a href="' + p.link + '" target="_blank" style="font-size:11px;color:#2563eb">🔗</a>' : '—')
+          + (p.link ? '<a href="' + p.link + '" target="_blank" style="font-size:11px;color:#0E5A54">🔗</a>' : '—')
         + '</td>'
         + '</tr>';
     }
@@ -3038,7 +3055,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
       + ' · ' + peers.length + ' nhóm sản phẩm · ' + rowIdx + ' SKUs'
     + '</div>'
     + '<div style="overflow-x:auto">'
-    + '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    + '<table class="sortable" style="width:100%;border-collapse:collapse;font-size:12px">'
       + '<thead><tr>'
         + '<th style="' + thS + ';' + L + '">SKU</th>'
         + '<th style="' + thS + ';' + L + '">CPU</th>'
@@ -3047,7 +3064,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
         + '<th style="' + thS + ';' + L + '">GPU</th>'
         + '<th style="' + thS + ';' + C + '">' + d2 + '</th>'
         + '<th style="' + thS + ';' + C + '">' + d1 + '</th>'
-        + '<th style="' + thS + ';' + C + ';color:#2563eb">' + d0 + ' ↑</th>'
+        + '<th style="' + thS + ';' + C + ';color:#0E5A54">' + d0 + ' ↑</th>'
         + '<th style="' + thS + ';' + C + '">Sold</th>'
         + '<th style="' + thS + ';' + C + '">Link</th>'
       + '</tr></thead>'
@@ -3387,7 +3404,7 @@ function miRenderTrend(container) {
 
   const dayBtns = [7,14,30].map(d =>
     '<button onclick="miSetDays(' + d + ')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:none;cursor:pointer;'
-    + (d === _miTrendDays ? 'background:#2563eb;color:#fff' : 'background:#f1f5f9;color:#64748b') + '">'
+    + (d === _miTrendDays ? 'background:#0E5A54;color:#fff' : 'background:#F0F1EC;color:var(--text2)') + '">'
     + d + 'd</button>'
   ).join('');
 
@@ -3409,9 +3426,9 @@ function miRenderTrend(container) {
   const chartDates = [...csvDates].reverse().slice(-_miTrendDays);
 
   const DEALERS = [
-    {key:'MBW',        color:'#2563eb', label:'MBW'},
+    {key:'MBW',        color:'#3D6B8F', label:'MBW'},
     {key:'FPT Retail', color:'#f97316', label:'FPT'},
-    {key:'CellPhone S',color:'#16a34a', label:'CPS'},
+    {key:'CellPhone S',color:'#6B7F5B', label:'CPS'},
     {key:'Phong Vu',   color:'#f59e0b', label:'PV'},
   ];
   const normPN = s => (s||'').toLowerCase().replace(/[\s\-_]/g,'');
@@ -3476,7 +3493,7 @@ function miRenderWeekly(container) {
   // Week picker buttons
   const weekBtns = weeks.slice(0, Math.min(4, weeks.length)).map((w,i) =>
     '<button onclick="miSetWeek(' + i + ')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:none;cursor:pointer;'
-    + (i===wIdx ? 'background:#2563eb;color:#fff' : 'background:#f1f5f9;color:#64748b') + '">'
+    + (i===wIdx ? 'background:#0E5A54;color:#fff' : 'background:#F0F1EC;color:var(--text2)') + '">'
     + miWeekLabel(w) + '</button>'
   ).join('');
 
@@ -3527,7 +3544,7 @@ function miRenderWeekly(container) {
   const riseCount  = changes.filter(c=>c.pct>0).length;
   const avgDrop    = drops.length ? (drops.reduce((s,c)=>s+c.pct,0)/drops.length).toFixed(1) : 0;
 
-  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+  const dlrColor = {'MBW':'#3D6B8F','FPT Retail':'#B5763F','CellPhone S':'#6B7F5B','Phong Vu':'#C08A2E'};
   const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
   const mkRow = (c) => {
@@ -3591,7 +3608,7 @@ function miRenderStock(container) {
   // Slow: sold = 0 or '' + been in market (has prevPrice)
   // Promo opportunity: disc% > 10% but sold still low
 
-  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+  const dlrColor = {'MBW':'#3D6B8F','FPT Retail':'#B5763F','CellPhone S':'#6B7F5B','Phong Vu':'#C08A2E'};
   const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
   const parseSold = (s) => { const n = parseInt((s||'0').replace(/\D/g,'')); return isNaN(n)?0:n; };
@@ -3662,9 +3679,9 @@ function ppPriceHistory(group) {
   if (!days.length) return '';
 
   const DEALERS = [
-    { key: 'MBW',          color: '#2563eb', short: 'MBW' },
+    { key: 'MBW',          color: '#3D6B8F', short: 'MBW' },
     { key: 'FPT Retail',   color: '#f97316', short: 'FPT' },
-    { key: 'CellPhone S',  color: '#16a34a', short: 'CPS' },
+    { key: 'CellPhone S',  color: '#6B7F5B', short: 'CPS' },
     { key: 'Phong Vu',     color: '#f59e0b', short: 'PV' },
   ];
 
@@ -3799,9 +3816,9 @@ function ppDealerCard(dealer, products, diffPct){
 
 function ppPriceBar(mbw, fpt, cps){
   const prices = [
-    {d:'MBW', v:mbw, c:'#2563eb'},
+    {d:'MBW', v:mbw, c:'#3D6B8F'},
     {d:'FPT', v:fpt, c:'#f97316'},
-    {d:'CPS', v:cps, c:'#16a34a'}
+    {d:'CPS', v:cps, c:'#6B7F5B'}
   ].filter(x=>x.v);
   if(prices.length < 2) return '';
   const minV = Math.min(...prices.map(x=>x.v));
@@ -3915,7 +3932,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
         : rowIdx%2===0 ? '' : 'background:#fafafa';
       rowIdx++;
 
-      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'}[p.dealer]||'#666';
+      const dlrColor = {'MBW':'#3D6B8F','FPT Retail':'#B5763F','CellPhone S':'#6B7F5B','Phong Vu':'#C08A2E'}[p.dealer]||'#666';
       const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'}[p.dealer]||p.dealer;
 
       const priceFmt = (price, base) => {
@@ -3967,7 +3984,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
       rows += `<tr style="${staleRowBg}">
         <td style="text-align:left;padding:5px 8px;vertical-align:top">
           <div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word;text-align:left">
-            ${isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : ''}${p.model}
+            ${isSelected ? '<span style="color:#0E5A54;font-weight:700">▶ </span>' : ''}${p.model}
           </div>
           <span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:${dlrColor};background:${dlrColor}18;padding:1px 6px;border-radius:4px;border:1px solid ${dlrColor}40">${dlrShort}</span>
           ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px">⚠ ${p.latestDate}</span>` : ''}
@@ -3980,7 +3997,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
         ${mkPriceCell(p1, p2, false)}
         ${mkPriceCell(p0, p1, isSelected)}
         <td style="text-align:center;padding:5px 8px;vertical-align:top">${soldFmt}</td>
-        <td style="text-align:left;padding:5px 8px;vertical-align:top">${p.link?`<a href="${p.link}" target="_blank" style="color:#2563eb;font-size:11px">View ↗</a>`:'—'}</td>
+        <td style="text-align:left;padding:5px 8px;vertical-align:top">${p.link?`<a href="${p.link}" target="_blank" style="color:#0E5A54;font-size:11px">View ↗</a>`:'—'}</td>
       </tr>`;
     }
   }
@@ -3993,7 +4010,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
     <div style="padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:11px;color:#6b7280">
       ${isGaming ? '🎮 Gaming' : '💼 B&P'} · So sánh theo: <strong>${matchLabel}</strong> · ${peers.length} nhóm · ${peers.reduce((s,grp)=>s+grp.allProducts.length,0)} SKU
     </div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <table class="sortable" style="width:100%;border-collapse:collapse;font-size:12px">
       <thead><tr>
         <th style="${thS};text-align:left">SKU</th>
         <th style="${thS};text-align:left">CPU</th>
@@ -4002,7 +4019,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
         <th style="${thS};text-align:left">GPU</th>
         <th style="${thS};text-align:center">${(prev2Date||'—').slice(0,5)}</th>
         <th style="${thS};text-align:center">${(prevDate||'—').slice(0,5)}</th>
-        <th style="${thS};text-align:center;color:#2563eb">${(todayDate||'—').slice(0,5)} ↑</th>
+        <th style="${thS};text-align:center;color:#0E5A54">${(todayDate||'—').slice(0,5)} ↑</th>
         <th style="${thS};text-align:center">Sold</th>
         <th style="${thS};text-align:left">Link</th>
       </tr></thead>
@@ -4031,9 +4048,9 @@ function ppRenderSegSummary(groups){
   let t = `<div class="pp-seg-wrapper"><table class="pp-seg-table">
     <thead><tr>
       <th>Segment / Series</th>
-      <th style="color:#2563eb">MBW avg</th>
+      <th style="color:#3D6B8F">MBW avg</th>
       <th style="color:#f97316">FPT avg</th>
-      <th style="color:#16a34a">CPS avg</th>
+      <th style="color:#6B7F5B">CPS avg</th>
       <th>MBW vs FPT</th>
       <th>MBW vs CPS</th>
       <th>Rẻ nhất</th>
@@ -4047,7 +4064,7 @@ function ppRenderSegSummary(groups){
     const cpsA = ppAvgMinPrice(s.CPS);
     const fptIdx = ppPct(mbwA, fptA);
     const cpsIdx = ppPct(mbwA, cpsA);
-    const priceList = [{d:'MBW',v:mbwA,c:'#2563eb'},{d:'FPT',v:fptA,c:'#f97316'},{d:'CPS',v:cpsA,c:'#16a34a'}].filter(x=>x.v);
+    const priceList = [{d:'MBW',v:mbwA,c:'#3D6B8F'},{d:'FPT',v:fptA,c:'#B5763F'},{d:'CPS',v:cpsA,c:'#6B7F5B'}].filter(x=>x.v);
     const cheapest = priceList.length ? priceList.reduce((a,b)=>a.v<b.v?a:b) : null;
     // Count unique spec groups for this segment
     const groupCount = Object.values(groups).filter(g=>(g.segment||'(Khác)')===seg).length;
@@ -4190,9 +4207,9 @@ function ppRenderVendorFilter(groups) {
   const chips = vendors.map(v => {
     const id = 'pp_vendor_chk_' + btoa(unescape(encodeURIComponent(v))).replace(/=/g,'');
     const active = _ppVendorState.includes(v);
-    const color = active ? '#2563eb' : '#6b7280';
+    const color = active ? '#0E5A54' : 'var(--text2)';
     const bg    = active ? '#eff6ff' : '#f9fafb';
-    const border= active ? '#2563eb' : '#d1d5db';
+    const border= active ? '#0E5A54' : 'var(--border)';
     return `<label id="${id}" onclick="ppSetVendor('${v.replace(/'/g,"\'")}')" 
       style="cursor:pointer;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;
              color:${color};background:${bg};border:1px solid ${border};white-space:nowrap;user-select:none">
@@ -4263,4 +4280,65 @@ function ppComboHighlight(opts){
 }
 
 
+</script>
+
+<script>
+/* ===== Sap xep bang (opt-in qua class "sortable") =====
+   Khong gan dai tra len moi thead th: file co bang lich su gia va bang so sanh
+   spec, nhung bang do khong co ngu nghia sap xep. */
+(function(){
+  const state = {};
+  const keyOf = t => t.id || t.dataset.sortKey || '';
+  function val(td){
+    if (!td) return {n:null,s:''};
+    const s = td.textContent.replace(/[\u2191\u2193\u25b2\u25bc\u2013\u00b7]/g,'').trim();
+    const x = s.replace(/[,\s%\u20ab]/g,'').replace(/^\$/,'');
+    const n = (x===''||x==='-'||x==='\u2014') ? null : Number(x);
+    return {n:(n!==null && isFinite(n))?n:null, s:s.toLocaleUpperCase('vi')};
+  }
+  function sortIt(t, col, dir){
+    const tb = t.tBodies[0]; if (!tb || !t.tHead) return;
+    const rows = [...tb.rows].filter(r => r.cells.length > col);
+    if (rows.length < 2) return;
+    const sign = dir === 'asc' ? 1 : -1;
+    rows.sort((A,B)=>{
+      const a = val(A.cells[col]), b = val(B.cells[col]);
+      if (a.n!==null && b.n!==null) return (a.n-b.n)*sign;
+      if (a.n!==null) return -1;
+      if (b.n!==null) return 1;
+      return a.s.localeCompare(b.s,'vi')*sign;
+    });
+    const fr = document.createDocumentFragment();
+    rows.forEach(r=>fr.appendChild(r));
+    tb.appendChild(fr);
+    [...t.tHead.rows[0].cells].forEach((th,i)=>{
+      th.classList.toggle('sorted-asc',  i===col && dir==='asc');
+      th.classList.toggle('sorted-desc', i===col && dir==='desc');
+      if (i===col) th.setAttribute('aria-sort', dir==='asc'?'ascending':'descending');
+      else th.removeAttribute('aria-sort');
+    });
+  }
+  document.addEventListener('click', function(ev){
+    const th = ev.target.closest('table.sortable thead th');
+    if (!th) return;
+    const t = th.closest('table.sortable');
+    const col = [...th.parentElement.cells].indexOf(th);
+    const prev = state[keyOf(t)];
+    const dir = (prev && prev.col===col) ? (prev.dir==='asc'?'desc':'asc') : (col===0?'asc':'desc');
+    state[keyOf(t)] = {col, dir};
+    sortIt(t, col, dir);
+  });
+  // Bang duoc ve lai lien tuc khi doi tab/loc -> ap lai thu tu da chon.
+  // Debounce 60ms de khong chay lai giua chung mot lan render.
+  window.reapplySorts = function(){
+    document.querySelectorAll('table.sortable').forEach(t=>{
+      const st = state[keyOf(t)]; if (st) sortIt(t, st.col, st.dir);
+    });
+  };
+  let timer = null;
+  new MutationObserver(()=>{
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(window.reapplySorts, 60);
+  }).observe(document.body, {childList:true, subtree:true});
+})();
 </script>
