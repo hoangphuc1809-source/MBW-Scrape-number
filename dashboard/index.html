@@ -816,10 +816,10 @@ const isBP   = p => p.gamingGroup !== 'Gaming';
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('hdrMeta').textContent =
     `Today: ${todayDate}  ·  Compared to: ${prevDate}  ·  ${stats.totalToday} SKUs tracked`;
-  document.getElementById('bMBW').textContent = `MBW ${stats.mbw}`;
-  document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
-  document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
-  document.getElementById('bPV').textContent = `PV ${stats.pv}`;
+  document.getElementById('bMBW').textContent = `MBW ${stats.mbw ?? '-'}`;
+  document.getElementById('bFPT').textContent = `FPT ${stats.fpt ?? '-'}`;
+  document.getElementById('bCPS').textContent = `CPS ${stats.cps ?? '-'}`;
+  document.getElementById('bPV').textContent = `PV ${stats.pv ?? '-'}`;
   { const _b = document.getElementById('bAPC'); if (_b) _b.textContent = `APC ${stats.apc ?? '–'}`; }
   const _todayLbl = document.getElementById('todayLbl'); if(_todayLbl) _todayLbl.textContent = todayDate;
   const _prevLbl  = document.getElementById('prevLbl');  if(_prevLbl)  _prevLbl.textContent  = prevDate;
@@ -2262,10 +2262,10 @@ function applyNewData(derived, csv) {
   // Update header
   document.getElementById('hdrMeta').textContent =
     `Today: ${todayDate}  ·  Compared to: ${prevDate}  ·  ${stats.totalToday} SKUs tracked`;
-  document.getElementById('bMBW').textContent = `MBW ${stats.mbw}`;
-  document.getElementById('bFPT').textContent = `FPT ${stats.fpt}`;
-  document.getElementById('bCPS').textContent = `CPS ${stats.cps}`;
-  document.getElementById('bPV').textContent = `PV ${stats.pv}`;
+  document.getElementById('bMBW').textContent = `MBW ${stats.mbw ?? '-'}`;
+  document.getElementById('bFPT').textContent = `FPT ${stats.fpt ?? '-'}`;
+  document.getElementById('bCPS').textContent = `CPS ${stats.cps ?? '-'}`;
+  document.getElementById('bPV').textContent = `PV ${stats.pv ?? '-'}`;
   { const _b = document.getElementById('bAPC'); if (_b) _b.textContent = `APC ${stats.apc ?? '–'}`; }
   const _todayLbl2 = document.getElementById('todayLbl'); if(_todayLbl2) _todayLbl2.textContent = todayDate;
   const _prevLbl2  = document.getElementById('prevLbl');  if(_prevLbl2)  _prevLbl2.textContent  = prevDate;
