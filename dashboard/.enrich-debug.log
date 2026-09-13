@@ -1,14 +1,14 @@
-[2026-09-13T04:34:13.903Z] --- Bắt đầu enrich-and-export.js ---
-[2026-09-13T04:34:13.912Z] Đọc được 2801 SP từ 5 file artifact (scrape-artifacts)
-[2026-09-13T04:34:13.912Z] Đọc Part # (FORMULA render)...
-[2026-09-13T04:34:14.525Z]   10276 dòng
-[2026-09-13T04:34:14.525Z] Đọc Segment (FORMULA render)...
-[2026-09-13T04:34:14.792Z]   120 dòng
-[2026-09-13T04:34:14.792Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-09-13T04:34:14.818Z] Part# map: 4050 SKU
-[2026-09-13T04:34:14.818Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
-[2026-09-13T04:34:14.852Z] Tính xong 2661 dòng enriched (loại 140 SP EOL)
-[2026-09-13T04:34:15.804Z] data.csv cũ: 68312 dòng, giữ lại 65637 dòng (loại dòng 13/09/2026 nếu có, sẽ thêm bản mới)
-[2026-09-13T04:34:15.958Z]   ⚠ Giá bất thường: An Phat | Laptop Lenovo V15 G5 IRL 83HF00BTVA (Intel Core i7-1362 — 29.590.000đ vs trung vị 17.990.000đ (lệch 64%) → bỏ giá
-[2026-09-13T04:34:15.966Z] ⚠ Đã loại giá của 1 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
-[2026-09-13T04:34:16.711Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 68299 dòng (kể cả header), 23551 KB
+[2026-09-13T08:15:33.301Z] --- Bắt đầu enrich-and-export.js ---
+[2026-09-13T08:15:33.312Z] Đọc được 2815 SP từ 5 file artifact (scrape-artifacts)
+[2026-09-13T08:15:33.313Z] Đọc Part # (FORMULA render)...
+[2026-09-13T08:15:33.867Z]   10276 dòng
+[2026-09-13T08:15:33.868Z] Đọc Segment (FORMULA render)...
+[2026-09-13T08:15:33.979Z]   120 dòng
+[2026-09-13T08:15:33.979Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-09-13T08:15:34.019Z] Part# map: 4050 SKU
+[2026-09-13T08:15:34.019Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
+[2026-09-13T08:15:34.061Z] Tính xong 2677 dòng enriched (loại 138 SP EOL)
+[2026-09-13T08:15:35.279Z] data.csv cũ: 68298 dòng, giữ lại 65637 dòng (loại dòng 13/09/2026 nếu có, sẽ thêm bản mới)
+[2026-09-13T08:15:35.465Z]   ⚠ Giá bất thường: An Phat | Laptop Lenovo V15 G5 IRL 83HF00BTVA (Intel Core i7-1362 — 29.590.000đ vs trung vị 17.990.000đ (lệch 64%) → bỏ giá
+[2026-09-13T08:15:35.469Z] ⚠ Đã loại giá của 1 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
+[2026-09-13T08:15:36.239Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 68315 dòng (kể cả header), 23557 KB
