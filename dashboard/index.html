@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+/* Theme: Navy Gold (mac dinh) / Light - luu o localStorage lpd_theme */
+(function(){var t='navygold';try{t=localStorage.getItem('lpd_theme')||'navygold';}catch(e){}if(t!=='light'&&t!=='navygold')t='navygold';document.documentElement.setAttribute('data-theme',t);})();
+var TC_NAVY={"#ef4444":"#EE7F76","#10b981":"#6FCB9F","#16a34a":"#6FCB9F","#f59e0b":"#E9C46A","#f97316":"#F29A5C","#2563eb":"#7FA7F2","#0d9488":"#5FC3B8","#84cc16":"#A6D36A","#dc2626":"#F28C9A","#9ca3af":"#B8C4D3","#94a3b8":"#8A9DB6","#8b5cf6":"#B39CF5","#374151":"#C9D3DF","#222":"#F4EEDF","#666":"#A3B4CA","#fca5a5":"#F6A9A3","#f0f0f0":"#1C3553","ring":"#102540"};
+function TC(h){return document.documentElement.getAttribute('data-theme')==='navygold'?(TC_NAVY[h]||h):(h==='ring'?'white':h);}
+function toggleTheme(){var n=document.documentElement.getAttribute('data-theme')==='navygold'?'light':'navygold';try{localStorage.setItem('lpd_theme',n);}catch(e){}location.reload();}
+document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('btnTheme');if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='navygold'?'\u2600\uFE0F Light':'\uD83C\uDF19 Navy Gold';});
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0,user-scalable=yes"/>
 <title>Laptop Price Monitor – VN Retail</title>
@@ -473,6 +482,100 @@ tbody tr:hover{background:#fafafa}
 .pp-history-table thead { background: #f8fafc; }
 .pp-no-sel { text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 20px; }
 
+
+/* Theme tokens (light = mau goc) */
+:root{--on-accent:#fff;--bd-2563eb:#2563eb;--bd-334155:#334155;--bd-d1d5db:#d1d5db;--bd-e2e8f0:#e2e8f0;--bd-e5e7eb:#e5e7eb;--bd-f0f0f0:#f0f0f0;--bd-f3f4f6:#f3f4f6;--bd-fca5a5:#fca5a5;--bd-fcd34d:#fcd34d;--bg-065f46:#065f46;--bg-1e293b:#1e293b;--bg-1e3a5f:#1e3a5f;--bg-1e40af:#1e40af;--bg-2563eb:#2563eb;--bg-7f1d1d:#7f1d1d;--bg-dbeafe:#dbeafe;--bg-eff6ff:#eff6ff;--bg-f0fdf4:#f0fdf4;--bg-f1f5f9:#f1f5f9;--bg-f8fafc:#f8fafc;--bg-f9fafb:#f9fafb;--bg-fafafa:#fafafa;--bg-fee2e2:#fee2e2;--bg-fef08a:#fef08a;--bg-fef2f2:#fef2f2;--bg-fef3c7:#fef3c7;--bg-ffffff:#ffffff;--fg-10b981:#10b981;--fg-16a34a:#16a34a;--fg-1e293b:#1e293b;--fg-1e40af:#1e40af;--fg-222222:#222222;--fg-2563eb:#2563eb;--fg-374151:#374151;--fg-475569:#475569;--fg-64748b:#64748b;--fg-6b7280:#6b7280;--fg-92400e:#92400e;--fg-94a3b8:#94a3b8;--fg-9ca3af:#9ca3af;--fg-b91c1c:#b91c1c;--fg-d1d5db:#d1d5db;--fg-ef4444:#ef4444;--fg-f97316:#f97316;--fg-ffffff:#ffffff}
+</style>
+<style id="navygold-theme">
+[data-theme=navygold]{--on-accent:#0B1B2E;--bd-2563eb:#E3B955;--bd-334155:rgba(255,255,255,.14);--bd-d1d5db:rgba(163,180,202,.3);--bd-e2e8f0:rgba(227,185,85,.18);--bd-e5e7eb:rgba(227,185,85,.18);--bd-f0f0f0:rgba(163,180,202,.10);--bd-f3f4f6:rgba(163,180,202,.10);--bd-fca5a5:rgba(238,127,118,.4);--bd-fcd34d:rgba(227,185,85,.35);--bg-065f46:#15463A;--bg-1e293b:#07121F;--bg-1e3a5f:#0E2238;--bg-1e40af:#0E2238;--bg-2563eb:#E3B955;--bg-7f1d1d:#5A2530;--bg-dbeafe:rgba(227,185,85,.16);--bg-eff6ff:rgba(227,185,85,.12);--bg-f0fdf4:rgba(111,203,159,.10);--bg-f1f5f9:#1A3352;--bg-f8fafc:#0E2238;--bg-f9fafb:#0E2238;--bg-fafafa:rgba(255,255,255,.025);--bg-fee2e2:rgba(238,127,118,.18);--bg-fef08a:rgba(227,185,85,.35);--bg-fef2f2:rgba(238,127,118,.10);--bg-fef3c7:rgba(227,185,85,.14);--bg-ffffff:#102540;--fg-10b981:#6FCB9F;--fg-16a34a:#6FCB9F;--fg-1e293b:#F4EEDF;--fg-1e40af:#F1D38B;--fg-222222:#F4EEDF;--fg-2563eb:#E3B955;--fg-374151:#C9D3DF;--fg-475569:#C9D3DF;--fg-64748b:#A3B4CA;--fg-6b7280:#A3B4CA;--fg-92400e:#F1D38B;--fg-94a3b8:#8A9DB6;--fg-9ca3af:#7F93AD;--fg-b91c1c:#EE7F76;--fg-d1d5db:#4F6581;--fg-ef4444:#EE7F76;--fg-f97316:#F29A5C;--fg-ffffff:#ffffff}
+/* Navy Gold v1: vang cho khung/brand; du lieu gia giu do = giam, xanh = tang */
+[data-theme=navygold]{--bg:#0B1B2E;--card:#102540;--hdr:#07121F;--accent:#E3B955;--accent2:#C99A3B;--gold-soft:#F1D38B;--teal:#5FC3B8;
+--drop:#EE7F76;--rise:#6FCB9F;--drop-bg:rgba(238,127,118,.22);--drop-light:rgba(238,127,118,.07);
+--rise-bg:rgba(111,203,159,.22);--rise-light:rgba(111,203,159,.07);--orange:#E8935A;
+--text:#F4EEDF;--text2:#A3B4CA;--border:rgba(227,185,85,.18);--row:rgba(163,180,202,.10);--track:#1A3352;--shadow:none;color-scheme:dark}
+[data-theme=navygold] body{font-family:'Be Vietnam Pro',system-ui,'Segoe UI',sans-serif;background:radial-gradient(ellipse 90% 360px at 50% 0,rgba(140,170,210,.12),transparent 75%) no-repeat,var(--bg)}
+[data-theme=navygold] ::selection{background:rgba(227,185,85,.35)}
+[data-theme=navygold] .hdr{border-bottom:1px solid var(--border)}
+[data-theme=navygold] .hdr-left h1{color:var(--gold-soft);font-weight:600;letter-spacing:-.01em}
+[data-theme=navygold] .badge{background:rgba(255,255,255,.05);color:var(--text)}
+[data-theme=navygold] .btn-refresh{background:transparent;border-color:rgba(227,185,85,.35);color:var(--text)}
+[data-theme=navygold] .btn-refresh:hover{background:rgba(227,185,85,.12)}
+[data-theme=navygold] .tabs{background:var(--hdr);border-bottom:1px solid var(--border)}
+[data-theme=navygold] .tab{color:var(--text2)}
+[data-theme=navygold] .tab.active{color:var(--accent);border-color:var(--accent)}
+[data-theme=navygold] .kpi,[data-theme=navygold] .filter-bar,[data-theme=navygold] .rank-wrap,[data-theme=navygold] .ac{border:1px solid var(--border)}
+[data-theme=navygold] .kpi{background:linear-gradient(180deg,rgba(227,185,85,.05),rgba(227,185,85,0) 60%),var(--card)}
+[data-theme=navygold] .kpi-lbl{color:var(--accent);opacity:.85}
+[data-theme=navygold] .filter-bar{background:var(--card)}
+[data-theme=navygold] .filter-bar select,[data-theme=navygold] .filter-bar input{background:var(--bg);color:var(--text);border-color:var(--border)}
+[data-theme=navygold] .filter-lbl{color:var(--accent)}
+[data-theme=navygold] .cnt{color:#0B1B2E}
+[data-theme=navygold] .ac.bigdrop{background:rgba(232,147,90,.08)}
+[data-theme=navygold] .ac:hover{box-shadow:0 0 0 1px rgba(227,185,85,.4)}
+[data-theme=navygold] .ts-control,[data-theme=navygold] .ts-wrapper.single.input-active .ts-control{background:var(--bg)!important;border-color:var(--border)!important;color:var(--text)!important;box-shadow:none}
+[data-theme=navygold] .ts-control input{color:var(--text)!important}
+[data-theme=navygold] .ts-control input::placeholder{color:var(--text2)}
+[data-theme=navygold] .ts-dropdown{background:var(--card);color:var(--text);border-color:var(--border)}
+[data-theme=navygold] .ts-dropdown .active{background:rgba(227,185,85,.14);color:var(--gold-soft)}
+[data-theme=navygold] .ts-wrapper.multi .ts-control>div{background:rgba(227,185,85,.16);color:var(--gold-soft);border-color:transparent}
+[data-theme=navygold] .rank-hdr{background:#0E2238!important;color:var(--text);border-bottom:1px solid var(--border);border-left:4px solid var(--accent)}
+[data-theme=navygold] .rank-hdr.drop-hdr{border-left-color:var(--drop)}
+[data-theme=navygold] .rank-hdr.drop-hdr h3{color:var(--drop)}
+[data-theme=navygold] .rank-hdr.rise-hdr{border-left-color:var(--rise)}
+[data-theme=navygold] .rank-hdr.rise-hdr h3{color:var(--rise)}
+[data-theme=navygold] .rank-hdr.blue-hdr h3{color:var(--accent)}
+[data-theme=navygold] .rank-hdr.teal-hdr{border-left-color:var(--teal)}
+[data-theme=navygold] .rank-hdr.teal-hdr h3{color:var(--teal)}
+[data-theme=navygold] .rank-hdr small{color:var(--text2);opacity:1}
+[data-theme=navygold] #allSkusContainer .rank-hdr{border-left-color:var(--accent)}
+[data-theme=navygold] #allSkusContainer .rank-hdr h3{color:var(--gold-soft)}
+[data-theme=navygold] thead th,[data-theme=navygold] #allPriceTable thead th,[data-theme=navygold] .pp-equiv-table th,[data-theme=navygold] .pp-seg-table th,[data-theme=navygold] .pp-history-table thead{background:#0E2238!important;color:var(--text2);border-bottom:1px solid var(--border)}
+[data-theme=navygold] thead th:hover,[data-theme=navygold] #allPriceTable thead th:hover{background:#15304F!important;color:var(--gold-soft)}
+[data-theme=navygold] tbody td,[data-theme=navygold] #allPriceTable tbody td,[data-theme=navygold] .pp-equiv-table td,[data-theme=navygold] .pp-seg-table td{border-bottom:1px solid var(--row)!important}
+[data-theme=navygold] tbody tr:hover,[data-theme=navygold] #allPriceTable tbody tr:hover,[data-theme=navygold] .pp-equiv-table tr:hover td{background:rgba(227,185,85,.05)!important}
+[data-theme=navygold] .pp-row-sel td{background:rgba(227,185,85,.10)!important}
+[data-theme=navygold] .td-na{color:#4F6581}
+[data-theme=navygold] .ptag,[data-theme=navygold] .lnk{color:var(--accent)}
+[data-theme=navygold] .rn1{background:rgba(227,185,85,.22);color:var(--gold-soft)}
+[data-theme=navygold] .rn2{background:rgba(163,180,202,.18);color:#D3DDE9}
+[data-theme=navygold] .rn3{background:rgba(232,147,90,.2);color:#F2B48A}
+[data-theme=navygold] .rno{background:var(--track);color:var(--text2)}
+[data-theme=navygold] .gtag{background:rgba(143,160,240,.16);color:#B9C4FA}
+[data-theme=navygold] .ctag{background:rgba(111,203,159,.14);color:#9EDDBE}
+[data-theme=navygold] .td-seg-g{background:rgba(227,185,85,.16);color:var(--gold-soft)}
+[data-theme=navygold] .td-seg-b{background:rgba(120,170,240,.16);color:#A9C8F5}
+[data-theme=navygold] .dlr-mbw{background:rgba(250,220,90,.18);color:#F7DE7A}
+[data-theme=navygold] .dlr-fpt{background:rgba(96,140,240,.22);color:#AFC6FA}
+[data-theme=navygold] .dlr-cps{background:rgba(238,90,90,.22);color:#F6A9A3}
+[data-theme=navygold] .dlr-pv{background:rgba(240,160,90,.2);color:#F4BE8E}
+[data-theme=navygold] .dlr-apc{background:rgba(60,190,170,.2);color:#8FDCCF}
+[data-theme=navygold] .dlr-key{background:rgba(170,130,240,.22);color:#CDB6F7}
+[data-theme=navygold] #posSearchBar{background:var(--card)!important;border-bottom:1px solid var(--border)}
+[data-theme=navygold] #posSearchBar label,[data-theme=navygold] .pp-section-title,[data-theme=navygold] .pp-sku-name{color:var(--text)}
+[data-theme=navygold] .pp-section-title{border-left-color:var(--accent)}
+[data-theme=navygold] #posSKUInput,[data-theme=navygold] #miSKUInput{background:var(--bg);border-color:var(--border);color:var(--text)}
+[data-theme=navygold] #posSKUInput:focus,[data-theme=navygold] #miSKUInput:focus{border-color:var(--accent);background:var(--bg);box-shadow:0 0 0 3px rgba(227,185,85,.15)}
+[data-theme=navygold] .pp-combo-dropdown{background:var(--card);border-color:var(--border)}
+[data-theme=navygold] .pp-combo-opt{color:var(--text);border-bottom-color:var(--row)}
+[data-theme=navygold] .pp-combo-opt:hover,[data-theme=navygold] .pp-combo-opt.pp-combo-active,[data-theme=navygold] .pp-combo-opt.pp-combo-selected{background:rgba(227,185,85,.12);color:var(--gold-soft)}
+[data-theme=navygold] .pp-sku-card,[data-theme=navygold] .pp-dealer-card{background:var(--card);border-color:var(--border);box-shadow:none}
+[data-theme=navygold] .pp-dealer-price,[data-theme=navygold] .pp-price{color:var(--text)}
+[data-theme=navygold] .pp-equiv-wrapper,[data-theme=navygold] .pp-seg-wrapper,[data-theme=navygold] .pp-history-wrap{border-color:var(--border)}
+[data-theme=navygold] .pp-equiv-table,[data-theme=navygold] .pp-seg-table{background:var(--card)}
+[data-theme=navygold] .pp-tag{background:rgba(227,185,85,.14);color:var(--gold-soft)}
+[data-theme=navygold] .pp-cheaper{background:var(--rise-bg);color:var(--rise)}
+[data-theme=navygold] .pp-pricier{background:var(--drop-bg);color:var(--drop)}
+[data-theme=navygold] .pp-same{background:var(--track);color:var(--text2)}
+[data-theme=navygold] .pp-bar-track{background:var(--track)}
+[data-theme=navygold] .pp-bar-val{color:var(--text2)}
+[data-theme=navygold] .pp-clear-btn{background:var(--bg);border-color:var(--border);color:var(--text2)}
+[data-theme=navygold] #loginOverlay{background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(140,170,210,.14),transparent 70%),#07121F}
+[data-theme=navygold] .login-box,[data-theme=navygold] .wf-box,[data-theme=navygold] .chgpwd-box{background:var(--card);border:1px solid var(--border)}
+[data-theme=navygold] .login-title,[data-theme=navygold] .wf-box h3,[data-theme=navygold] .chgpwd-box h3{color:var(--gold-soft)}
+[data-theme=navygold] .login-box input,[data-theme=navygold] .chgpwd-box input{background:var(--bg);border-color:var(--border);color:var(--text)}
+[data-theme=navygold] .login-box label{color:var(--accent)}
+[data-theme=navygold] .login-btn,[data-theme=navygold] .wf-btn-run{color:#0B1B2E}
+[data-theme=navygold] .wf-btn-cancel{background:transparent;color:var(--text)}
 </style>
   <!-- Tom Select: searchable dropdowns -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
@@ -558,6 +661,7 @@ tbody tr:hover{background:#fafafa}
     <a href="https://docs.google.com/spreadsheets/d/1VQAHqU3FaVfEOzVmp9nqLlkVokN0s9JkkJwLDscvr6w/edit?usp=drivesdk" target="_blank" class="btn-refresh" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px" title="Open Google Sheet">
       📊 Google Sheet
     </a>
+    <button class="btn-chgpwd" id="btnTheme" onclick="toggleTheme()" title="Switch theme">Theme</button>
     <button class="btn-chgpwd" onclick="openChgPwd()" title="Change password">🔑 Password</button>
     <button class="btn-logout" onclick="doLogout()">⎋ Logout</button>
   </div>
@@ -615,7 +719,7 @@ tbody tr:hover{background:#fafafa}
     <div class="filter-sep"></div>
     <span id="d_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
     <button onclick="resetDropFilters()"
-      style="padding:6px 12px;background:#fff;border:1.5px solid var(--border);border-radius:7px;
+      style="padding:6px 12px;background:var(--bg-ffffff);border:1.5px solid var(--border);border-radius:7px;
              font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;white-space:nowrap;
              transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
@@ -665,7 +769,7 @@ tbody tr:hover{background:#fafafa}
     <div class="filter-sep"></div>
     <span id="as_count" style="font-size:12px;color:var(--text2);white-space:nowrap"></span>
     <button onclick="resetAllSkusFilters()"
-      style="padding:6px 12px;background:#fff;border:1.5px solid var(--border);border-radius:7px;
+      style="padding:6px 12px;background:var(--bg-ffffff);border:1.5px solid var(--border);border-radius:7px;
              font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;white-space:nowrap;
              transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
@@ -702,7 +806,7 @@ tbody tr:hover{background:#fafafa}
     </div>
     <button id="posClearBtn" onclick="ppComboClear()" title="Clear" style="display:none"
       class="pp-clear-btn">✕</button>
-    <span id="posCount" style="font-size:11px;color:#9ca3af;flex-shrink:0"></span>
+    <span id="posCount" style="font-size:11px;color:var(--fg-9ca3af);flex-shrink:0"></span>
   </div>
   <div id="posResult"></div>
 </div>
@@ -715,8 +819,8 @@ tbody tr:hover{background:#fafafa}
     <div>
       <div class="pp-section-title">📈 Price Trend Chart</div>
       <!-- MI Combo Search -->
-    <div class="filter-bar" style="position:sticky;top:0;z-index:50;background:#fff;padding:10px 14px;margin:-14px -14px 12px;border-bottom:1px solid #f0f0f0">
-      <label style="font-size:12px;font-weight:600;color:#374151;white-space:nowrap">🔍 SKU / Model:</label>
+    <div class="filter-bar" style="position:sticky;top:0;z-index:50;background:var(--bg-ffffff);padding:10px 14px;margin:0 -14px 12px;border-bottom:1px solid var(--bd-f0f0f0)">
+      <label style="font-size:12px;font-weight:600;color:var(--fg-374151);white-space:nowrap">🔍 SKU / Model:</label>
       <div class="pp-combo" id="miCombo">
         <input id="miSKUInput" type="text" autocomplete="off"
           placeholder="Gõ để tìm hoặc chọn model..."
@@ -1313,7 +1417,7 @@ function renderAllSkus() {
     const delta = pPrev ? pNow - pPrev : 0;
     const pct   = pPrev ? ((delta/pPrev)*100).toFixed(1) : null;
     const isUp  = delta > 0, isDn = delta < 0;
-    const clr   = isDn ? '#ef4444' : isUp ? '#10b981' : 'inherit';
+    const clr   = isDn ? TC('#ef4444') : isUp ? TC('#10b981') : 'inherit';
     const arrow = isDn ? '▼' : isUp ? '▲' : '';
     const priceFmt = `<span style="font-weight:700;color:${clr};${NW}">${vnd(pNow)}</span>`;
     const chgFmt  = pct
@@ -1390,8 +1494,8 @@ function renderAllSkus() {
           <td style="${L};padding:5px 6px">
             <div class="mname" style="font-size:12px;line-height:1.35;max-width:440px;overflow-wrap:anywhere;word-break:break-word">${p.model}${p.focusModel ? ' <span class="dlr dlr-key" style="font-size:9px;padding:1px 4px">⭐ Key Model</span>' : ''}</div>
             <span class="dlr ${dlrCls(p.dealer)}" style="font-size:9px;padding:1px 4px">${p.dealer}</span>
-            ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px" title="Không thấy trong lần scrape gần nhất — có thể đã ngừng kinh doanh / hết hàng. Giá hiển thị là giá cũ nhất được ghi nhận.">⚠ No data since ${p.latestDate}</span>` : ''}
-            ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? '#ef4444' : '#222'};margin-left:4px">${discPct}% off SRP</span>` : ''}
+            ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:var(--bg-fef3c7);color:var(--fg-92400e);border:1px solid var(--bd-fcd34d);border-radius:3px;padding:1px 4px" title="Không thấy trong lần scrape gần nhất — có thể đã ngừng kinh doanh / hết hàng. Giá hiển thị là giá cũ nhất được ghi nhận.">⚠ No data since ${p.latestDate}</span>` : ''}
+            ${discPct > 0 ? `<span style="font-size:10px;font-style:italic;color:${discPct > 10 ? 'var(--fg-ef4444)' : 'var(--fg-222222)'};margin-left:4px">${discPct}% off SRP</span>` : ''}
           </td>
           <td style="${L};padding:5px 4px;font-size:11px;${NW};color:${brandColor(p.brand)};font-weight:600">${p.brand||'–'}</td>
           <td style="${L};padding:5px 4px;font-size:11px;${NW}">${p.segment||'–'}</td>
@@ -1402,7 +1506,7 @@ function renderAllSkus() {
           ${p2Cell}
           ${priceCell(prev,  prev2)}
           ${priceCell(today, prev)}
-          <td style="${C};padding:5px 4px;font-size:11px;color:#6b7280">${p.sold||'—'}</td>
+          <td style="${C};padding:5px 4px;font-size:11px;color:var(--fg-6b7280)">${p.sold||'—'}</td>
           <td style="${L};padding:5px 4px">${p.link?`<a class="lnk" href="${p.link}" target="_blank">View ↗</a>`:'–'}</td>
         </tr>`;
       }).join('');
@@ -1419,8 +1523,8 @@ function renderAllSkus() {
   container.innerHTML = `
     <div class="rank-wrap">
       <div class="rank-hdr drop-hdr">
-        <h3>📋 All SKUs — ${data.length} products${staleInView > 0 ? ` <span style="font-size:11px;font-weight:400;color:#92400e;background:#fef3c7;padding:2px 8px;border-radius:10px;margin-left:6px">⚠ ${staleInView} từ ngày trước</span>` : ''}</h3>
-        <small>All dealers · Price ${dateRange} · % change vs previous day${staleInView > 0 ? ` · <span style="color:#92400e">⚠ = giá ngày gần nhất, chưa có data hôm nay</span>` : ''}</small>
+        <h3>📋 All SKUs — ${data.length} products${staleInView > 0 ? ` <span style="font-size:11px;font-weight:400;color:var(--fg-92400e);background:var(--bg-fef3c7);padding:2px 8px;border-radius:10px;margin-left:6px">⚠ ${staleInView} từ ngày trước</span>` : ''}</h3>
+        <small>All dealers · Price ${dateRange} · % change vs previous day${staleInView > 0 ? ` · <span style="color:var(--fg-92400e)">⚠ = giá ngày gần nhất, chưa có data hôm nay</span>` : ''}</small>
       </div>
       <div class="tbl-wrap">
         <table id="allSkusTable" style="border-collapse:collapse;font-size:12px;width:100%">
@@ -1528,7 +1632,7 @@ function renderAlert() {
         const prev  = p.prevPrice||0;
         const delta = today - prev;
         const isDrop = delta<0, isRise = delta>0;
-        const clr = isDrop?'#ef4444':isRise?'#10b981':'var(--text2)';
+        const clr = isDrop?TC('#ef4444'):isRise?TC('#10b981'):'var(--text2)';
         const arrow = isDrop?'▼':isRise?'▲':'';
         const pct = prev ? ((delta/prev)*100).toFixed(1) : null;
         const cpuLbl = p.cpuDetail||p.cpuFamily||'';
@@ -1549,17 +1653,17 @@ function renderAlert() {
     }
 
     return `<div class="rank-wrap">
-      <div class="rank-hdr" style="background:linear-gradient(135deg,#1e3a5f 0%,#1e40af 100%)">
+      <div class="rank-hdr" style="background:linear-gradient(135deg,var(--bg-1e3a5f) 0%,var(--bg-1e40af) 100%)">
         <h3>🎮 ${gpuName} — ${items.length} SKUs · ${dealers} Dealers</h3>
         <small>${todayDate} · ▼ % = drop today vs yesterday</small>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border)">
         <div style="border-right:1px solid var(--border)">
-          <div style="background:#065f46;color:#fff;padding:7px 10px;font-size:11px;font-weight:700">💚 5 GIÁ THẤP NHẤT</div>
+          <div style="background:var(--bg-065f46);color:var(--fg-ffffff);padding:7px 10px;font-size:11px;font-weight:700">💚 5 GIÁ THẤP NHẤT</div>
           <table style="width:100%;border-collapse:collapse;font-size:12px"><tbody>${miniRows(cheapest)}</tbody></table>
         </div>
         <div>
-          <div style="background:#7f1d1d;color:#fff;padding:7px 10px;font-size:11px;font-weight:700">🔥 5 GIÁ CAO NHẤT</div>
+          <div style="background:var(--bg-7f1d1d);color:var(--fg-ffffff);padding:7px 10px;font-size:11px;font-weight:700">🔥 5 GIÁ CAO NHẤT</div>
           <table style="width:100%;border-collapse:collapse;font-size:12px"><tbody>${miniRows(priciest)}</tbody></table>
         </div>
       </div>
@@ -1586,11 +1690,11 @@ function renderAlert() {
 
   // ── KPI summary cards ─────────────────────────────────────────
   const kpis = [
-    {icon:'📉',lbl:'Price Drops Today',val:changes.filter(c=>c.delta<0).length,clr:'#ef4444'},
-    {icon:'📈',lbl:'Price Increases Today', val:changes.filter(c=>c.delta>0).length,clr:'#10b981'},
-    {icon:'⚠️',lbl:'Swings >10%',   val:bigDrops.length+bigRises.length,     clr:'#f59e0b'},
-    {icon:'🔴',lbl:'Continuous Drops',    val:consDrops.length,                    clr:'#ef4444'},
-    {icon:'🟢',lbl:'Continuous Rises',    val:consRises.length,                    clr:'#10b981'},
+    {icon:'📉',lbl:'Price Drops Today',val:changes.filter(c=>c.delta<0).length,clr:TC('#ef4444')},
+    {icon:'📈',lbl:'Price Increases Today', val:changes.filter(c=>c.delta>0).length,clr:TC('#10b981')},
+    {icon:'⚠️',lbl:'Swings >10%',   val:bigDrops.length+bigRises.length,     clr:TC('#f59e0b')},
+    {icon:'🔴',lbl:'Continuous Drops',    val:consDrops.length,                    clr:TC('#ef4444')},
+    {icon:'🟢',lbl:'Continuous Rises',    val:consRises.length,                    clr:TC('#10b981')},
   ];
   const kpiHtml = `<div class="kpi-row" style="margin:12px 0 16px">
     ${kpis.map(k=>`<div class="kpi"><div class="kpi-lbl">${k.icon} ${k.lbl}</div><div class="kpi-val" style="color:${k.clr}">${k.val}</div></div>`).join('')}
@@ -1913,12 +2017,12 @@ function normPN(s) {
 // Màu theo hãng cho cột Brand (rule Phuc, 07/08/2026) — hãng không có
 // trong map giữ màu chữ mặc định (var(--text2)).
 const BRAND_COLORS = {
-  'ASUS':     '#0d9488', // Cyan/Teal
-  'Lenovo':   '#f97316', // Cam
-  'Acer':     '#84cc16', // Xanh lá nhạt (Olive/Lime)
-  'MSI':      '#dc2626', // Đỏ
-  'HP':       '#2563eb', // Xanh dương
-  'Gigabyte': '#9ca3af', // Xám nhạt
+  'ASUS':     TC('#0d9488'), // Cyan/Teal
+  'Lenovo':   TC('#f97316'), // Cam
+  'Acer':     TC('#84cc16'), // Xanh lá nhạt (Olive/Lime)
+  'MSI':      TC('#dc2626'), // Đỏ
+  'HP':       TC('#2563eb'), // Xanh dương
+  'Gigabyte': TC('#9ca3af'), // Xám nhạt
 };
 function brandColor(b) {
   return BRAND_COLORS[normBrand(b)] || 'var(--text2)';
@@ -2489,7 +2593,7 @@ function closeWfModal() {
 function setRunStatus(msg, isError) {
   const el = document.getElementById('refreshStatus');
   el.textContent = msg;
-  el.style.color = isError ? '#fca5a5' : 'rgba(255,255,255,.6)';
+  el.style.color = isError ? TC('#fca5a5') : 'rgba(255,255,255,.6)';
 }
 
 async function triggerWorkflow() {
@@ -2833,7 +2937,7 @@ function ppSKUMap(groups){
 
 // Dealer display names
 const PP_DEALER_KEYS = ['MBW','FPT Retail','CellPhone S','Phong Vu'];
-const PP_DEALER_COLORS = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+const PP_DEALER_COLORS = {'MBW':TC('#2563eb'),'FPT Retail':TC('#f97316'),'CellPhone S':TC('#16a34a'),'Phong Vu':TC('#f59e0b')};
 const PP_DEALER_SHORT = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
 // ── Main render ──────────────────────────────────────────────────
@@ -2906,14 +3010,14 @@ function renderPositioning(){
 
   <div class="pp-section-title">🔍 Sản phẩm cùng phân khúc trên thị trường</div>
   <!-- 2-tab switcher: CPU match | Price Segment match -->
-  <div style="display:flex;gap:0;margin-bottom:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;width:fit-content">
+  <div style="display:flex;gap:0;margin-bottom:10px;border:1px solid var(--bd-e2e8f0);border-radius:8px;overflow:hidden;width:fit-content">
     <button onclick="ppSetCompTab('cpu')" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;
-      background:${_ppCompTab==='cpu'?'#2563eb':'#f8fafc'};color:${_ppCompTab==='cpu'?'#fff':'#64748b'};
-      border-right:1px solid #e2e8f0;transition:all 0.15s">
+      background:${_ppCompTab==='cpu'?'var(--bg-2563eb)':'var(--bg-f8fafc)'};color:${_ppCompTab==='cpu'?'var(--on-accent)':'var(--fg-64748b)'};
+      border-right:1px solid var(--bd-e2e8f0);transition:all 0.15s">
       🧠 Theo CPU
     </button>
     <button onclick="ppSetCompTab('price')" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;
-      background:${_ppCompTab==='price'?'#2563eb':'#f8fafc'};color:${_ppCompTab==='price'?'#fff':'#64748b'};
+      background:${_ppCompTab==='price'?'var(--bg-2563eb)':'var(--bg-f8fafc)'};color:${_ppCompTab==='price'?'var(--on-accent)':'var(--fg-64748b)'};
       transition:all 0.15s">
       💰 Theo Price Segment
     </button>
@@ -2957,7 +3061,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
   const C  = 'text-align:center';
   const L  = 'text-align:left';
   const NW = 'white-space:nowrap';
-  const thS = 'padding:8px 10px;font-size:11px;font-weight:600;color:#475569;background:#f8fafc;border-bottom:1px solid #e2e8f0;white-space:nowrap';
+  const thS = 'padding:8px 10px;font-size:11px;font-weight:600;color:var(--fg-475569);background:var(--bg-f8fafc);border-bottom:1px solid var(--bd-e2e8f0);white-space:nowrap';
 
   let rows = '';
   let rowIdx = 0;
@@ -2969,31 +3073,31 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
 
     for (const p of products) {
       const isSelected = grp.key === g.key;
-      const rowBg = isSelected ? 'background:#eff6ff' : rowIdx%2===0 ? '' : 'background:#fafafa';
+      const rowBg = isSelected ? 'background:var(--bg-eff6ff)' : rowIdx%2===0 ? '' : 'background:var(--bg-fafafa)';
       const staleRowBg = p.isStale && !isSelected ? 'background:rgba(251,191,36,0.07)' : rowBg;
       rowIdx++;
 
-      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'}[p.dealer]||'#666';
+      const dlrColor = {'MBW':TC('#2563eb'),'FPT Retail':TC('#f97316'),'CellPhone S':TC('#16a34a'),'Phong Vu':TC('#f59e0b')}[p.dealer]||TC('#666');
       const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'}[p.dealer]||p.dealer;
 
       const p0 = p.todayPrice  || 0;
       const p1 = p.prevPrice   || 0;
       const p2 = p.prev2Price  || 0;
-      const soldFmt = p.sold ? '<span style="font-size:11px;color:#6b7280">' + p.sold + '</span>' : '—';
+      const soldFmt = p.sold ? '<span style="font-size:11px;color:var(--fg-6b7280)">' + p.sold + '</span>' : '—';
 
       const mkPriceCell = (price, prevP, highlight) => {
-        const tdBg = highlight ? 'background:#dbeafe;' : '';
-        if (!price) return '<td style="' + C + ';padding:5px 8px;vertical-align:top;' + tdBg + '"><span style="color:#d1d5db">–</span></td>';
+        const tdBg = highlight ? 'background:var(--bg-dbeafe);' : '';
+        if (!price) return '<td style="' + C + ';padding:5px 8px;vertical-align:top;' + tdBg + '"><span style="color:var(--fg-d1d5db)">–</span></td>';
         const delta    = (prevP > 0) ? price - prevP : 0;
         const hasDelta = prevP > 0 && delta !== 0;
         const pct      = hasDelta ? Math.abs((delta/prevP)*100).toFixed(1) : null;
         const up = delta > 0, dn = delta < 0;
-        const priceClr = dn ? '#ef4444' : up ? '#10b981' : '#374151';
-        const pctClr   = dn ? '#ef4444' : up ? '#10b981' : '#9ca3af';
+        const priceClr = dn ? TC('#ef4444') : up ? TC('#10b981') : TC('#374151');
+        const pctClr   = dn ? TC('#ef4444') : up ? TC('#10b981') : TC('#9ca3af');
         const arrow    = dn ? '▼' : up ? '▲' : '';
         const pctLine  = pct
           ? '<div style="font-size:10px;color:' + pctClr + ';margin-top:1px;text-align:center">' + arrow + ' ' + pct + '%</div>'
-          : '<div style="font-size:10px;color:#9ca3af;margin-top:1px;text-align:center">0%</div>';
+          : '<div style="font-size:10px;color:var(--fg-9ca3af);margin-top:1px;text-align:center">0%</div>';
         return '<td style="' + C + ';padding:5px 8px;vertical-align:top;' + tdBg + '">'
           + '<div style="font-weight:700;' + NW + ';color:' + priceClr + ';text-align:center">' + ppFmt(price) + '</div>'
           + pctLine
@@ -3001,13 +3105,13 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
       };
 
       const staleBadge = p.isStale
-        ? '<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px">⚠ ' + p.latestDate + '</span>'
+        ? '<span style="display:inline-block;margin-left:4px;font-size:9px;background:var(--bg-fef3c7);color:var(--fg-92400e);border:1px solid var(--bd-fcd34d);border-radius:3px;padding:1px 4px">⚠ ' + p.latestDate + '</span>'
         : '';
 
       rows += '<tr style="' + staleRowBg + '">'
         + '<td style="' + L + ';padding:5px 8px;vertical-align:top">'
           + '<div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word">'
-            + (isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : '')
+            + (isSelected ? '<span style="color:var(--fg-2563eb);font-weight:700">▶ </span>' : '')
             + p.model
           + '</div>'
           + '<span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:' + dlrColor + ';background:' + dlrColor + '18;padding:1px 6px;border-radius:4px;border:1px solid ' + dlrColor + '40">' + dlrShort + '</span>'
@@ -3022,7 +3126,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
         + mkPriceCell(p0, p1, isSelected)
         + '<td style="' + C + ';padding:5px 8px;vertical-align:top">' + soldFmt + '</td>'
         + '<td style="' + C + ';padding:5px 8px;vertical-align:top">'
-          + (p.link ? '<a href="' + p.link + '" target="_blank" style="font-size:11px;color:#2563eb">🔗</a>' : '—')
+          + (p.link ? '<a href="' + p.link + '" target="_blank" style="font-size:11px;color:var(--fg-2563eb)">🔗</a>' : '—')
         + '</td>'
         + '</tr>';
     }
@@ -3033,8 +3137,8 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
   const d1 = (prevDate||'—').slice(0,5);
   const d0 = (todayDate||'—').slice(0,5);
 
-  return '<div style="font-size:11px;color:#6b7280;margin-bottom:6px">'
-      + 'Phân khúc giá: <b style="color:#1e40af">' + segLabel + '</b>'
+  return '<div style="font-size:11px;color:var(--fg-6b7280);margin-bottom:6px">'
+      + 'Phân khúc giá: <b style="color:var(--fg-1e40af)">' + segLabel + '</b>'
       + ' · ' + peers.length + ' nhóm sản phẩm · ' + rowIdx + ' SKUs'
     + '</div>'
     + '<div style="overflow-x:auto">'
@@ -3047,7 +3151,7 @@ function ppRenderCompetitivePriceSeg(g, groups, vendorF) {
         + '<th style="' + thS + ';' + L + '">GPU</th>'
         + '<th style="' + thS + ';' + C + '">' + d2 + '</th>'
         + '<th style="' + thS + ';' + C + '">' + d1 + '</th>'
-        + '<th style="' + thS + ';' + C + ';color:#2563eb">' + d0 + ' ↑</th>'
+        + '<th style="' + thS + ';' + C + ';color:var(--fg-2563eb)">' + d0 + ' ↑</th>'
         + '<th style="' + thS + ';' + C + '">Sold</th>'
         + '<th style="' + thS + ';' + C + '">Link</th>'
       + '</tr></thead>'
@@ -3088,10 +3192,10 @@ function miComboRenderDropdown(q) {
     : _miAllModels;
   const items = filtered.slice(0,80).map(m => {
     const hl = q ? m.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi'), '<b>$1</b>') : m;
-    const sel = m === _miSelModel ? 'background:#eff6ff;font-weight:600;' : '';
+    const sel = m === _miSelModel ? 'background:var(--bg-eff6ff);font-weight:600;' : '';
     return '<div class="pp-combo-item" style="' + sel + '" onmousedown="miComboSelect(\'' + m.replace(/'/g,"\\'") + '\')">' + hl + '</div>';
   }).join('');
-  dd.innerHTML = items || '<div style="padding:8px 12px;color:#9ca3af;font-size:12px">No results</div>';
+  dd.innerHTML = items || '<div style="padding:8px 12px;color:var(--fg-9ca3af);font-size:12px">No results</div>';
 }
 
 function miComboFilter(q) {
@@ -3230,7 +3334,7 @@ function miLinechart(series, dates, W, H) {
   const h = H - PAD.t - PAD.b;
 
   const allPrices = series.flatMap(s => dates.map(d => s.data[d]||0)).filter(p=>p>0);
-  if (!allPrices.length) return '<div style="text-align:center;color:#9ca3af;padding:40px">No price data available</div>';
+  if (!allPrices.length) return '<div style="text-align:center;color:var(--fg-9ca3af);padding:40px">No price data available</div>';
 
   const minP = Math.min(...allPrices) * 0.998;
   const maxP = Math.max(...allPrices) * 1.002;
@@ -3250,8 +3354,8 @@ function miLinechart(series, dates, W, H) {
   for (let i = 0; i <= yTicks; i++) {
     const p = minP + (rangeP * i / yTicks);
     const y = yOf(p);
-    gridLines += '<line x1="' + PAD.l + '" y1="' + y.toFixed(1) + '" x2="' + (PAD.l+w) + '" y2="' + y.toFixed(1) + '" stroke="#f0f0f0" stroke-width="1"/>';
-    yLabels   += '<text x="' + (PAD.l-6) + '" y="' + (y+4).toFixed(1) + '" text-anchor="end" font-size="9" fill="#9ca3af">' + fmt(p) + '</text>';
+    gridLines += '<line x1="' + PAD.l + '" y1="' + y.toFixed(1) + '" x2="' + (PAD.l+w) + '" y2="' + y.toFixed(1) + '" stroke="' + TC('#f0f0f0') + '" stroke-width="1"/>';
+    yLabels   += '<text x="' + (PAD.l-6) + '" y="' + (y+4).toFixed(1) + '" text-anchor="end" font-size="9" fill="' + TC('#9ca3af') + '">' + fmt(p) + '</text>';
   }
 
   // X labels — show every N dates to avoid crowding
@@ -3259,7 +3363,7 @@ function miLinechart(series, dates, W, H) {
   let xLabels = '';
   dates.forEach((d, i) => {
     if (i % step === 0 || i === dates.length-1) {
-      xLabels += '<text x="' + xOf(i).toFixed(1) + '" y="' + (PAD.t+h+18) + '" text-anchor="middle" font-size="9" fill="#9ca3af">' + d.slice(0,5) + '</text>';
+      xLabels += '<text x="' + xOf(i).toFixed(1) + '" y="' + (PAD.t+h+18) + '" text-anchor="middle" font-size="9" fill="' + TC('#9ca3af') + '">' + d.slice(0,5) + '</text>';
     }
   });
 
@@ -3283,7 +3387,7 @@ function miLinechart(series, dates, W, H) {
 
     // Dots for each data point
     validPts.forEach(pt => {
-      dots += '<circle cx="' + pt.x.toFixed(1) + '" cy="' + pt.y.toFixed(1) + '" r="3" fill="' + s.color + '" stroke="white" stroke-width="1.5"/>';
+      dots += '<circle cx="' + pt.x.toFixed(1) + '" cy="' + pt.y.toFixed(1) + '" r="3" fill="' + s.color + '" stroke="' + TC('ring') + '" stroke-width="1.5"/>';
     });
 
     // Legend
@@ -3307,11 +3411,11 @@ function miLinechart(series, dates, W, H) {
   const html = '<div id="' + chartId + '" class="mi-chart-wrap" style="position:relative;width:100%;max-width:' + W + 'px">'
     + '<svg viewBox="0 0 ' + W + ' ' + (H+20) + '" style="width:100%;display:block">'
     + gridLines + yLabels + xLabels + paths + dots
-    + '<line class="mi-hoverline" x1="0" y1="' + PAD.t + '" x2="0" y2="' + (PAD.t+h) + '" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3" style="display:none;pointer-events:none"/>'
+    + '<line class="mi-hoverline" x1="0" y1="' + PAD.t + '" x2="0" y2="' + (PAD.t+h) + '" stroke="' + TC('#94a3b8') + '" stroke-width="1" stroke-dasharray="3,3" style="display:none;pointer-events:none"/>'
     + hitZones
     + legend
     + '</svg>'
-    + '<div class="mi-tooltip" style="display:none;position:absolute;pointer-events:none;background:#1e293b;color:#fff;border-radius:6px;padding:8px 10px;font-size:11px;line-height:1.6;box-shadow:0 4px 12px rgba(0,0,0,0.25);z-index:10;white-space:nowrap"></div>'
+    + '<div class="mi-tooltip" style="display:none;position:absolute;pointer-events:none;background:var(--bg-1e293b);color:var(--fg-ffffff);border-radius:6px;padding:8px 10px;font-size:11px;line-height:1.6;box-shadow:0 4px 12px rgba(0,0,0,0.25);z-index:10;white-space:nowrap"></div>'
     + '</div>';
 
   // Bind hover interactivity after the HTML is inserted into the DOM.
@@ -3353,7 +3457,7 @@ function miBindChartHover(chartId, series, dates) {
           + '<b style="margin-left:8px">' + fmtFull(p) + '</b></div>';
       }).join('');
 
-      tooltip.innerHTML = '<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid #334155;padding-bottom:4px">'
+      tooltip.innerHTML = '<div style="font-weight:700;margin-bottom:4px;border-bottom:1px solid var(--bd-334155);padding-bottom:4px">'
         + date + '</div>' + rows;
       tooltip.style.display = 'block';
     });
@@ -3378,7 +3482,7 @@ function miBindChartHover(chartId, series, dates) {
 // ── SECTION 1: Price Trend Chart ───────────────────────────────────
 function miRenderTrend(container) {
   if (!csvDates.length) {
-    container.innerHTML = '<div style="text-align:center;padding:32px;color:#9ca3af">'
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--fg-9ca3af)">'
       + '📊 Load data from Sheet to view price trend charts</div>';
     return;
   }
@@ -3387,20 +3491,20 @@ function miRenderTrend(container) {
 
   const dayBtns = [7,14,30].map(d =>
     '<button onclick="miSetDays(' + d + ')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:none;cursor:pointer;'
-    + (d === _miTrendDays ? 'background:#2563eb;color:#fff' : 'background:#f1f5f9;color:#64748b') + '">'
+    + (d === _miTrendDays ? 'background:var(--bg-2563eb);color:var(--on-accent)' : 'background:var(--bg-f1f5f9);color:var(--fg-64748b)') + '">'
     + d + 'd</button>'
   ).join('');
 
   // No model selected yet
   if (!selModel) {
-    container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;color:#9ca3af">'
+    container.innerHTML = '<div style="background:var(--bg-ffffff);border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;color:var(--fg-9ca3af)">'
       + '🔍 Search and select a model above to view its price trend'
       + '</div>';
     return;
   }
 
   if (!csvDates.length) {
-    container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;color:#9ca3af">'
+    container.innerHTML = '<div style="background:var(--bg-ffffff);border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08);text-align:center;color:var(--fg-9ca3af)">'
       + '📊 Load data from Sheet to view price trend chart'
       + '</div>';
     return;
@@ -3409,10 +3513,10 @@ function miRenderTrend(container) {
   const chartDates = [...csvDates].reverse().slice(-_miTrendDays);
 
   const DEALERS = [
-    {key:'MBW',        color:'#2563eb', label:'MBW'},
-    {key:'FPT Retail', color:'#f97316', label:'FPT'},
-    {key:'CellPhone S',color:'#16a34a', label:'CPS'},
-    {key:'Phong Vu',   color:'#f59e0b', label:'PV'},
+    {key:'MBW',        color:TC('#2563eb'), label:'MBW'},
+    {key:'FPT Retail', color:TC('#f97316'), label:'FPT'},
+    {key:'CellPhone S',color:TC('#16a34a'), label:'CPS'},
+    {key:'Phong Vu',   color:TC('#f59e0b'), label:'PV'},
   ];
   const normPN = s => (s||'').toLowerCase().replace(/[\s\-_]/g,'');
   const selNorm = selModel.toLowerCase();
@@ -3450,9 +3554,9 @@ function miRenderTrend(container) {
 
   const chartHTML = miLinechart(series, chartDates, 680, 220);
 
-  container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
+  container.innerHTML = '<div style="background:var(--bg-ffffff);border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
     + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
-      + '<span style="font-size:12px;font-weight:600;color:#1e293b">' + selModel.slice(0,70) + '</span>'
+      + '<span style="font-size:12px;font-weight:600;color:var(--fg-1e293b)">' + selModel.slice(0,70) + '</span>'
       + '<div style="display:flex;gap:4px;margin-left:auto">' + dayBtns + '</div>'
     + '</div>'
     + chartHTML
@@ -3462,12 +3566,12 @@ function miRenderTrend(container) {
 // ── SECTION 2: Weekly Summary ──────────────────────────────────────
 function miRenderWeekly(container) {
   if (!csvDates.length) {
-    container.innerHTML = '<div style="text-align:center;padding:24px;color:#9ca3af">Load data from Sheet to view weekly summary</div>';
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--fg-9ca3af)">Load data from Sheet to view weekly summary</div>';
     return;
   }
 
   const weeks = miGetWeeks();
-  if (!weeks.length) { container.innerHTML = '<div style="color:#9ca3af;padding:16px">No weekly data</div>'; return; }
+  if (!weeks.length) { container.innerHTML = '<div style="color:var(--fg-9ca3af);padding:16px">No weekly data</div>'; return; }
 
   const wIdx = Math.min(_miWeekIdx, weeks.length-1);
   const weekDates = weeks[wIdx]; // desc order (latest first)
@@ -3476,7 +3580,7 @@ function miRenderWeekly(container) {
   // Week picker buttons
   const weekBtns = weeks.slice(0, Math.min(4, weeks.length)).map((w,i) =>
     '<button onclick="miSetWeek(' + i + ')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;border:none;cursor:pointer;'
-    + (i===wIdx ? 'background:#2563eb;color:#fff' : 'background:#f1f5f9;color:#64748b') + '">'
+    + (i===wIdx ? 'background:var(--bg-2563eb);color:var(--on-accent)' : 'background:var(--bg-f1f5f9);color:var(--fg-64748b)') + '">'
     + miWeekLabel(w) + '</button>'
   ).join('');
 
@@ -3527,15 +3631,15 @@ function miRenderWeekly(container) {
   const riseCount  = changes.filter(c=>c.pct>0).length;
   const avgDrop    = drops.length ? (drops.reduce((s,c)=>s+c.pct,0)/drops.length).toFixed(1) : 0;
 
-  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+  const dlrColor = {'MBW':TC('#2563eb'),'FPT Retail':TC('#f97316'),'CellPhone S':TC('#16a34a'),'Phong Vu':TC('#f59e0b')};
   const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
   const mkRow = (c) => {
-    const dc = dlrColor[c.dealer]||'#666';
+    const dc = dlrColor[c.dealer]||TC('#666');
     const ds = dlrShort[c.dealer]||c.dealer;
-    const clr = c.pct<0?'#ef4444':'#10b981';
+    const clr = c.pct<0?TC('#ef4444'):TC('#10b981');
     const arrow = c.pct<0?'▼':'▲';
-    return '<tr style="border-bottom:1px solid #f3f4f6">'
+    return '<tr style="border-bottom:1px solid var(--bd-f3f4f6)">'
       + '<td style="padding:6px 8px;font-size:11px;max-width:220px">'
         + '<div style="font-size:11px;line-height:1.3">' + c.model.slice(0,60) + '</div>'
         + '<span style="display:inline-block;font-size:9px;font-weight:700;color:' + dc + ';background:' + dc + '18;padding:1px 5px;border-radius:3px;margin-top:2px">' + ds + '</span>'
@@ -3552,46 +3656,46 @@ function miRenderWeekly(container) {
     '<div style="flex:1;min-width:280px">'
       + '<div style="font-size:12px;font-weight:700;color:' + color + ';margin-bottom:6px">' + title + ' (' + rows.length + ')</div>'
       + '<table style="width:100%;border-collapse:collapse">'
-        + '<thead><tr style="background:#f8fafc">'
-          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:left;font-weight:600">Model</th>'
-          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:right;font-weight:600">Prev</th>'
-          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:right;font-weight:600">This Wk</th>'
-          + '<th style="padding:5px 8px;font-size:10px;color:#64748b;text-align:right;font-weight:600">Δ%</th>'
+        + '<thead><tr style="background:var(--bg-f8fafc)">'
+          + '<th style="padding:5px 8px;font-size:10px;color:var(--fg-64748b);text-align:left;font-weight:600">Model</th>'
+          + '<th style="padding:5px 8px;font-size:10px;color:var(--fg-64748b);text-align:right;font-weight:600">Prev</th>'
+          + '<th style="padding:5px 8px;font-size:10px;color:var(--fg-64748b);text-align:right;font-weight:600">This Wk</th>'
+          + '<th style="padding:5px 8px;font-size:10px;color:var(--fg-64748b);text-align:right;font-weight:600">Δ%</th>'
         + '</tr></thead>'
         + '<tbody>' + rows.map(mkRow).join('') + '</tbody>'
       + '</table>'
     + '</div>'
   ) : '';
 
-  container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
+  container.innerHTML = '<div style="background:var(--bg-ffffff);border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
     + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
-      + '<span style="font-size:12px;font-weight:600;color:#475569">Week:</span>'
+      + '<span style="font-size:12px;font-weight:600;color:var(--fg-475569)">Week:</span>'
       + weekBtns
     + '</div>'
     + '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">'
-      + '<div style="background:#f8fafc;border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:#1e293b">' + totalSKUs + '</div><div style="font-size:10px;color:#64748b">SKUs tracked</div></div>'
-      + '<div style="background:#fef2f2;border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:#ef4444">' + dropCount + '</div><div style="font-size:10px;color:#64748b">Price drops · avg ' + avgDrop + '%</div></div>'
-      + '<div style="background:#f0fdf4;border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:#10b981">' + riseCount + '</div><div style="font-size:10px;color:#64748b">Price rises</div></div>'
+      + '<div style="background:var(--bg-f8fafc);border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:var(--fg-1e293b)">' + totalSKUs + '</div><div style="font-size:10px;color:var(--fg-64748b)">SKUs tracked</div></div>'
+      + '<div style="background:var(--bg-fef2f2);border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:var(--fg-ef4444)">' + dropCount + '</div><div style="font-size:10px;color:var(--fg-64748b)">Price drops · avg ' + avgDrop + '%</div></div>'
+      + '<div style="background:var(--bg-f0fdf4);border-radius:8px;padding:10px 16px;min-width:100px"><div style="font-size:20px;font-weight:700;color:var(--fg-10b981)">' + riseCount + '</div><div style="font-size:10px;color:var(--fg-64748b)">Price rises</div></div>'
     + '</div>'
     + (drops.length || rises.length
         ? '<div style="display:flex;gap:16px;flex-wrap:wrap">'
-            + mkTable(drops,'▼ Biggest Drops','#ef4444')
-            + mkTable(rises,'▲ Biggest Rises','#10b981')
+            + mkTable(drops,'▼ Biggest Drops',TC('#ef4444'))
+            + mkTable(rises,'▲ Biggest Rises',TC('#10b981'))
           + '</div>'
-        : '<div style="text-align:center;padding:20px;color:#9ca3af">No significant price changes this week</div>')
+        : '<div style="text-align:center;padding:20px;color:var(--fg-9ca3af)">No significant price changes this week</div>')
     + '</div>';
 }
 
 // ── SECTION 3: Stock Signal ────────────────────────────────────────
 function miRenderStock(container) {
   const src = (allUnique && allUnique.length > allToday.length) ? allUnique : allToday;
-  if (!src.length) { container.innerHTML = '<div style="color:#9ca3af;padding:16px">No data</div>'; return; }
+  if (!src.length) { container.innerHTML = '<div style="color:var(--fg-9ca3af);padding:16px">No data</div>'; return; }
 
   // Hot: sold > 50 + price stable (no disc or disc < 3%)
   // Slow: sold = 0 or '' + been in market (has prevPrice)
   // Promo opportunity: disc% > 10% but sold still low
 
-  const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'};
+  const dlrColor = {'MBW':TC('#2563eb'),'FPT Retail':TC('#f97316'),'CellPhone S':TC('#16a34a'),'Phong Vu':TC('#f59e0b')};
   const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'};
 
   const parseSold = (s) => { const n = parseInt((s||'0').replace(/\D/g,'')); return isNaN(n)?0:n; };
@@ -3605,15 +3709,15 @@ function miRenderStock(container) {
                    .sort((a,b) => parseDisc(b.disc) - parseDisc(a.disc)).slice(0,10);
 
   const mkCard = (p, badge, badgeColor) => {
-    const dc = dlrColor[p.dealer]||'#666';
+    const dc = dlrColor[p.dealer]||TC('#666');
     const ds = dlrShort[p.dealer]||p.dealer;
-    return '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;background:#fff">'
-      + '<div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:4px;color:#1e293b">' + p.model.slice(0,55) + (p.model.length>55?'…':'') + '</div>'
+    return '<div style="border:1px solid var(--bd-e2e8f0);border-radius:8px;padding:10px 12px;background:var(--bg-ffffff)">'
+      + '<div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:4px;color:var(--fg-1e293b)">' + p.model.slice(0,55) + (p.model.length>55?'…':'') + '</div>'
       + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
         + '<span style="font-size:9px;font-weight:700;color:' + dc + ';background:' + dc + '18;padding:1px 5px;border-radius:3px">' + ds + '</span>'
-        + '<span style="font-size:11px;font-weight:700;color:#1e293b">' + ppFmt(p.todayPrice) + '</span>'
-        + (p.sold ? '<span style="font-size:10px;color:#6b7280">· ' + p.sold + ' sold</span>' : '')
-        + (p.disc && p.disc !== '0%' ? '<span style="font-size:10px;color:#ef4444">' + p.disc + ' off</span>' : '')
+        + '<span style="font-size:11px;font-weight:700;color:var(--fg-1e293b)">' + ppFmt(p.todayPrice) + '</span>'
+        + (p.sold ? '<span style="font-size:10px;color:var(--fg-6b7280)">· ' + p.sold + ' sold</span>' : '')
+        + (p.disc && p.disc !== '0%' ? '<span style="font-size:10px;color:var(--fg-ef4444)">' + p.disc + ' off</span>' : '')
         + '<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:' + badgeColor + '20;color:' + badgeColor + ';margin-left:auto">' + badge + '</span>'
       + '</div>'
     + '</div>';
@@ -3621,21 +3725,21 @@ function miRenderStock(container) {
 
   const mkSection = (items, title, emoji, color, emptyMsg) => {
     return '<div style="margin-bottom:20px">'
-      + '<div style="font-size:13px;font-weight:700;color:' + color + ';margin-bottom:8px">' + emoji + ' ' + title + ' <span style="font-size:11px;font-weight:400;color:#94a3b8">(' + items.length + ' SKUs)</span></div>'
+      + '<div style="font-size:13px;font-weight:700;color:' + color + ';margin-bottom:8px">' + emoji + ' ' + title + ' <span style="font-size:11px;font-weight:400;color:var(--fg-94a3b8)">(' + items.length + ' SKUs)</span></div>'
       + (items.length
           ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">'
               + items.map(p => mkCard(p,
                   title==='Hot Sellers' ? '🔥 Hot' : title==='Slow Movers' ? '🐢 Slow' : '🎯 Promo',
                   color)).join('')
             + '</div>'
-          : '<div style="color:#94a3b8;font-size:12px;padding:8px">' + emptyMsg + '</div>')
+          : '<div style="color:var(--fg-94a3b8);font-size:12px;padding:8px">' + emptyMsg + '</div>')
     + '</div>';
   };
 
-  container.innerHTML = '<div style="background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
-    + mkSection(hot,   'Hot Sellers',         '🔥', '#f97316', 'No hot sellers detected')
-    + mkSection(slow,  'Slow Movers',          '🐢', '#94a3b8', 'No slow movers detected')
-    + mkSection(promo, 'Promo Opportunities',  '🎯', '#8b5cf6', 'No promo opportunities detected')
+  container.innerHTML = '<div style="background:var(--bg-ffffff);border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">'
+    + mkSection(hot,   'Hot Sellers',         '🔥', TC('#f97316'), 'No hot sellers detected')
+    + mkSection(slow,  'Slow Movers',          '🐢', TC('#94a3b8'), 'No slow movers detected')
+    + mkSection(promo, 'Promo Opportunities',  '🎯', TC('#8b5cf6'), 'No promo opportunities detected')
     + '</div>';
 }
 
@@ -3662,10 +3766,10 @@ function ppPriceHistory(group) {
   if (!days.length) return '';
 
   const DEALERS = [
-    { key: 'MBW',          color: '#2563eb', short: 'MBW' },
-    { key: 'FPT Retail',   color: '#f97316', short: 'FPT' },
-    { key: 'CellPhone S',  color: '#16a34a', short: 'CPS' },
-    { key: 'Phong Vu',     color: '#f59e0b', short: 'PV' },
+    { key: 'MBW',          color: TC('#2563eb'), short: 'MBW' },
+    { key: 'FPT Retail',   color: TC('#f97316'), short: 'FPT' },
+    { key: 'CellPhone S',  color: TC('#16a34a'), short: 'CPS' },
+    { key: 'Phong Vu',     color: TC('#f59e0b'), short: 'PV' },
   ];
 
   // Match rows theo Part# (col V = row[21]) — cách chính xác nhất vì
@@ -3735,8 +3839,8 @@ function ppPriceHistory(group) {
   if (!hasAny) return '';
 
   // Render table
-  const thStyle = 'padding:6px 10px;font-size:11px;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap;text-align:center';
-  const tdStyle = 'padding:6px 10px;font-size:12px;text-align:center;border-bottom:1px solid #f3f4f6';
+  const thStyle = 'padding:6px 10px;font-size:11px;font-weight:600;color:var(--fg-6b7280);border-bottom:1px solid var(--bd-e5e7eb);white-space:nowrap;text-align:center';
+  const tdStyle = 'padding:6px 10px;font-size:12px;text-align:center;border-bottom:1px solid var(--bd-f3f4f6)';
 
   const dateHeaders = days.map(d =>
     `<th style="${thStyle}">${d.slice(0,5)}</th>`
@@ -3748,10 +3852,10 @@ function ppPriceHistory(group) {
     const cells = days.map((d, i) => {
       const price   = matrix[key][d];
       const prevDay = i < days.length - 1 ? matrix[key][days[i+1]] : 0;
-      if (!price) return `<td style="${tdStyle};color:#d1d5db">–</td>`;
+      if (!price) return `<td style="${tdStyle};color:var(--fg-d1d5db)">–</td>`;
       const delta = (price && prevDay) ? price - prevDay : 0;
-      const arrow = delta < 0 ? ' <span style="color:#ef4444;font-size:10px">▼</span>'
-                  : delta > 0 ? ' <span style="color:#10b981;font-size:10px">▲</span>' : '';
+      const arrow = delta < 0 ? ' <span style="color:var(--fg-ef4444);font-size:10px">▼</span>'
+                  : delta > 0 ? ' <span style="color:var(--fg-10b981);font-size:10px">▲</span>' : '';
       const bold  = i === 0 ? 'font-weight:700' : '';
       return `<td style="${tdStyle};${bold}">${ppFmt(price)}${arrow}</td>`;
     }).join('');
@@ -3781,7 +3885,7 @@ function ppPriceHistory(group) {
 function ppDealerCard(dealer, products, diffPct){
   const minP = ppMinPrice(products);
   const cnt  = products.length;
-  const color = PP_DEALER_COLORS[dealer]||'#666';
+  const color = PP_DEALER_COLORS[dealer]||TC('#666');
   const short = PP_DEALER_SHORT[dealer]||dealer;
   let diffHtml;
   if(dealer === 'MBW'){
@@ -3799,9 +3903,9 @@ function ppDealerCard(dealer, products, diffPct){
 
 function ppPriceBar(mbw, fpt, cps){
   const prices = [
-    {d:'MBW', v:mbw, c:'#2563eb'},
-    {d:'FPT', v:fpt, c:'#f97316'},
-    {d:'CPS', v:cps, c:'#16a34a'}
+    {d:'MBW', v:mbw, c:TC('#2563eb')},
+    {d:'FPT', v:fpt, c:TC('#f97316')},
+    {d:'CPS', v:cps, c:TC('#16a34a')}
   ].filter(x=>x.v);
   if(prices.length < 2) return '';
   const minV = Math.min(...prices.map(x=>x.v));
@@ -3837,14 +3941,14 @@ function ppEquivTable(g, selectedSKU, mbwRef){
 
   for(const p of rows){
     const isSel = p.model === selectedSKU;
-    const c = PP_DEALER_COLORS[p.dealer]||'#666';
+    const c = PP_DEALER_COLORS[p.dealer]||TC('#666');
     const sh = PP_DEALER_SHORT[p.dealer]||p.dealer;
     const diff = (mbwRef && p.dealer!=='MBW') ? ppPct(mbwRef, p.todayPrice) : null;
     const rowPN = p.partNum || ppExtractPN(p.model);
     t += `<tr${isSel?' class="pp-row-sel"':''}>
       <td><span style="color:${c};font-weight:700">${sh}</span></td>
       <td class="pp-sku-cell">${p.model}${p.focusModel?'&nbsp;<span class="dlr-key">⭐</span>':''}</td>
-      ${showPN?`<td style="font-family:monospace;font-size:11px;color:#6b7280">${rowPN.toUpperCase()||'—'}</td>`:''}
+      ${showPN?`<td style="font-family:monospace;font-size:11px;color:var(--fg-6b7280)">${rowPN.toUpperCase()||'—'}</td>`:''}
       <td>${p.cpuDetail||p.cpuFamily||'—'}</td>
       <td>${p.ram||'—'}</td>
       <td>${p.ssd||'—'}</td>
@@ -3898,7 +4002,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
   const C = 'text-align:center';
   const L = 'text-align:left';
   const NW = 'white-space:nowrap';
-  const thS = `padding:8px 10px;font-size:11px;font-weight:600;color:#475569;background:#f8fafc;border-bottom:1px solid #e2e8f0;${NW}`;
+  const thS = `padding:8px 10px;font-size:11px;font-weight:600;color:var(--fg-475569);background:var(--bg-f8fafc);border-bottom:1px solid var(--bd-e2e8f0);${NW}`;
 
   let rows = '';
   let rowIdx = 0;
@@ -3911,18 +4015,18 @@ function ppRenderCompetitive(g, groups, vendorF) {
     for (const p of products) {
       const isSelected = grp.key === g.key;
       const rowBg = isSelected
-        ? 'background:#eff6ff'
-        : rowIdx%2===0 ? '' : 'background:#fafafa';
+        ? 'background:var(--bg-eff6ff)'
+        : rowIdx%2===0 ? '' : 'background:var(--bg-fafafa)';
       rowIdx++;
 
-      const dlrColor = {'MBW':'#2563eb','FPT Retail':'#f97316','CellPhone S':'#16a34a','Phong Vu':'#f59e0b'}[p.dealer]||'#666';
+      const dlrColor = {'MBW':TC('#2563eb'),'FPT Retail':TC('#f97316'),'CellPhone S':TC('#16a34a'),'Phong Vu':TC('#f59e0b')}[p.dealer]||TC('#666');
       const dlrShort = {'MBW':'MBW','FPT Retail':'FPT','CellPhone S':'CPS','Phong Vu':'PV'}[p.dealer]||p.dealer;
 
       const priceFmt = (price, base) => {
-        if (!price) return '<span style="color:#d1d5db">–</span>';
+        if (!price) return '<span style="color:var(--fg-d1d5db)">–</span>';
         const delta = base ? price - base : 0;
         const pct   = base ? ((delta/base)*100).toFixed(1) : null;
-        const clr   = delta < 0 ? '#ef4444' : delta > 0 ? '#10b981' : '#374151';
+        const clr   = delta < 0 ? TC('#ef4444') : delta > 0 ? TC('#10b981') : TC('#374151');
         const arrow = delta < 0 ? '▼' : delta > 0 ? '▲' : '';
         const chg   = pct && Math.abs(parseFloat(pct)) > 0.1
           ? `<span style="font-size:10px;color:${clr}"> ${arrow}${Math.abs(pct)}%</span>` : '';
@@ -3936,27 +4040,27 @@ function ppRenderCompetitive(g, groups, vendorF) {
       const p1 = p.prevPrice   || 0;   // newPrev
       const p2 = p.prev2Price  || 0;   // newPrev2
 
-      const soldFmt = p.sold ? `<span style="font-size:11px;color:#6b7280">${p.sold}</span>` : '—';
+      const soldFmt = p.sold ? `<span style="font-size:11px;color:var(--fg-6b7280)">${p.sold}</span>` : '—';
 
       // ── Price cell helper ─────────────────────────────────────────
       // Màu: giảm=đỏ, tăng=xanh lá, ngang=đen. 0% hiện xám nhạt.
       // Align: giá+% center; text left; tất cả vertical-align:top
       const mkPriceCell = (price, prevP, highlight) => {
-        const tdBg = highlight ? 'background:#dbeafe;' : '';
-        if (!price) return `<td style="text-align:center;padding:5px 8px;vertical-align:top;${tdBg}"><span style="color:#d1d5db">–</span></td>`;
+        const tdBg = highlight ? 'background:var(--bg-dbeafe);' : '';
+        if (!price) return `<td style="text-align:center;padding:5px 8px;vertical-align:top;${tdBg}"><span style="color:var(--fg-d1d5db)">–</span></td>`;
         const delta  = (prevP > 0) ? price - prevP : 0;
         const hasDelta = prevP > 0 && delta !== 0;
         const pct    = hasDelta ? Math.abs((delta/prevP)*100).toFixed(1) : null;
         const up     = delta > 0;
         const dn     = delta < 0;
         // Giá: giảm=đỏ, tăng=xanh lá, ngang=đen #374151
-        const priceClr = dn ? '#ef4444' : up ? '#10b981' : '#374151';
+        const priceClr = dn ? TC('#ef4444') : up ? TC('#10b981') : TC('#374151');
         // % thay đổi: cùng màu, 0%=xám
-        const pctClr   = dn ? '#ef4444' : up ? '#10b981' : '#9ca3af';
+        const pctClr   = dn ? TC('#ef4444') : up ? TC('#10b981') : TC('#9ca3af');
         const arrow    = dn ? '▼' : up ? '▲' : '';
         const pctLine  = pct
           ? `<div style="font-size:10px;color:${pctClr};margin-top:1px;text-align:center">${arrow} ${pct}%</div>`
-          : `<div style="font-size:10px;color:#9ca3af;margin-top:1px;text-align:center">0%</div>`;
+          : `<div style="font-size:10px;color:var(--fg-9ca3af);margin-top:1px;text-align:center">0%</div>`;
         return `<td style="text-align:center;padding:5px 8px;vertical-align:top;${tdBg}">
           <div style="font-weight:700;white-space:nowrap;color:${priceClr};text-align:center">${ppFmt(price)}</div>
           ${pctLine}
@@ -3967,10 +4071,10 @@ function ppRenderCompetitive(g, groups, vendorF) {
       rows += `<tr style="${staleRowBg}">
         <td style="text-align:left;padding:5px 8px;vertical-align:top">
           <div style="font-size:11px;line-height:1.4;max-width:260px;word-break:break-word;text-align:left">
-            ${isSelected ? '<span style="color:#2563eb;font-weight:700">▶ </span>' : ''}${p.model}
+            ${isSelected ? '<span style="color:var(--fg-2563eb);font-weight:700">▶ </span>' : ''}${p.model}
           </div>
           <span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:${dlrColor};background:${dlrColor}18;padding:1px 6px;border-radius:4px;border:1px solid ${dlrColor}40">${dlrShort}</span>
-          ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:3px;padding:1px 4px">⚠ ${p.latestDate}</span>` : ''}
+          ${p.isStale ? `<span style="display:inline-block;margin-left:4px;font-size:9px;background:var(--bg-fef3c7);color:var(--fg-92400e);border:1px solid var(--bd-fcd34d);border-radius:3px;padding:1px 4px">⚠ ${p.latestDate}</span>` : ''}
         </td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;line-height:1.4">${p.cpuDetail||p.cpuFamily||'—'}</td>
         <td style="text-align:left;padding:5px 8px;font-size:11px;vertical-align:top;white-space:nowrap">${p.ram||'—'}</td>
@@ -3980,7 +4084,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
         ${mkPriceCell(p1, p2, false)}
         ${mkPriceCell(p0, p1, isSelected)}
         <td style="text-align:center;padding:5px 8px;vertical-align:top">${soldFmt}</td>
-        <td style="text-align:left;padding:5px 8px;vertical-align:top">${p.link?`<a href="${p.link}" target="_blank" style="color:#2563eb;font-size:11px">View ↗</a>`:'—'}</td>
+        <td style="text-align:left;padding:5px 8px;vertical-align:top">${p.link?`<a href="${p.link}" target="_blank" style="color:var(--fg-2563eb);font-size:11px">View ↗</a>`:'—'}</td>
       </tr>`;
     }
   }
@@ -3990,7 +4094,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
     : `CPU: ${g.cpuFamily||'—'} · RAM: ${g.ram||'—'}`;
 
   return `<div class="pp-equiv-wrapper">
-    <div style="padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:11px;color:#6b7280">
+    <div style="padding:8px 12px;background:var(--bg-f8fafc);border-bottom:1px solid var(--bd-e5e7eb);font-size:11px;color:var(--fg-6b7280)">
       ${isGaming ? '🎮 Gaming' : '💼 B&P'} · So sánh theo: <strong>${matchLabel}</strong> · ${peers.length} nhóm · ${peers.reduce((s,grp)=>s+grp.allProducts.length,0)} SKU
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px">
@@ -4002,7 +4106,7 @@ function ppRenderCompetitive(g, groups, vendorF) {
         <th style="${thS};text-align:left">GPU</th>
         <th style="${thS};text-align:center">${(prev2Date||'—').slice(0,5)}</th>
         <th style="${thS};text-align:center">${(prevDate||'—').slice(0,5)}</th>
-        <th style="${thS};text-align:center;color:#2563eb">${(todayDate||'—').slice(0,5)} ↑</th>
+        <th style="${thS};text-align:center;color:var(--fg-2563eb)">${(todayDate||'—').slice(0,5)} ↑</th>
         <th style="${thS};text-align:center">Sold</th>
         <th style="${thS};text-align:left">Link</th>
       </tr></thead>
@@ -4031,9 +4135,9 @@ function ppRenderSegSummary(groups){
   let t = `<div class="pp-seg-wrapper"><table class="pp-seg-table">
     <thead><tr>
       <th>Segment / Series</th>
-      <th style="color:#2563eb">MBW avg</th>
-      <th style="color:#f97316">FPT avg</th>
-      <th style="color:#16a34a">CPS avg</th>
+      <th style="color:var(--fg-2563eb)">MBW avg</th>
+      <th style="color:var(--fg-f97316)">FPT avg</th>
+      <th style="color:var(--fg-16a34a)">CPS avg</th>
       <th>MBW vs FPT</th>
       <th>MBW vs CPS</th>
       <th>Rẻ nhất</th>
@@ -4047,7 +4151,7 @@ function ppRenderSegSummary(groups){
     const cpsA = ppAvgMinPrice(s.CPS);
     const fptIdx = ppPct(mbwA, fptA);
     const cpsIdx = ppPct(mbwA, cpsA);
-    const priceList = [{d:'MBW',v:mbwA,c:'#2563eb'},{d:'FPT',v:fptA,c:'#f97316'},{d:'CPS',v:cpsA,c:'#16a34a'}].filter(x=>x.v);
+    const priceList = [{d:'MBW',v:mbwA,c:TC('#2563eb')},{d:'FPT',v:fptA,c:TC('#f97316')},{d:'CPS',v:cpsA,c:TC('#16a34a')}].filter(x=>x.v);
     const cheapest = priceList.length ? priceList.reduce((a,b)=>a.v<b.v?a:b) : null;
     // Count unique spec groups for this segment
     const groupCount = Object.values(groups).filter(g=>(g.segment||'(Khác)')===seg).length;
@@ -4060,7 +4164,7 @@ function ppRenderSegSummary(groups){
       <td>${fptIdx!==null?ppBadge(fptIdx):'<span class="pp-na">—</span>'}</td>
       <td>${cpsIdx!==null?ppBadge(cpsIdx):'<span class="pp-na">—</span>'}</td>
       <td>${cheapest?`<span style="color:${cheapest.c};font-weight:700">${PP_DEALER_SHORT[cheapest.d]||cheapest.d}</span>`:'—'}</td>
-      <td style="text-align:center;color:#6b7280">${groupCount}</td>
+      <td style="text-align:center;color:var(--fg-6b7280)">${groupCount}</td>
     </tr>`;
   }
   t += '</tbody></table></div>';
@@ -4116,7 +4220,7 @@ function ppComboRenderDropdown(norm){
     if(norm){
       const lo = s.toLowerCase(), start = lo.indexOf(norm);
       if(start >= 0)
-        label = s.slice(0,start) + '<mark style="background:#fef08a;border-radius:2px">'
+        label = s.slice(0,start) + '<mark style="background:var(--bg-fef08a);border-radius:2px">'
                + s.slice(start, start+norm.length) + '</mark>' + s.slice(start+norm.length);
     }
     return `<div class="pp-combo-opt${isSel?' pp-combo-selected':''}" 
@@ -4190,9 +4294,9 @@ function ppRenderVendorFilter(groups) {
   const chips = vendors.map(v => {
     const id = 'pp_vendor_chk_' + btoa(unescape(encodeURIComponent(v))).replace(/=/g,'');
     const active = _ppVendorState.includes(v);
-    const color = active ? '#2563eb' : '#6b7280';
-    const bg    = active ? '#eff6ff' : '#f9fafb';
-    const border= active ? '#2563eb' : '#d1d5db';
+    const color = active ? 'var(--fg-2563eb)' : 'var(--fg-6b7280)';
+    const bg    = active ? 'var(--bg-eff6ff)' : 'var(--bg-f9fafb)';
+    const border= active ? 'var(--bd-2563eb)' : 'var(--bd-d1d5db)';
     return `<label id="${id}" onclick="ppSetVendor('${v.replace(/'/g,"\'")}')" 
       style="cursor:pointer;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;
              color:${color};background:${bg};border:1px solid ${border};white-space:nowrap;user-select:none">
@@ -4200,10 +4304,10 @@ function ppRenderVendorFilter(groups) {
     </label>`;
   }).join('');
   const clearBtn = _ppVendorState.length
-    ? `<button onclick="ppVendorClear()" style="padding:4px 10px;border-radius:20px;font-size:11px;border:1px solid #fca5a5;background:#fee2e2;color:#b91c1c;cursor:pointer">✕ Clear</button>`
+    ? `<button onclick="ppVendorClear()" style="padding:4px 10px;border-radius:20px;font-size:11px;border:1px solid var(--bd-fca5a5);background:var(--bg-fee2e2);color:var(--fg-b91c1c);cursor:pointer">✕ Clear</button>`
     : '';
-  return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 0 10px;border-bottom:1px solid #f3f4f6;margin-bottom:4px">
-    <span style="font-size:11px;font-weight:600;color:#6b7280;white-space:nowrap">🏷️ Vendor:</span>
+  return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 0 10px;border-bottom:1px solid var(--bd-f3f4f6);margin-bottom:4px">
+    <span style="font-size:11px;font-weight:600;color:var(--fg-6b7280);white-space:nowrap">🏷️ Vendor:</span>
     ${chips}
     ${clearBtn}
   </div>`;
