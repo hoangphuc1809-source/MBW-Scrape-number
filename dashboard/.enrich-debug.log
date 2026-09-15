@@ -1,16 +1,15 @@
-[2026-09-15T01:38:43.091Z] --- Bắt đầu enrich-and-export.js ---
-[2026-09-15T01:38:43.104Z] Đọc được 2892 SP từ 5 file artifact (scrape-artifacts)
-[2026-09-15T01:38:43.104Z] Đọc Part # (FORMULA render)...
-[2026-09-15T01:38:44.024Z]   10276 dòng
-[2026-09-15T01:38:44.024Z] Đọc Segment (FORMULA render)...
-[2026-09-15T01:38:44.221Z]   120 dòng
-[2026-09-15T01:38:44.222Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-09-15T01:38:44.268Z] Part# map: 4050 SKU
-[2026-09-15T01:38:44.268Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
-[2026-09-15T01:38:44.317Z] Tính xong 2752 dòng enriched (loại 140 SP EOL)
-[2026-09-15T01:38:45.922Z] data.csv cũ: 69523 dòng, giữ lại 69523 dòng (loại dòng 15/09/2026 nếu có, sẽ thêm bản mới)
-[2026-09-15T01:38:46.203Z]   ⚠ Giá bất thường: An Phat | Laptop ASUS Vivobook X1404VA-EB609W (Intel Core 3 Proce — 43.990.000đ vs trung vị 19.900.000đ (lệch 121%) → bỏ giá
-[2026-09-15T01:38:46.205Z]   ⚠ Giá bất thường: An Phat | Laptop Lenovo V15 G5 IRL 83HF00BTVA (Intel Core i7-1362 — 29.590.000đ vs trung vị 17.990.000đ (lệch 64%) → bỏ giá
-[2026-09-15T01:38:46.210Z] ⚠ Đã loại giá của 2 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
-[2026-09-15T01:38:46.233Z] Cắt còn 35 ngày gần nhất (70818 dòng)
-[2026-09-15T01:38:47.490Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 70819 dòng (kể cả header), 24466 KB
+[2026-09-15T04:27:02.238Z] --- Bắt đầu enrich-and-export.js ---
+[2026-09-15T04:27:02.257Z] Đọc được 2826 SP từ 5 file artifact (scrape-artifacts)
+[2026-09-15T04:27:02.257Z] Đọc Part # (FORMULA render)...
+[2026-09-15T04:27:02.687Z]   10276 dòng
+[2026-09-15T04:27:02.687Z] Đọc Segment (FORMULA render)...
+[2026-09-15T04:27:02.846Z]   120 dòng
+[2026-09-15T04:27:02.846Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-09-15T04:27:02.885Z] Part# map: 4050 SKU
+[2026-09-15T04:27:02.885Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
+[2026-09-15T04:27:02.927Z] Tính xong 2686 dòng enriched (loại 140 SP EOL)
+[2026-09-15T04:27:04.120Z] data.csv cũ: 70818 dòng, giữ lại 68066 dòng (loại dòng 15/09/2026 nếu có, sẽ thêm bản mới)
+[2026-09-15T04:27:04.269Z]   ⚠ Giá bất thường: An Phat | Laptop ASUS Vivobook X1404VA-EB609W (Intel Core 3 Proce — 43.990.000đ vs trung vị 19.900.000đ (lệch 121%) → bỏ giá
+[2026-09-15T04:27:04.269Z]   ⚠ Giá bất thường: An Phat | Laptop Lenovo V15 G5 IRL 83HF00BTVA (Intel Core i7-1362 — 29.590.000đ vs trung vị 17.990.000đ (lệch 64%) → bỏ giá
+[2026-09-15T04:27:04.273Z] ⚠ Đã loại giá của 2 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
+[2026-09-15T04:27:04.954Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 70753 dòng (kể cả header), 24444 KB
