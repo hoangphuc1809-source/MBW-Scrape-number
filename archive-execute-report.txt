@@ -1,7 +1,7 @@
 === Archive RAW DATA (cửa sổ trượt) — THỰC THI ===
 RAW DATA giữ 15 ngày, RAW DATA ARCHIVE giữ thêm 15 ngày (tổng 30 ngày). Cũ hơn 30 ngày → XOÁ VĨNH VIỄN.
 Tab "Daily SRP Tracking": grid rowCount=120353
-Tab "RAW DATA ARCHIVE": grid rowCount=20001
+Tab "RAW DATA ARCHIVE": grid rowCount=38752
 
 Đang đọc RAW DATA...
    đọc Daily SRP Tracking 2-5001: 5000 dòng thô
@@ -15,51 +15,54 @@ Tab "RAW DATA ARCHIVE": grid rowCount=20001
    đọc Daily SRP Tracking 40002-45001: 5000 dòng thô
    đọc Daily SRP Tracking 45002-50001: 5000 dòng thô
    đọc Daily SRP Tracking 50002-55001: 5000 dòng thô
-   đọc Daily SRP Tracking 55002-60001: 5000 dòng thô
-   đọc Daily SRP Tracking 60002-65001: 5000 dòng thô
-   đọc Daily SRP Tracking 65002-70001: 5000 dòng thô
-   đọc Daily SRP Tracking 70002-75001: 5000 dòng thô
-   đọc Daily SRP Tracking 75002-80001: 5000 dòng thô
-   đọc Daily SRP Tracking 80002-85001: 5000 dòng thô
-   đọc Daily SRP Tracking 85002-90001: 5000 dòng thô
-   đọc Daily SRP Tracking 90002-95001: 5000 dòng thô
-   đọc Daily SRP Tracking 95002-100001: 5000 dòng thô
-   đọc Daily SRP Tracking 100002-105001: 5000 dòng thô
-   đọc Daily SRP Tracking 105002-110001: 5000 dòng thô
-   đọc Daily SRP Tracking 110002-115001: 5000 dòng thô
-   đọc Daily SRP Tracking 115002-120001: 3122 dòng thô
+   đọc Daily SRP Tracking 55002-60001: 4006 dòng thô
+   đọc Daily SRP Tracking 60002-65001: 0 dòng thô
+   đọc Daily SRP Tracking 65002-70001: 0 dòng thô
+   đọc Daily SRP Tracking 70002-75001: 0 dòng thô
+   đọc Daily SRP Tracking 75002-80001: 0 dòng thô
+   đọc Daily SRP Tracking 80002-85001: 0 dòng thô
+   đọc Daily SRP Tracking 85002-90001: 0 dòng thô
+   đọc Daily SRP Tracking 90002-95001: 0 dòng thô
+   đọc Daily SRP Tracking 95002-100001: 0 dòng thô
+   đọc Daily SRP Tracking 100002-105001: 0 dòng thô
+   đọc Daily SRP Tracking 105002-110001: 0 dòng thô
+   đọc Daily SRP Tracking 110002-115001: 0 dòng thô
+   đọc Daily SRP Tracking 115002-120001: 0 dòng thô
    đọc Daily SRP Tracking 120002-120353: 0 dòng thô
-→ 118122 dòng có dữ liệu thật trong RAW DATA
+→ 59006 dòng có dữ liệu thật trong RAW DATA
 
 Đang đọc RAW DATA ARCHIVE...
    đọc RAW DATA ARCHIVE 2-5001: 5000 dòng thô
    đọc RAW DATA ARCHIVE 5002-10001: 5000 dòng thô
    đọc RAW DATA ARCHIVE 10002-15001: 5000 dòng thô
    đọc RAW DATA ARCHIVE 15002-20001: 5000 dòng thô
-→ 20000 dòng có dữ liệu thật trong RAW DATA ARCHIVE
+   đọc RAW DATA ARCHIVE 20002-25001: 5000 dòng thô
+   đọc RAW DATA ARCHIVE 25002-30001: 5000 dòng thô
+   đọc RAW DATA ARCHIVE 30002-35001: 3751 dòng thô
+   đọc RAW DATA ARCHIVE 35002-38752: 0 dòng thô
+→ 33751 dòng có dữ liệu thật trong RAW DATA ARCHIVE
 
-Ngưỡng RAW DATA (giữ nếu Ngày >=): 29/8/2026
-Ngưỡng tổng (xoá vĩnh viễn nếu Ngày <): 14/8/2026
+Ngưỡng RAW DATA (giữ nếu Ngày >=): 5/9/2026
+Ngưỡng tổng (xoá vĩnh viễn nếu Ngày <): 21/8/2026
 
 === KẾT QUẢ ===
-RAW DATA (giữ 15 ngày): 39421 dòng
-RAW DATA ARCHIVE (giữ thêm 15 ngày): 33751 dòng
-XOÁ VĨNH VIỄN (cũ hơn 30 ngày): 64950 dòng
-Không parse được ngày (giữ lại trong RAW DATA để an toàn): 14
+RAW DATA (giữ 15 ngày): 42106 dòng
+RAW DATA ARCHIVE (giữ thêm 15 ngày): 31217 dòng
+XOÁ VĨNH VIỄN (cũ hơn 30 ngày): 19434 dòng
+Không parse được ngày (giữ lại trong RAW DATA để an toàn): 41
 
-Đang ghi lại RAW DATA ARCHIVE (33751 dòng)...
-   Mo rong RAW DATA ARCHIVE tu 20001 den 38752 dong (can 33752)
+Đang ghi lại RAW DATA ARCHIVE (31217 dòng)...
    ✓ Đã ghi RAW DATA ARCHIVE lô 0-5000
    ✓ Đã ghi RAW DATA ARCHIVE lô 5000-10000
    ✓ Đã ghi RAW DATA ARCHIVE lô 10000-15000
    ✓ Đã ghi RAW DATA ARCHIVE lô 15000-20000
    ✓ Đã ghi RAW DATA ARCHIVE lô 20000-25000
    ✓ Đã ghi RAW DATA ARCHIVE lô 25000-30000
-   ✓ Đã ghi RAW DATA ARCHIVE lô 30000-33751
-Xác nhận: RAW DATA ARCHIVE hiện có 33751 dòng (kỳ vọng 33751)
+   ✓ Đã ghi RAW DATA ARCHIVE lô 30000-31217
+Xác nhận: RAW DATA ARCHIVE hiện có 31217 dòng (kỳ vọng 31217)
 ✅ Xác nhận RAW DATA ARCHIVE thành công.
 
-Đang ghi lại Daily SRP Tracking (39421 dòng)...
+Đang ghi lại Daily SRP Tracking (42106 dòng)...
    ✓ Đã ghi Daily SRP Tracking lô 0-5000
    ✓ Đã ghi Daily SRP Tracking lô 5000-10000
    ✓ Đã ghi Daily SRP Tracking lô 10000-15000
@@ -67,6 +70,7 @@ Xác nhận: RAW DATA ARCHIVE hiện có 33751 dòng (kỳ vọng 33751)
    ✓ Đã ghi Daily SRP Tracking lô 20000-25000
    ✓ Đã ghi Daily SRP Tracking lô 25000-30000
    ✓ Đã ghi Daily SRP Tracking lô 30000-35000
-   ✓ Đã ghi Daily SRP Tracking lô 35000-39421
+   ✓ Đã ghi Daily SRP Tracking lô 35000-40000
+   ✓ Đã ghi Daily SRP Tracking lô 40000-42106
 
-✅ HOÀN TẤT. RAW DATA: 39421 dòng. RAW DATA ARCHIVE: 33751 dòng. Đã xoá vĩnh viễn 64950 dòng cũ hơn 30 ngày.
+✅ HOÀN TẤT. RAW DATA: 42106 dòng. RAW DATA ARCHIVE: 31217 dòng. Đã xoá vĩnh viễn 19434 dòng cũ hơn 30 ngày.
