@@ -67,6 +67,7 @@ jobs:
     timeout-minutes: 3
     outputs:
       online: ${{ steps.check.outputs.online }}
+      api_error: ${{ steps.check.outputs.api_error }}
     steps:
       - name: Kiem tra trang thai runner qua GitHub API
         id: check
@@ -78,21 +79,54 @@ jobs:
           # repo admin) thay the.
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_PAT }}
         run: |
-          RESULT=$(curl -s -H "Authorization: token $GH_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/runners" || echo "")
-          ONLINE_COUNT=$(echo "$RESULT" | jq '[.runners[]? | select(.status=="online")] | length' 2>/dev/null || echo "")
-          if [ -z "$ONLINE_COUNT" ]; then
-            echo "⚠ Khong doc duoc trang thai runner (loi API) — gia dinh ONLINE de an toan"
+          # FIX 28/09/2026: ban cu chi coi la "API loi" khi chuoi tra ve RONG.
+          # Nhung khi PAT het han, GitHub tra JSON HOP LE {"message":"Bad
+          # credentials"} -> jq chay thanh cong -> .runners[]? khong co gi ->
+          # length=0 -> roi thang vao nhanh OFFLINE. Nhanh an toan "gia dinh
+          # ONLINE khi API loi" vi the KHONG BAO GIO chay voi loi 401/403.
+          # Hau qua: tu run #589 (19/09) den #618 (28/09), ca 2 may van online
+          # nhung FPT am tham chay Bright Data 3 lan/ngay (~30 phien ton tien
+          # vo ich), chi lo ra khi chinh Bright Data cung fail. Nay phan biet
+          # bang HTTP status code thay vi doan qua noi dung.
+          HTTP=$(curl -s -o /tmp/runners.json -w "%{http_code}" \
+            -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runners" || echo "000")
+          echo "HTTP status: $HTTP"
+          if [ "$HTTP" != "200" ]; then
+            echo "⚠ API tra HTTP $HTTP (PAT het han / thieu quyen?) — gia dinh ONLINE de an toan"
+            head -c 300 /tmp/runners.json 2>/dev/null || true
+            echo ""
             echo "online=true" >> "$GITHUB_OUTPUT"
-          elif [ "$ONLINE_COUNT" -gt 0 ]; then
-            echo "✅ Co $ONLINE_COUNT may self-hosted online"
-            echo "online=true" >> "$GITHUB_OUTPUT"
+            echo "api_error=$HTTP" >> "$GITHUB_OUTPUT"
           else
-            echo "🔴 KHONG co may self-hosted nao online — FPT se dung Bright Data (online fallback)"
-            echo "online=false" >> "$GITHUB_OUTPUT"
+            ONLINE_COUNT=$(jq '[.runners[]? | select(.status=="online")] | length' /tmp/runners.json)
+            if [ "$ONLINE_COUNT" -gt 0 ]; then
+              echo "✅ Co $ONLINE_COUNT may self-hosted online"
+              echo "online=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "🔴 KHONG co may self-hosted nao online — FPT se dung Bright Data (online fallback)"
+              echo "online=false" >> "$GITHUB_OUTPUT"
+            fi
+            echo "--- Chi tiet ---"
+            jq '[.runners[]? | {name, status}]' /tmp/runners.json
           fi
-          echo "--- Chi tiet ---"
-          echo "$RESULT" | jq '[.runners[]? | {name, status}]' 2>/dev/null || echo "$RESULT"
+
+      # 28/09/2026: bao dong ngay khi PAT hong. Truoc day loi nay im lang 10
+      # ngay vi pipeline van "success" — chi FPT bi day sang Bright Data.
+      - name: Canh bao PAT hong (Telegram)
+        if: ${{ steps.check.outputs.api_error != '' }}
+        continue-on-error: true
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.OPS_BOT_TOKEN }}
+          CHAT: ${{ secrets.OPS_CHAT_ID }}
+          CODE: ${{ steps.check.outputs.api_error }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then exit 0; fi
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT}" \
+            --data-urlencode "text=[CANH BAO] RUNNER_CHECK_PAT tra HTTP ${CODE} — khong doc duoc trang thai runner. Pipeline dang gia dinh may self-hosted ONLINE. Hay tao lai PAT trong Settings > Secrets." \
+            -o /dev/null || true
 
   # 30/07/2026 [v3.5.0]: tach MBW/CPS/FPT thanh 3 job scrape SONG SONG THAT
   # SU (khong con needs: tuan tu giua chung) de tiet kiem thoi gian tong —
