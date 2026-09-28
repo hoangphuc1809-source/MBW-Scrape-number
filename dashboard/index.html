@@ -2382,6 +2382,61 @@ function applyNewData(derived, csv) {
   if (todayColIdx>=0) AL_COLS[todayColIdx][1] = `Price ${todayDate}`;
 }
 
+// 28/09/2026: nguon MOI — products.csv + prices.csv da chuan hoa.
+// Ghep lai thanh dung mang 24 cot y het data.csv cu, nen toan bo
+// buildDerivedData() va moi thu phia sau KHONG phai sua mot dong nao.
+// Tai ve ~1.0 MB thay vi 4.5 MB, parse 7.5 MB thay vi 30.5 MB.
+// Bat ky truc trac gi -> tra ve null -> fetchSheetData tu roi ve data.csv.
+const SPLIT_PRICE_COLS = ['Date','Hour','Dealers','SRP','Promotion Price','Change','Sold','Rate','Status'];
+async function fetchSplitData(stamp) {
+  try {
+    const opt = { cache: 'no-store' };
+    const [pRes, qRes] = await Promise.all([
+      fetch(`./products.csv?t=${stamp}`, opt),
+      fetch(`./prices.csv?t=${stamp}`, opt)
+    ]);
+    if (!pRes.ok || !qRes.ok) return null;
+    const prodRows  = parseCSV(await pRes.text());
+    const priceRows = parseCSV(await qRes.text());
+    if (prodRows.length < 2 || priceRows.length < 10) return null;
+
+    const pHead = prodRows[0], qHead = priceRows[0];
+    if (pHead[0] !== 'pid' || qHead[0] !== 'pid') return null;
+    // Cot gia phai dung nhu thoa thuan, neu khac -> khong doan mo, bo qua.
+    for (let i = 0; i < SPLIT_PRICE_COLS.length; i++) {
+      if (qHead[i + 1] !== SPLIT_PRICE_COLS[i]) return null;
+    }
+
+    const attrCols = pHead.slice(1);                 // SKU + 13 thuoc tinh
+    const byPid = new Map();
+    for (let i = 1; i < prodRows.length; i++) byPid.set(prodRows[i][0], prodRows[i]);
+
+    // Dung lai dung thu tu cot cua data.csv cu.
+    const OUT = ['Date','Hour','Dealers','SKU','SRP','Promotion Price','Change','Sold','Rate',
+                 'Vendor','Series Group','Segment','CPU Segment','CPU','RAM','SSD','Screen',
+                 'GPU','V-RAM','Weight','Products link','Part #','Focus Model','Status'];
+    const qIdx = {}; qHead.forEach((h, n) => { qIdx[h] = n; });
+    const pIdx = {}; attrCols.forEach((h, n) => { pIdx[h] = n + 1; });
+
+    const out = [OUT];
+    let missing = 0;
+    for (let i = 1; i < priceRows.length; i++) {
+      const q = priceRows[i];
+      const p = byPid.get(q[0]);
+      if (!p) { missing++; continue; }
+      out.push(OUT.map(h => (h in qIdx) ? (q[qIdx[h]] ?? '') : (p[pIdx[h]] ?? '')));
+    }
+    // Neu nhieu dong khong tim thay san pham thi 2 file lech nhau -> bo qua.
+    if (missing > 0) console.warn(`prices.csv: ${missing} dong khong khop products.csv`);
+    if (missing > priceRows.length * 0.01) return null;
+    if (out.length < 10) return null;
+    return out;
+  } catch (err) {
+    console.warn('Nguon tach file loi, quay ve data.csv:', err.message);
+    return null;
+  }
+}
+
 async function fetchSheetData(manual=false) {
   const icon   = document.getElementById('sheetRefreshIcon');
   const status = document.getElementById('sheetRefreshStatus');
@@ -2404,6 +2459,24 @@ async function fetchSheetData(manual=false) {
 
   const MAX_TRIES = 5;
   let lastErr = null;
+
+  // 28/09/2026: thu nguon da chuan hoa truoc (nhe hon ~78%). That bai thi
+  // khong bao loi gi ca — chay tiep xuong vong lap data.csv nhu truoc day.
+  try {
+    const splitRows = await fetchSplitData(stamp());
+    if (splitRows) {
+      const derived = buildDerivedData(splitRows);
+      applyNewData(derived, '');
+      const now = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
+      if (status) status.textContent = `✅ Updated ${now}`;
+      console.log(`Sheet refreshed tu products.csv + prices.csv: ${derived.newAllToday.length} rows`);
+      if (icon) icon.className = '';
+      if (btn)  btn.disabled = false;
+      return;
+    }
+  } catch (err) {
+    console.warn('Nguon tach file that bai, dung data.csv:', err && err.message);
+  }
 
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
     for (const csvUrl of urlVariants()) {

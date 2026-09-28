@@ -417,6 +417,50 @@ async function main() {
   const csv = [HEADER, ...allRows].map(row => row.map(csvEscape).join(',')).join('\n') + '\n';
   fs.mkdirSync(path.dirname(DATA_CSV_PATH), { recursive: true });
   fs.writeFileSync(DATA_CSV_PATH, csv, 'utf8');
+
+  // ---------------------------------------------------------------------
+  // 28/09/2026: tach data.csv thanh 2 file chuan hoa.
+  //
+  // Ly do: do tren du lieu that (84.454 dong / 35 ngay), 23.4 MB trong tong
+  // 30.5 MB chi la THUOC TINH SAN PHAM (ten, CPU, RAM, GPU, man hinh, link)
+  // duoc chep lai y nguyen moi ngay — trung binh moi SKU lap 27.7 lan.
+  // Tach ra: 30.5 MB -> 7.5 MB tho, 4.5 MB -> 1.0 MB khi tai ve (-78%).
+  // Trinh duyet cung chi phai parse 7.5 MB thay vi 30.5 MB.
+  //
+  // KHONG MAT DU LIEU: moi TO HOP thuoc tinh khac nhau la mot dong products
+  // rieng, nen truong hop dealer doi ten CPU hay them utm vao link giua chung
+  // (940/3044 SKU co CPU doi, 331 co link doi) van duoc giu nguyen lich su —
+  // khac han cach "lay gia tri moi nhat" se ghi de qua khu.
+  //
+  // data.csv VAN duoc ghi nhu cu lam duong lui cho dashboard.
+  // ---------------------------------------------------------------------
+  const PRICE_COLS = ['Date', 'Hour', 'Dealers', 'SRP', 'Promotion Price', 'Change', 'Sold', 'Rate', 'Status'];
+  const ATTR_COLS = HEADER.filter(h => !PRICE_COLS.includes(h));   // SKU + 13 thuoc tinh
+  const idxOf = Object.fromEntries(HEADER.map((h, n) => [h, n]));
+
+  const seen = new Map();
+  const productRows = [];
+  const priceRows = [];
+  for (const r of allRows) {
+    const sig = ATTR_COLS.map(h => r[idxOf[h]] ?? '').join('\u0001');
+    let pid = seen.get(sig);
+    if (pid === undefined) {
+      pid = seen.size + 1;
+      seen.set(sig, pid);
+      productRows.push([pid, ...ATTR_COLS.map(h => r[idxOf[h]] ?? '')]);
+    }
+    priceRows.push([pid, ...PRICE_COLS.map(h => r[idxOf[h]] ?? '')]);
+  }
+
+  const toCsv = (head, rws) => [head, ...rws].map(row => row.map(csvEscape).join(',')).join('\n') + '\n';
+  const productsCsv = toCsv(['pid', ...ATTR_COLS], productRows);
+  const pricesCsv = toCsv(['pid', ...PRICE_COLS], priceRows);
+  fs.writeFileSync(path.join(path.dirname(DATA_CSV_PATH), 'products.csv'), productsCsv, 'utf8');
+  fs.writeFileSync(path.join(path.dirname(DATA_CSV_PATH), 'prices.csv'), pricesCsv, 'utf8');
+  debugLog(`   products.csv: ${productRows.length} dong (${(productsCsv.length / 1024).toFixed(0)} KB)`);
+  debugLog(`   prices.csv  : ${priceRows.length} dong (${(pricesCsv.length / 1024).toFixed(0)} KB)`);
+  debugLog(`   => tong ${((productsCsv.length + pricesCsv.length) / 1024).toFixed(0)} KB so voi data.csv ${(csv.length / 1024).toFixed(0)} KB`);
+
   debugLog(`✅ Đã ghi ${DATA_CSV_PATH} — ${allRows.length + 1} dòng (kể cả header), ${(csv.length / 1024).toFixed(0)} KB`);
 }
 
