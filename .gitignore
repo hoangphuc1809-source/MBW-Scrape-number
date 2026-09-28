@@ -1,0 +1,14 @@
+# 28/09/2026: repo truoc day khong co .gitignore nen moi lan chay
+# `npm install` tren may self-hosted la cay lam viec bi ban, de commit nham
+# node_modules vao repo.
+
+# Dependencies (CI tu chay `npm install` o moi job)
+node_modules/
+package-lock.json
+
+# npm logs
+npm-debug.log*
+.npm/
+
+# Output tam cua cac job scrape (chi luu file, khong can version)
+scrape-output/
