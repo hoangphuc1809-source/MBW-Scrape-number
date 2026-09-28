@@ -755,14 +755,15 @@ jobs:
           git config user.name "msi-data-bot"
           git config user.email "actions@users.noreply.github.com"
           ADDED=0
-          if [ -f dashboard/data.csv ] && [ -n "$(git status --porcelain dashboard/data.csv)" ]; then
-            git add dashboard/data.csv
-            ADDED=1
-          fi
-          if [ -f dashboard/.enrich-debug.log ] && [ -n "$(git status --porcelain dashboard/.enrich-debug.log)" ]; then
-            git add dashboard/.enrich-debug.log
-            ADDED=1
-          fi
+          # 28/09/2026: them products.csv + prices.csv (nguon da chuan hoa).
+          # Buoc nay liet ke tung file mot, nen file moi sinh ra ma quen them
+          # vao day thi se khong bao gio len repo — dung loi vua gap o run #621.
+          for f in dashboard/data.csv dashboard/products.csv dashboard/prices.csv dashboard/.enrich-debug.log; do
+            if [ -f "$f" ] && [ -n "$(git status --porcelain "$f")" ]; then
+              git add "$f"
+              ADDED=1
+            fi
+          done
           if [ "$ADDED" = "1" ]; then
             git commit -m "chore(dashboard): cap nhat data snapshot [skip ci]"
             git pull --rebase origin main
