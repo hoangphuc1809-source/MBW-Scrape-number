@@ -1,14 +1,17 @@
-[2026-09-28T09:29:01.503Z] --- Bắt đầu enrich-and-export.js ---
-[2026-09-28T09:29:01.514Z] Đọc được 2691 SP từ 5 file artifact (scrape-artifacts)
-[2026-09-28T09:29:01.515Z] Đọc Part # (FORMULA render)...
-[2026-09-28T09:29:02.029Z]   10276 dòng
-[2026-09-28T09:29:02.029Z] Đọc Segment (FORMULA render)...
-[2026-09-28T09:29:02.294Z]   120 dòng
-[2026-09-28T09:29:02.295Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-09-28T09:29:02.334Z] Part# map: 4050 SKU
-[2026-09-28T09:29:02.334Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
-[2026-09-28T09:29:02.377Z] Tính xong 2581 dòng enriched (loại 110 SP EOL)
-[2026-09-28T09:29:03.822Z] data.csv cũ: 84438 dòng, giữ lại 81873 dòng (loại dòng 28/09/2026 nếu có, sẽ thêm bản mới)
-[2026-09-28T09:29:03.992Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Nitro ProPanel ANV15-42-R0QM NH.QUDSV.001 ( — 29.900.000đ vs trung vị 17.890.000đ (lệch 67%) → bỏ giá
-[2026-09-28T09:29:03.996Z] ⚠ Đã loại giá của 1 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
-[2026-09-28T09:29:04.875Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 84455 dòng (kể cả header), 29253 KB
+[2026-09-28T10:42:35.898Z] --- Bắt đầu enrich-and-export.js ---
+[2026-09-28T10:42:35.909Z] Đọc được 2711 SP từ 5 file artifact (scrape-artifacts)
+[2026-09-28T10:42:35.909Z] Đọc Part # (FORMULA render)...
+[2026-09-28T10:42:36.343Z]   10276 dòng
+[2026-09-28T10:42:36.343Z] Đọc Segment (FORMULA render)...
+[2026-09-28T10:42:36.465Z]   120 dòng
+[2026-09-28T10:42:36.466Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-09-28T10:42:36.503Z] Part# map: 4050 SKU
+[2026-09-28T10:42:36.503Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
+[2026-09-28T10:42:36.544Z] Tính xong 2602 dòng enriched (loại 109 SP EOL)
+[2026-09-28T10:42:37.868Z] data.csv cũ: 84454 dòng, giữ lại 81873 dòng (loại dòng 28/09/2026 nếu có, sẽ thêm bản mới)
+[2026-09-28T10:42:38.031Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Nitro ProPanel ANV15-42-R0QM NH.QUDSV.001 ( — 29.900.000đ vs trung vị 17.890.000đ (lệch 67%) → bỏ giá
+[2026-09-28T10:42:38.035Z] ⚠ Đã loại giá của 1 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
+[2026-09-28T10:42:39.211Z]    products.csv: 5207 dong (1539 KB)
+[2026-09-28T10:42:39.211Z]    prices.csv  : 84475 dong (5443 KB)
+[2026-09-28T10:42:39.211Z]    => tong 6982 KB so voi data.csv 29259 KB
+[2026-09-28T10:42:39.211Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 84476 dòng (kể cả header), 29259 KB
