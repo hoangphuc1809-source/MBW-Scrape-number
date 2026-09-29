@@ -1,19 +1,19 @@
-[2026-09-29T04:19:12.636Z] --- Bắt đầu enrich-and-export.js ---
-[2026-09-29T04:19:12.646Z] Đọc được 2671 SP từ 5 file artifact (scrape-artifacts)
-[2026-09-29T04:19:12.647Z] Đọc Part # (FORMULA render)...
-[2026-09-29T04:19:13.048Z]   10276 dòng
-[2026-09-29T04:19:13.048Z] Đọc Segment (FORMULA render)...
-[2026-09-29T04:19:13.148Z]   120 dòng
-[2026-09-29T04:19:13.148Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
-[2026-09-29T04:19:13.185Z] Part# map: 4050 SKU
-[2026-09-29T04:19:13.185Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
-[2026-09-29T04:19:13.225Z] Tính xong 2565 dòng enriched (loại 106 SP EOL)
-[2026-09-29T04:19:14.622Z] data.csv cũ: 85406 dòng, giữ lại 82791 dòng (loại dòng 29/09/2026 nếu có, sẽ thêm bản mới)
-[2026-09-29T04:19:14.773Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Nitro ProPanel ANV15-52-50RB NH.QUASV.002 ( — 33.490.000đ vs trung vị 17.890.000đ (lệch 87%) → bỏ giá
-[2026-09-29T04:19:14.774Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Gaming Nitro ProPanel ANV15-52-74UM NH.QUBS — 32.490.000đ vs trung vị 17.890.000đ (lệch 82%) → bỏ giá
-[2026-09-29T04:19:14.774Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Nitro ProPanel ANV15-42-R0QM NH.QUDSV.001 ( — 29.900.000đ vs trung vị 17.890.000đ (lệch 67%) → bỏ giá
-[2026-09-29T04:19:14.778Z] ⚠ Đã loại giá của 3 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
-[2026-09-29T04:19:15.916Z]    products.csv: 5124 dong (1516 KB)
-[2026-09-29T04:19:15.916Z]    prices.csv  : 85356 dong (5495 KB)
-[2026-09-29T04:19:15.916Z]    => tong 7011 KB so voi data.csv 29570 KB
-[2026-09-29T04:19:15.916Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 85357 dòng (kể cả header), 29570 KB
+[2026-09-29T05:10:56.683Z] --- Bắt đầu enrich-and-export.js ---
+[2026-09-29T05:10:56.693Z] Đọc được 2692 SP từ 5 file artifact (scrape-artifacts)
+[2026-09-29T05:10:56.694Z] Đọc Part # (FORMULA render)...
+[2026-09-29T05:10:57.296Z]   10276 dòng
+[2026-09-29T05:10:57.296Z] Đọc Segment (FORMULA render)...
+[2026-09-29T05:10:57.560Z]   120 dòng
+[2026-09-29T05:10:57.560Z] Part# header index: {"Product Name":0,"Vendor":1,"Part #":2,"CPU Segment":3,"CPU":4,"RAM":5,"SSD":6,"Screen":7,"GPU":8,"V-RAM":9,"Status":10,"Series Group":11,"Segment":12,"CPU (Listed)":13,"RAM (Listed)":14,"Storage":15,"Screen Size":16,"GPU (Listed)":17,"Weight":18,"Product Link":19,"Focus Model":20,"Availability":21}
+[2026-09-29T05:10:57.599Z] Part# map: 4050 SKU
+[2026-09-29T05:10:57.599Z] Vendor chuan tu Part#: 13 gia tri -> ["Asus","Samsung","Gigabyte","Acer","Hp","Dell","Lenovo","Msi","Apple","Colorful","Lg","Masstel","Singpc"]
+[2026-09-29T05:10:57.641Z] Tính xong 2584 dòng enriched (loại 108 SP EOL)
+[2026-09-29T05:10:59.064Z] data.csv cũ: 85356 dòng, giữ lại 82791 dòng (loại dòng 29/09/2026 nếu có, sẽ thêm bản mới)
+[2026-09-29T05:10:59.209Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Nitro ProPanel ANV15-52-50RB NH.QUASV.002 ( — 33.490.000đ vs trung vị 17.890.000đ (lệch 87%) → bỏ giá
+[2026-09-29T05:10:59.209Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Gaming Nitro ProPanel ANV15-52-74UM NH.QUBS — 32.490.000đ vs trung vị 17.890.000đ (lệch 82%) → bỏ giá
+[2026-09-29T05:10:59.209Z]   ⚠ Giá bất thường: An Phat | Laptop Acer Nitro ProPanel ANV15-42-R0QM NH.QUDSV.001 ( — 29.900.000đ vs trung vị 17.890.000đ (lệch 67%) → bỏ giá
+[2026-09-29T05:10:59.213Z] ⚠ Đã loại giá của 3 dòng vì lệch > 55.00000000000001% so với trung vị 7 ngày của chính SKU đó
+[2026-09-29T05:11:00.337Z]    products.csv: 5127 dong (1517 KB)
+[2026-09-29T05:11:00.337Z]    prices.csv  : 85375 dong (5496 KB)
+[2026-09-29T05:11:00.337Z]    => tong 7013 KB so voi data.csv 29576 KB
+[2026-09-29T05:11:00.337Z] ✅ Đã ghi /home/runner/work/MBW-Scrape-number/MBW-Scrape-number/dashboard/data.csv — 85376 dòng (kể cả header), 29576 KB
